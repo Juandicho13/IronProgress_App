@@ -19,31 +19,48 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
+/**
+ * Pantalla de Registro Manual de Ejercicios (Logbook).
+ *
+ * Esta pantalla permite al usuario:
+ * 1. Registrar sets individuales manualmente (CRUD).
+ * 2. Visualizar el historial agrupado por fechas.
+ * 3. Editar o eliminar registros pasados.
+ * 4. Navegar a las gráficas de progreso de un ejercicio específico.
+ *
+ * @param viewModel El [ExerciseViewModel] compartido para la gestión de datos.
+ * @param navController Controlador para la navegación hacia gráficas o rutinas.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
 
-    // 🚀 OPTIMIZACIÓN DE FLUIDEZ:
-    // Leemos los datos YA AGRUPADOS desde el ViewModel.
-    // La pantalla ya no pierde tiempo calculando fechas, solo dibuja.
+    // --- Recolección de Estado (State Collection) ---
+
+    // Se observa el mapa de ejercicios agrupados directamente desde el ViewModel.
+    // Esto delega la lógica de procesamiento de fechas al hilo de fondo (IO Dispatcher),
+    // manteniendo la UI fluida (Jank-free).
     val groupedExercises by viewModel.groupedExercises.collectAsState()
 
     val currentRestTime by viewModel.currentRestTime.collectAsState()
 
-    // Variables del formulario
+    // --- Estado del Formulario Local ---
     var name by remember { mutableStateOf("") }
     var muscle by remember { mutableStateOf("") }
     var sets by remember { mutableStateOf("") }
     var reps by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
+
+    // Control del menú desplegable de grupos musculares
     var expanded by remember { mutableStateOf(false) }
 
-    // Estado para edición
+    // --- Estado de Edición (Modal) ---
+    // Si no es nulo, muestra el diálogo de edición para esa entidad
     var exerciseToEdit by remember { mutableStateOf<ExerciseEntity?>(null) }
 
     val muscleGroups = listOf("Pecho", "Espalda", "Pierna", "Hombro", "Bíceps", "Tríceps", "Abdomen", "Cardio")
 
-    // Ventana de Edición
+    // Modal de Edición (Overlay)
     if (exerciseToEdit != null) {
         EditExerciseDialog(
             exercise = exerciseToEdit!!,
@@ -77,7 +94,7 @@ fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // 1. BOTÓN DE CAMBIO RÁPIDO DE RUTINA
+            // 1. Acceso Directo a Rutinas
             OutlinedButton(
                 onClick = { navController.navigate("routines") },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
@@ -88,7 +105,7 @@ fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
                 Text("¿No es hoy? Cambiar Rutina")
             }
 
-            // 2. FORMULARIO DE REGISTRO
+            // 2. Tarjeta de Formulario (Entrada de Datos)
             Card(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -97,6 +114,7 @@ fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
                     Text("Nuevo Registro", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Input: Nombre del Ejercicio
                     OutlinedTextField(
                         value = name, onValueChange = { name = it },
                         label = { Text("Nombre del Ejercicio") },
@@ -106,6 +124,7 @@ fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Dropdown: Grupo Muscular
                     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                         OutlinedTextField(
                             value = muscle, onValueChange = {}, readOnly = true,
@@ -125,6 +144,7 @@ fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
                     }
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Inputs Numéricos: Series, Reps, Peso
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = sets, onValueChange = { if (it.all { char -> char.isDigit() }) sets = it },
@@ -144,6 +164,7 @@ fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
                     }
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Botón de Guardado
                     Button(
                         onClick = {
                             if (name.isNotEmpty() && muscle.isNotEmpty()) {
@@ -151,8 +172,9 @@ fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
                                     name, muscle,
                                     sets.toIntOrNull() ?: 0, reps, weight.toDoubleOrNull() ?: 0.0
                                 )
+                                // Resetear campos
                                 sets = ""; reps = ""; weight = ""
-                                // Navegamos al timer usando la variable de tiempo actual
+                                // Navegación al temporizador
                                 navController.navigate("timer/$currentRestTime/Descanso")
                             }
                         },
@@ -168,13 +190,13 @@ fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. LISTA AGRUPADA POR DÍAS (OPTIMIZADA)
+            // 3. Historial (LazyList agrupada)
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                // Iteramos sobre el mapa que ya viene LISTO del ViewModel
                 groupedExercises.forEach { (dateHeader, exercisesForDay) ->
+                    // Encabezado de Fecha (Sticky Header simulado)
                     item {
                         Text(
                             text = dateHeader.uppercase(),
@@ -184,6 +206,7 @@ fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
                             modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp)
                         )
                     }
+                    // Lista de items para esa fecha
                     items(exercisesForDay) { exercise ->
                         ExerciseItem(
                             exercise = exercise,
@@ -193,14 +216,19 @@ fun ExerciseScreen(viewModel: ExerciseViewModel, navController: NavController) {
                         )
                     }
                 }
+                // Espacio extra para asegurar que el último item no quede tapado por navegación
                 item { Spacer(modifier = Modifier.height(50.dp)) }
             }
         }
     }
 }
 
-// --- Componentes ---
+// --- Componentes Reutilizables ---
 
+/**
+ * Tarjeta individual que representa un set o ejercicio en el historial.
+ * Muestra resumen de datos y acciones rápidas (Editar/Borrar/Ver Gráfica).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseItem(
@@ -219,6 +247,7 @@ fun ExerciseItem(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Icono de categoría
             Box(
                 modifier = Modifier.size(40.dp).background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
@@ -226,6 +255,8 @@ fun ExerciseItem(
                 Icon(Icons.Default.FitnessCenter, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
             }
             Spacer(modifier = Modifier.width(16.dp))
+
+            // Datos Principales
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = exercise.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(
@@ -235,12 +266,17 @@ fun ExerciseItem(
                 )
                 Text(text = exercise.muscleGroup, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
             }
+
+            // Acciones
             IconButton(onClick = onEditClick) { Icon(Icons.Default.Edit, "Editar", tint = MaterialTheme.colorScheme.primary) }
             IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, "Borrar", tint = MaterialTheme.colorScheme.error) }
         }
     }
 }
 
+/**
+ * Diálogo flotante para editar un registro existente.
+ */
 @Composable
 fun EditExerciseDialog(exercise: ExerciseEntity, onDismiss: () -> Unit, onConfirm: (ExerciseEntity) -> Unit) {
     var sets by remember { mutableStateOf(exercise.targetSets.toString()) }

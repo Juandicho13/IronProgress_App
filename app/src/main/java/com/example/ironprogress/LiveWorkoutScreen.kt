@@ -4,8 +4,8 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn // 🔥 IMPORTACIÓN AGREGADA
-import androidx.compose.foundation.lazy.items      // 🔥 IMPORTACIÓN AGREGADA
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,9 +13,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.Warning // 🔥 IMPORTACIÓN AGREGADA
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,38 +29,57 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 
+/**
+ * Pantalla Principal de Ejecución de Rutina (Live Workout).
+ *
+ * Esta es la vista central durante una sesión de entrenamiento activa.
+ * Gestiona:
+ * 1. La navegación secuencial entre ejercicios y series.
+ * 2. El registro de datos en tiempo real (Input de peso/reps).
+ * 3. La visualización del historial inmediato (Series completadas hoy).
+ * 4. La transición hacia el temporizador de descanso o el resumen final.
+ *
+ * @param viewModel ViewModel compartido que mantiene el estado de la sesión.
+ * @param navController Controlador para navegar al Timer o al Dashboard.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController) {
 
-    // --- ESTADOS ---
-    // TRUCO PARA EVITAR ERRORES DE "SMART CAST":
-    // 1. Obtenemos el Estado
+    //region --- Recolección de Estado (State Collection) ---
+    // Se observa la lista de ejercicios activos. Si es null, indica carga; si es vacía, error.
     val activeExercisesState = viewModel.activeRoutineExercises.collectAsState()
-    // 2. Lo guardamos en una variable local FIJA. Ahora Kotlin sabe que no cambiará.
     val activeExercises = activeExercisesState.value
 
+    // Observamos índices y contadores para la UI reactiva
     val currentIndex by viewModel.currentExerciseIndex.collectAsState()
     val currentSet by viewModel.currentSetNumber.collectAsState()
     val routineBaseRestTime by viewModel.currentRestTime.collectAsState()
     val allRoutines by viewModel.allRoutines.collectAsState(initial = emptyList())
+    //endregion
 
-    // Estado para el diálogo de cambio de rutina
+    //region --- Estados Locales de UI ---
+    // Controla la visibilidad del diálogo para cambiar de rutina "al vuelo"
     var showChangeDialog by remember { mutableStateOf(false) }
 
-    // 1. PANTALLAS DE ESTADO (Cargando / Vacía)
+    // Controla la visibilidad del resumen final (activado por fin de rutina o botón de bandera)
+    var showSummaryDialog by remember { mutableStateOf(false) }
+    //endregion
+
+    // 1. Manejo de Estado: Cargando datos desde BD
     if (activeExercises == null) {
-        // Caso A: Aún estamos buscando en la BD...
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
         return
     }
 
+    // 2. Manejo de Estado: Rutina sin ejercicios
     if (activeExercises.isEmpty()) {
-        // Caso B: Rutina vacía (Kotlin ya sabe que activeExercises NO es null aquí)
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.Default.Warning, null, tint = Color.Gray, modifier = Modifier.size(48.dp))
@@ -74,49 +95,37 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
         return
     }
 
-    // 2. PANTALLA DE FINALIZACIÓN
+    // 3. Manejo de Estado: Rutina Finalizada (Navegación Automática)
+    // Si el índice supera la lista, mostramos el resumen automáticamente.
     if (currentIndex >= activeExercises.size) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(Icons.Default.Check, null, modifier = Modifier.size(100.dp), tint = MaterialTheme.colorScheme.primary)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "¡ENTRENAMIENTO COMPLETADO!",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(
-                onClick = {
-                    navController.navigate("dashboard") {
-                        popUpTo("dashboard") { inclusive = true }
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().height(56.dp)
-            ) {
-                Text("VOLVER AL INICIO")
+        WorkoutSummaryContent(
+            exercises = activeExercises,
+            viewModel = viewModel,
+            onFinish = {
+                navController.navigate("dashboard") {
+                    // Limpiamos la pila de navegación para evitar volver al resumen con "Atrás"
+                    popUpTo("dashboard") { inclusive = true }
+                }
             }
-        }
+        )
         return
     }
 
-    // 3. PANTALLA DE ENTRENAMIENTO EN VIVO
+    // --- INTERFAZ DE ENTRENAMIENTO ACTIVO ---
+
     val exercise = activeExercises[currentIndex]
 
-    // GESTIÓN DE MEMORIA (Inputs)
+    // Gestión de Inputs: Usamos 'remember(exercise)' para resetear los campos
+    // solo cuando cambiamos al siguiente ejercicio, pero mantenerlos entre series.
     var actualReps by remember(exercise) { mutableStateOf(exercise.reps) }
     var actualWeight by remember(exercise) { mutableStateOf(exercise.weight.toString()) }
 
-    // Tiempo de descanso inteligente
+    // Determinamos el tiempo de descanso: Prioridad al específico del ejercicio, sino el global.
     val effectiveRestTime = remember(exercise) {
         exercise.targetRestTime ?: routineBaseRestTime
     }
 
-    // Historial de lo que llevamos hecho hoy
+    // Obtenemos historial en tiempo real para mostrar "Completado hoy"
     val todaysSets by viewModel.getTodaysHistory(exercise.name).collectAsState(initial = emptyList())
 
     Column(
@@ -125,7 +134,7 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
             .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
-        // --- ENCABEZADO ---
+        // --- Header Superior (Progreso y Acciones) ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -133,18 +142,29 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Barra de progreso lineal
             LinearProgressIndicator(
                 progress = { currentIndex.toFloat() / activeExercises.size.toFloat() },
                 modifier = Modifier.weight(1f).height(8.dp).clip(CircleShape),
                 trackColor = Color.Gray.copy(alpha = 0.25f),
             )
             Spacer(modifier = Modifier.width(16.dp))
-            IconButton(onClick = { showChangeDialog = true }, modifier = Modifier.size(24.dp)) {
-                Icon(Icons.Default.Refresh, contentDescription = "Cambiar Rutina", tint = Color.Gray)
+
+            // Botonera de acciones rápidas
+            Row {
+                // Acción: Finalizar prematuramente (Bandera)
+                IconButton(onClick = { showSummaryDialog = true }, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.Flag, contentDescription = "Terminar Entrenamiento", tint = MaterialTheme.colorScheme.primary)
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                // Acción: Cambiar Rutina (Refresh)
+                IconButton(onClick = { showChangeDialog = true }, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.Refresh, contentDescription = "Cambiar Rutina", tint = Color.Gray)
+                }
             }
         }
 
-        // --- CUERPO SCROLLABLE ---
+        // --- Cuerpo Principal (Scrollable) ---
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -160,7 +180,7 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // TARJETA PRINCIPAL
+            // Tarjeta de Ejercicio Actual (Input Card)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -179,6 +199,7 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Indicador de Serie Actual
                     Box(modifier = Modifier.background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp)).padding(horizontal = 24.dp, vertical = 8.dp)) {
                         Text(
                             "SERIE $currentSet / ${exercise.sets}",
@@ -190,9 +211,9 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // INPUTS
+                    // Campos de Entrada (Inputs)
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        // Peso
+                        // Input: Peso
                         Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                             val unitLabel = if (exercise.isKg) "KG" else "LB"
                             Text("PESO ($unitLabel)", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
@@ -210,7 +231,7 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
                                 )
                             )
                         }
-                        // Reps
+                        // Input: Repeticiones
                         Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("REPS", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                             OutlinedTextField(
@@ -231,7 +252,7 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
                 }
             }
 
-            // HISTORIAL DE HOY
+            // Lista de sets completados hoy (Feedback visual)
             if (todaysSets.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text("Completado hoy:", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
@@ -253,7 +274,7 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
             }
         }
 
-        // PIE DE PÁGINA (BOTÓN)
+        // --- Footer (Botón Principal y Ads) ---
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -262,11 +283,12 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
         ) {
             Button(
                 onClick = {
-                    // 1. CALCULAMOS QUE SIGUE
+                    // Lógica de navegación y texto para el temporizador
                     var nextExerciseName = ""
                     if (currentSet < exercise.sets) {
                         nextExerciseName = "Serie ${currentSet + 1} de ${exercise.name}"
                     } else {
+                        // Si terminamos series, miramos si hay siguiente ejercicio
                         if (currentIndex + 1 < activeExercises.size) {
                             nextExerciseName = "Sigue: ${activeExercises[currentIndex + 1].name}"
                         } else {
@@ -275,14 +297,14 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
                     }
                     val encodedNextName = Uri.encode(nextExerciseName)
 
-                    // 2. SOLO GUARDAR DATOS
+                    // 1. Guardar datos en BD
                     viewModel.logSetData(
                         currentEx = exercise,
                         actualReps = actualReps,
                         actualWeight = actualWeight.toDoubleOrNull() ?: 0.0
                     )
 
-                    // 3. NAVEGAR AL TIMER
+                    // 2. Navegar al servicio de Temporizador
                     navController.navigate("timer/$effectiveRestTime/$encodedNextName")
                 },
                 modifier = Modifier.fillMaxWidth().height(80.dp),
@@ -308,13 +330,14 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
         }
     }
 
-    // DIÁLOGO CAMBIAR RUTINA (Con imports corregidos)
+    // --- DIÁLOGOS (Modales) ---
+
+    // Modal: Selección de cambio de rutina
     if (showChangeDialog) {
         AlertDialog(
             onDismissRequest = { showChangeDialog = false },
             title = { Text("Cambiar Rutina") },
             text = {
-                // Ahora LazyColumn funcionará porque importamos androidx.compose.foundation.lazy.LazyColumn
                 LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
                     items(allRoutines) { routine ->
                         ListItem(
@@ -336,5 +359,122 @@ fun LiveWorkoutScreen(viewModel: ExerciseViewModel, navController: NavController
                 TextButton(onClick = { showChangeDialog = false }) { Text("CANCELAR") }
             }
         )
+    }
+
+    // Modal: Resumen de Entrenamiento (Trigger manual)
+    if (showSummaryDialog) {
+        Dialog(
+            onDismissRequest = { showSummaryDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            WorkoutSummaryContent(
+                exercises = activeExercises,
+                viewModel = viewModel,
+                onFinish = {
+                    showSummaryDialog = false
+                    navController.navigate("dashboard") {
+                        popUpTo("dashboard") { inclusive = true }
+                    }
+                }
+            )
+        }
+    }
+}
+
+/**
+ * Pantalla de Resumen de Entrenamiento (Post-Workout Summary).
+ *
+ * Muestra un listado de los ejercicios realizados y calcula el 1RM estimado
+ * (Repetición Máxima) basado en la última serie efectiva registrada.
+ * Sirve como refuerzo positivo al usuario ("Gamification").
+ */
+@Composable
+fun WorkoutSummaryContent(
+    exercises: List<RoutineExerciseEntity>,
+    viewModel: ExerciseViewModel,
+    onFinish: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp).fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(Modifier.height(32.dp))
+
+            // Header de Celebración
+            Icon(Icons.Rounded.EmojiEvents, null, tint = Color(0xFFFFD700), modifier = Modifier.size(64.dp))
+            Spacer(Modifier.height(16.dp))
+            Text(
+                "¡ENTRENAMIENTO COMPLETADO!",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Black,
+                textAlign = TextAlign.Center,
+                color = Color.White
+            )
+            Text("Resumen de fuerza hoy (1RM Est.)", color = Color.Gray)
+
+            Spacer(Modifier.height(32.dp))
+
+            // Lista de Logros y Estimaciones
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f).fillMaxWidth()
+            ) {
+                items(exercises) { ex ->
+                    // Cálculo de 1RM usando la fórmula de Epley (implementada en ViewModel)
+                    val repsInt = ex.reps.split("-")[0].toIntOrNull() ?: 1
+                    val estimated1RM = viewModel.calculate1RM(ex.weight, repsInt)
+
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(ex.name, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("${ex.weight} ${if(ex.isKg)"kg" else "lb"} x ${ex.reps}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            }
+
+                            // Badge de 1RM (Visualización de métrica)
+                            Surface(
+                                color = MaterialTheme.colorScheme.tertiaryContainer,
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text("1RM", fontSize = 10.sp, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                                    Text(
+                                        "$estimated1RM",
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 18.sp,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // Botón de Salida
+            Button(
+                onClick = onFinish,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text("GUARDAR Y SALIR", fontWeight = FontWeight.Bold)
+            }
+        }
     }
 }

@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -18,29 +17,39 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.roundToInt
 
+/**
+ * Pantalla de Análisis de Progreso y Evolución.
+ *
+ * Ofrece al usuario dos vistas principales:
+ * 1. Selector de Ejercicio: Lista de todos los ejercicios registrados históricamente.
+ * 2. Vista de Análisis (Dashboard):
+ * - Métricas clave (KPIs): Récord Personal (PR) y Tendencia vs Sesión anterior.
+ * - Gráfica de Línea: Evolución visual de la fuerza a lo largo del tiempo.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgressScreen(viewModel: ExerciseViewModel, navController: NavController) {
-    // Lista de nombres de ejercicios únicos para el selector
+
+    //region --- Estado de Datos (Data State) ---
+    // Lista reactiva de nombres únicos para el selector.
     val exerciseNames by viewModel.uniqueExerciseNames.collectAsState(initial = emptyList())
 
-    // Estado para el ejercicio seleccionado
+    // Estado local: Si es null, muestra el selector; si tiene valor, muestra el análisis de ese ejercicio.
     var selectedExercise by remember { mutableStateOf<String?>(null) }
+    //endregion
 
     Scaffold(
         topBar = {
@@ -48,12 +57,14 @@ fun ProgressScreen(viewModel: ExerciseViewModel, navController: NavController) {
                 title = { Text("MI PROGRESO", fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     if (selectedExercise != null) {
+                        // Si estamos en detalle, el botón "Atrás" limpia la selección (vuelve a la lista)
                         IconButton(onClick = { selectedExercise = null }) {
-                            Icon(Icons.Default.ArrowBack, null)
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver a lista")
                         }
                     } else {
+                        // Si estamos en la lista, el botón "Atrás" sale de la pantalla (vuelve al Dashboard)
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, null)
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Salir")
                         }
                     }
                 },
@@ -88,7 +99,8 @@ fun ProgressScreen(viewModel: ExerciseViewModel, navController: NavController) {
                 }
             } else {
                 // --- VISTA 2: ANÁLISIS DETALLADO ---
-                // Cargamos el historial de ese ejercicio específico
+                // Cargamos dinámicamente el historial completo del ejercicio seleccionado.
+                // El operador !! es seguro aquí porque selectedExercise no es null en este bloque else.
                 val history by viewModel.getExerciseHistory(selectedExercise!!).collectAsState(initial = emptyList())
 
                 if (history.isEmpty()) {
@@ -103,57 +115,65 @@ fun ProgressScreen(viewModel: ExerciseViewModel, navController: NavController) {
     }
 }
 
+/**
+ * Sub-pantalla que renderiza el dashboard de análisis para un ejercicio específico.
+ */
 @Composable
 fun AnalysisView(exerciseName: String, history: List<ExerciseEntity>) {
-    // 1. PROCESAMIENTO DE DATOS
-    // Agrupamos por fecha y nos quedamos con el PESO MÁXIMO de cada sesión
+
+    //region --- Procesamiento de Datos (Business Logic) ---
+    // Agrupamos el historial por fecha (día) y extraemos la "Mejor Serie" (Max Weight) de cada sesión.
+    // Esto normaliza los datos para la gráfica, evitando múltiples puntos por día.
     val dataPoints = remember(history) {
         history.groupBy {
             SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date(it.date))
         }.map { (_, exercises) ->
-            // De cada día, sacamos el objeto con el peso más alto
             exercises.maxByOrNull { it.currentWeight }!!
-        }.sortedBy { it.date } // Ordenamos cronológicamente
+        }.sortedBy { it.date } // Orden cronológico ascendente para la gráfica
     }
 
+    // Datos para comparación de tendencias
     val currentSession = dataPoints.last()
     val previousSession = if (dataPoints.size > 1) dataPoints[dataPoints.size - 2] else null
 
-    // Cálculos de Tendencia
+    // Cálculo de Delta (Diferencia)
     val currentMax = currentSession.currentWeight
     val previousMax = previousSession?.currentWeight ?: currentMax
     val diff = currentMax - previousMax
-    val isImprovement = diff > 0
-    val isRegression = diff < 0
-    val isSame = diff == 0.0
 
-    // Récord Histórico (PR)
+    // Récord Histórico Absoluto (PR)
     val pr = dataPoints.maxOf { it.currentWeight }
+    //endregion
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // TÍTULO
-        Text(exerciseName, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
+        // Encabezado del Reporte
+        Text(
+            exerciseName,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Black,
+            color = MaterialTheme.colorScheme.primary
+        )
         Text("Historial de Fuerza (Mejor Serie)", color = Color.Gray)
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // TARJETAS DE ESTADÍSTICAS
+        // Sección de KPIs (Tarjetas de Estadísticas)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // Tarjeta 1: PR
+            // KPI 1: Récord Personal
             StatCard(
                 title = "Récord (PR)",
-                value = "${pr.toInt()}", // Asumimos enteros para limpieza visual
-                unit = "kg/lb", // Ojalá dinámica, pero genérica por ahora
+                value = "${pr.toInt()}", // Simplificación visual a enteros
+                unit = "kg/lb",
                 icon = Icons.Default.EmojiEvents,
-                color = Color(0xFFFFD700), // Dorado
+                color = Color(0xFFFFD700), // Dorado (IronGold)
                 modifier = Modifier.weight(1f)
             )
 
-            // Tarjeta 2: TENDENCIA (Lo que pediste)
+            // KPI 2: Tendencia Reciente
             TrendCard(
                 diff = diff,
                 currentWeight = currentMax,
@@ -163,7 +183,7 @@ fun AnalysisView(exerciseName: String, history: List<ExerciseEntity>) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // GRÁFICA "DARK GYM"
+        // Sección de Visualización de Datos (Gráfica)
         Text("Evolución en el tiempo", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -175,6 +195,7 @@ fun AnalysisView(exerciseName: String, history: List<ExerciseEntity>) {
                 .padding(16.dp)
         ) {
             if (dataPoints.size < 2) {
+                // Estado vacío para gráficas insuficientes
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("Se necesitan al menos 2 sesiones para graficar", color = Color.Gray, textAlign = TextAlign.Center)
                 }
@@ -185,7 +206,10 @@ fun AnalysisView(exerciseName: String, history: List<ExerciseEntity>) {
     }
 }
 
-// --- GRÁFICA PERSONALIZADA ---
+/**
+ * Componente de Gráfica Lineal personalizado utilizando Canvas.
+ * Dibuja la evolución del peso levantado a lo largo del tiempo.
+ */
 @Composable
 fun LineChart(dataPoints: List<ExerciseEntity>) {
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -193,28 +217,29 @@ fun LineChart(dataPoints: List<ExerciseEntity>) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val width = size.width
         val height = size.height
-        val padding = 20f
 
-        // Encontrar rangos (Min y Max peso) para escalar la gráfica
+        // Determinar escalas (Y Axis)
         val maxWeight = dataPoints.maxOf { it.currentWeight }.toFloat()
         val minWeight = dataPoints.minOf { it.currentWeight }.toFloat()
-        val weightRange = (maxWeight - minWeight).coerceAtLeast(1f) // Evitar división por cero
+        // Rango de peso para normalización (evita división por cero)
+        val weightRange = (maxWeight - minWeight).coerceAtLeast(1f)
 
-        // Coordenadas X e Y
+        // Determinar paso horizontal (X Axis)
         val xStep = width / (dataPoints.size - 1)
 
+        // Mapeo de datos a coordenadas de pantalla (Píxeles)
         val points = dataPoints.mapIndexed { index, exercise ->
             val normalizedY = (exercise.currentWeight.toFloat() - minWeight) / weightRange
             val x = index * xStep
-            val y = height - (normalizedY * height) // Invertir Y porque en Canvas 0 está arriba
+            // Inversión del eje Y (Canvas 0,0 es top-left)
+            val y = height - (normalizedY * height)
             Offset(x, y)
         }
 
-        // 1. DIBUJAR LÍNEA
+        // 1. Trazado de la Línea de Tendencia
         val path = Path().apply {
             moveTo(points.first().x, points.first().y)
             for (i in 1 until points.size) {
-                // Curva suave (Bézier cúbica simple) o Línea recta
                 lineTo(points[i].x, points[i].y)
             }
         }
@@ -225,14 +250,15 @@ fun LineChart(dataPoints: List<ExerciseEntity>) {
             style = Stroke(width = 8f, cap = StrokeCap.Round)
         )
 
-        // 2. DIBUJAR PUNTOS Y ETIQUETAS
+        // 2. Renderizado de Puntos de Datos y Etiquetas
         points.forEachIndexed { index, point ->
-            // Punto
+            // Círculo exterior (Borde)
             drawCircle(
                 color = Color.White,
                 center = point,
                 radius = 10f
             )
+            // Círculo interior (Relleno)
             drawCircle(
                 color = primaryColor,
                 center = point,
@@ -240,13 +266,14 @@ fun LineChart(dataPoints: List<ExerciseEntity>) {
                 style = Stroke(width = 4f)
             )
 
-            // Etiqueta de peso (Solo si cabe o es el último)
+            // Etiquetas de Texto (Valores)
+            // Se muestran solo para el primer punto, el último, o si hay pocos datos (evita superposición)
             if (index == points.lastIndex || index == 0 || (points.size < 10)) {
                 drawContext.canvas.nativeCanvas.apply {
                     drawText(
                         "${dataPoints[index].currentWeight.toInt()}",
                         point.x,
-                        point.y - 25f, // Arriba del punto
+                        point.y - 25f, // Offset vertical superior
                         android.graphics.Paint().apply {
                             color = android.graphics.Color.WHITE
                             textSize = 30f
@@ -260,7 +287,7 @@ fun LineChart(dataPoints: List<ExerciseEntity>) {
     }
 }
 
-// --- COMPONENTES UI ---
+//region --- Componentes UI Reutilizables ---
 
 @Composable
 fun ExerciseSelectorCard(name: String, onClick: () -> Unit) {
@@ -281,7 +308,14 @@ fun ExerciseSelectorCard(name: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun StatCard(title: String, value: String, unit: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, modifier: Modifier = Modifier) {
+fun StatCard(
+    title: String,
+    value: String,
+    unit: String,
+    icon: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier.height(110.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -303,16 +337,19 @@ fun StatCard(title: String, value: String, unit: String, icon: androidx.compose.
     }
 }
 
-// 🔥 TARJETA INTELIGENTE DE TENDENCIA
+/**
+ * Tarjeta de Tendencia Inteligente.
+ * Calcula visualmente si el usuario ha mejorado, empeorado o mantenido su rendimiento.
+ */
 @Composable
 fun TrendCard(diff: Double, currentWeight: Double, modifier: Modifier = Modifier) {
     val isPositive = diff > 0
     val isNegative = diff < 0
 
     val color = when {
-        isPositive -> Color(0xFF4CAF50) // Verde
-        isNegative -> MaterialTheme.colorScheme.error // Rojo
-        else -> Color.Gray
+        isPositive -> Color(0xFF4CAF50) // Verde Éxito
+        isNegative -> MaterialTheme.colorScheme.error // Rojo Alerta
+        else -> Color.Gray // Neutro
     }
 
     val icon = when {
@@ -323,7 +360,7 @@ fun TrendCard(diff: Double, currentWeight: Double, modifier: Modifier = Modifier
 
     val text = when {
         isPositive -> "+${diff.toInt()}"
-        isNegative -> "${diff.toInt()}" // El signo ya viene en negativo
+        isNegative -> "${diff.toInt()}" // El signo negativo es implícito en el valor
         else -> "Igual"
     }
 
@@ -354,3 +391,4 @@ fun TrendCard(diff: Double, currentWeight: Double, modifier: Modifier = Modifier
         }
     }
 }
+//endregion

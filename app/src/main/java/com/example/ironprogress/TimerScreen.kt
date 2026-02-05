@@ -1,8 +1,7 @@
 package com.example.ironprogress
 
-import android.content.Context // Importante para vibrar
+import android.content.Context
 import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -25,6 +24,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
+/**
+ * Pantalla de Temporizador de Descanso (Rest Timer).
+ *
+ * Esta pantalla se muestra entre series para gestionar la recuperación del atleta.
+ * Características principales:
+ * 1. Cuenta regresiva visual de alto contraste.
+ * 2. Feedback háptico (vibración) y sonoro al finalizar.
+ * 3. Controles de reproducción (Pausa/Play) y extensión rápida (+30s).
+ * 4. Espacios publicitarios de alta visibilidad (Banner + MREC) aprovechando el tiempo de espera.
+ *
+ * @param durationSeconds Duración inicial del descanso.
+ * @param nextExerciseName Nombre del siguiente ejercicio (Previsualización).
+ * @param onFinish Callback ejecutado cuando el tiempo termina o el usuario salta el descanso.
+ */
 @Composable
 fun TimerScreen(
     durationSeconds: Int,
@@ -33,26 +46,34 @@ fun TimerScreen(
 ) {
     val context = LocalContext.current
 
-    // --- ESTADO ---
+    //region --- Estado del Temporizador ---
+    // Tiempo restante en segundos para visualización
     var timeLeft by remember { mutableLongStateOf(durationSeconds.toLong()) }
-    var targetEndTime by remember { mutableStateOf<Long?>(null) }
-    var showExitDialog by remember { mutableStateOf(false) }
 
-    // 1. INICIALIZAR HORA FIN
+    // Marca de tiempo objetivo (Epoch millis). Si es null, el timer está PAUSADO.
+    var targetEndTime by remember { mutableStateOf<Long?>(null) }
+
+    // Control del diálogo de confirmación de salida
+    var showExitDialog by remember { mutableStateOf(false) }
+    //endregion
+
+    // 1. Inicialización: Establecer el tiempo objetivo al montar el componente
     LaunchedEffect(Unit) {
         targetEndTime = System.currentTimeMillis() + (durationSeconds * 1000)
     }
 
-    // 2. BUCLE DE TIEMPO REAL + SONIDO + VIBRACIÓN
+    // 2. Bucle de Cronómetro (Game Loop pattern)
+    // Se ejecuta cada vez que targetEndTime cambia o se recompone
     LaunchedEffect(targetEndTime) {
         while (targetEndTime != null && timeLeft > 0) {
             val now = System.currentTimeMillis()
             val remaining = targetEndTime!! - now
 
             if (remaining <= 0) {
+                // --- FIN DEL TEMPORIZADOR ---
                 timeLeft = 0
 
-                // --- 🔔 1. SONIDO (Notificación suave) ---
+                // A. Feedback Auditivo (Sonido de notificación predeterminado)
                 try {
                     val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
                     val r = RingtoneManager.getRingtone(context, notification)
@@ -61,30 +82,34 @@ fun TimerScreen(
                     e.printStackTrace()
                 }
 
-                // --- 📳 2. VIBRACIÓN FUERTE (1.5 seg) ---
+                // B. Feedback Háptico (Vibración)
                 try {
                     val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                    if (Build.VERSION.SDK_INT >= 26) {
-                        // El 255 es la AMPLITUD MÁXIMA (Vibra duro)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        // API 26+: Vibración con amplitud controlada (255 = Máxima intensidad)
                         vibrator.vibrate(VibrationEffect.createOneShot(1500, 255))
                     } else {
-                        // Versiones viejas de Android
+                        // API < 26: Vibración estándar (Legacy)
+                        @Suppress("DEPRECATION")
                         vibrator.vibrate(1500)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
 
-                onFinish() // Avanzamos
+                // Navegar al siguiente estado
+                onFinish()
                 break
             } else {
+                // Actualización de UI y espera
                 timeLeft = (remaining / 1000) + 1
-                delay(100)
+                delay(100) // Polling cada 100ms para precisión aceptable
             }
         }
     }
 
-    // 3. INTERCEPTAR GESTO ATRÁS
+    // 3. Intercepción del botón "Atrás"
+    // Evita saltar el descanso accidentalmente sin confirmación.
     BackHandler(enabled = true) {
         showExitDialog = true
     }
@@ -95,7 +120,7 @@ fun TimerScreen(
             .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
-        // PUBLICIDAD SUPERIOR
+        // --- Monetización: Banner Superior ---
         Box(
             modifier = Modifier.fillMaxWidth().height(50.dp),
             contentAlignment = Alignment.Center
@@ -103,7 +128,7 @@ fun TimerScreen(
             AdmobBanner()
         }
 
-        // ZONA DEL RELOJ
+        // --- Cuerpo Principal ---
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -113,7 +138,7 @@ fun TimerScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // AVISO SIGUIENTE EJERCICIO
+            // Previsualización del Siguiente Ejercicio
             if (nextExerciseName.isNotEmpty()) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
@@ -132,12 +157,13 @@ fun TimerScreen(
                 }
             }
 
-            // NÚMEROS GIGANTES
+            // Visualización del Tiempo (Big Number)
             Box(contentAlignment = Alignment.Center) {
                 Text(
                     text = "$timeLeft",
                     fontSize = 140.sp,
                     fontWeight = FontWeight.Black,
+                    // Cambia a gris si está pausado para feedback visual
                     color = if (targetEndTime == null) Color.Gray else MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
                     lineHeight = 140.sp,
@@ -145,7 +171,7 @@ fun TimerScreen(
                 )
             }
 
-            // BOTONES DE CONTROL (SOLO 2)
+            // Controles de Reproducción
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
@@ -153,7 +179,7 @@ fun TimerScreen(
                 val buttonSize = 70.dp
                 val buttonShape = RoundedCornerShape(20.dp)
 
-                // Botón +30s
+                // Botón Extender Tiempo (+30s)
                 FilledTonalButton(
                     onClick = {
                         if (targetEndTime != null) {
@@ -175,13 +201,14 @@ fun TimerScreen(
 
                 Spacer(Modifier.width(32.dp))
 
-                // Botón Pausa/Play
+                // Botón Play/Pause
                 Button(
                     onClick = {
                         if (targetEndTime != null) {
-                            targetEndTime = null // PAUSA
+                            targetEndTime = null // Acción: PAUSAR
                         } else {
-                            targetEndTime = System.currentTimeMillis() + (timeLeft * 1000) // PLAY
+                            // Acción: REANUDAR (Recalcular target basado en tiempo restante actual)
+                            targetEndTime = System.currentTimeMillis() + (timeLeft * 1000)
                         }
                     },
                     shape = buttonShape,
@@ -191,14 +218,15 @@ fun TimerScreen(
                 ) {
                     Icon(
                         imageVector = if (targetEndTime == null) Icons.Default.PlayArrow else Icons.Default.Pause,
-                        contentDescription = "Pausar",
+                        contentDescription = if (targetEndTime == null) "Reanudar" else "Pausar",
                         modifier = Modifier.size(36.dp)
                     )
                 }
             }
         }
 
-        // PUBLICIDAD INFERIOR
+        // --- Monetización: Rectángulo Inferior (MREC) ---
+        // Este formato (300x250) tiene mayor CPM y es ideal para pantallas de espera.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -209,7 +237,7 @@ fun TimerScreen(
         }
     }
 
-    // DIÁLOGO DE SALIDA
+    // --- Diálogo de Confirmación de Salida ---
     if (showExitDialog) {
         AlertDialog(
             onDismissRequest = { showExitDialog = false },

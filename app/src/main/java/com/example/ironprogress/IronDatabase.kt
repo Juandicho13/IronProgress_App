@@ -5,9 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
+// ⚠️ IMPORTANTE: Asegúrate de que las 3 entidades estén aquí dentro de los corchetes []
 @Database(
-    entities = [RoutineEntity::class, RoutineExerciseEntity::class, ExerciseEntity::class],
-    version = 5, // 🚀 VERSION 5 OBLIGATORIA
+    entities = [
+        RoutineEntity::class,
+        RoutineExerciseEntity::class,
+        ExerciseEntity::class
+    ],
+    version = 6, // Subimos la versión por si acaso
     exportSchema = false
 )
 abstract class IronDatabase : RoomDatabase() {
@@ -24,7 +29,7 @@ abstract class IronDatabase : RoomDatabase() {
                     IronDatabase::class.java,
                     "iron_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration() // Esto permite borrar la BD vieja si cambia la versión
                     .build()
                 INSTANCE = instance
                 instance

@@ -16,6 +16,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.ironprogress.ui.theme.IronProgressTheme
 
+/**
+ * Actividad Principal (Entry Point).
+ *
+ * Configura la infraestructura base de la aplicación:
+ * 1. Inicialización de la Base de Datos (Singleton).
+ * 2. Inyección de Dependencias manual para el [ExerciseViewModel].
+ * 3. Definición del Grafo de Navegación (NavHost).
+ * 4. Aplicación del Tema Global (Dark Gym Theme).
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,35 +34,45 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // --- Inyección de Dependencias (Service Locator Pattern) ---
                     val context = LocalContext.current
                     val database = IronDatabase.getDatabase(context)
                     val dao = database.ironDao()
 
-                    // ViewModel compartido por toda la app
+                    // Instancia única del ViewModel compartida por toda la actividad
                     val viewModel: ExerciseViewModel = viewModel(
                         factory = ExerciseViewModelFactory(dao, context)
                     )
 
+                    // Controlador de navegación
                     val navController = rememberNavController()
 
+                    // --- Grafo de Navegación ---
                     NavHost(navController = navController, startDestination = "dashboard") {
 
-                        // 1. INICIO
+                        // region Menú Principal
                         composable("dashboard") {
                             HomeScreen(viewModel = viewModel, navController = navController)
                         }
+                        // endregion
 
-                        // 2. LISTA MANUAL
+                        // region Gestión de Entrenamiento
+                        // Modo Manual (CRUD simple)
                         composable("home_workout") {
                             ExerciseScreen(viewModel = viewModel, navController = navController)
                         }
 
-                        // 3. GESTIÓN DE RUTINAS
+                        // Gestión de Planes y Rutinas
                         composable("routines") {
                             RoutineScreen(viewModel = viewModel, navController = navController)
                         }
 
-                        // 4. TEMPORIZADOR
+                        // Modo Entrenamiento en Vivo (Live Workout)
+                        composable("live_workout") {
+                            LiveWorkoutScreen(viewModel = viewModel, navController = navController)
+                        }
+
+                        // Temporizador de Descanso (Pantalla de transición entre sets)
                         composable(
                             route = "timer/{duration}/{nextExercise}",
                             arguments = listOf(
@@ -68,13 +87,21 @@ class MainActivity : ComponentActivity() {
                                 durationSeconds = duration,
                                 nextExerciseName = nextExercise,
                                 onFinish = {
+                                    // Al terminar el tiempo, avanzamos el estado lógico de la rutina
                                     viewModel.advanceState()
                                     navController.popBackStack()
                                 }
                             )
                         }
+                        // endregion
 
-                        // 5. DETALLE DE GRÁFICA
+                        // region Analíticas y Datos
+                        // Menú de Selección de Gráficas
+                        composable("progress") {
+                            ProgressScreen(viewModel = viewModel, navController = navController)
+                        }
+
+                        // Detalle de Gráfica (Canvas)
                         composable(
                             route = "graph/{name}",
                             arguments = listOf(navArgument("name") { type = NavType.StringType })
@@ -86,27 +113,19 @@ class MainActivity : ComponentActivity() {
                                 navController = navController
                             )
                         }
+                        // endregion
 
-                        // 6. ENTRENAMIENTO EN VIVO
-                        composable("live_workout") {
-                            LiveWorkoutScreen(viewModel = viewModel, navController = navController)
-                        }
-
-                        // 7. MENÚ DE PROGRESO
-                        composable("progress") {
-                            ProgressScreen(viewModel = viewModel, navController = navController)
-                        }
-
-                        // 8. 🔥 PERFIL (NUEVO)
+                        // region Configuración y Herramientas
+                        // Perfil de Usuario y Ajustes
                         composable("profile") {
-                            // Importante: Pasamos el viewModel para guardar/leer preferencias
                             ProfileScreen(navController = navController, viewModel = viewModel)
                         }
 
-                        // 9. CALCULADORA 1RM (NUEVO)
+                        // Herramienta Externa: Calculadora de 1RM
                         composable("calculator") {
                             OneRMCalculatorScreen(navController = navController)
                         }
+                        // endregion
                     }
                 }
             }

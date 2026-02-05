@@ -1,11 +1,11 @@
 package com.example.ironprogress
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.CountDownTimer
@@ -59,7 +59,7 @@ class TimerService : Service() {
 
             override fun onFinish() {
                 updateNotification("¡TIEMPO TERMINADO!")
-                triggerAlarm() // 🔥 AQUÍ ES DONDE REVISAMOS LA CONFIGURACIÓN
+                triggerAlarm()
                 stopSelf()
             }
         }.start()
@@ -67,18 +67,22 @@ class TimerService : Service() {
 
     private fun stopTimer() {
         timer?.cancel()
-        stopForeground(STOP_FOREGROUND_REMOVE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            @Suppress("DEPRECATION")
+            stopForeground(true)
+        }
         stopSelf()
     }
 
-    // 🔥 LA LÓGICA INTELIGENTE
     private fun triggerAlarm() {
         // 1. LEER PREFERENCIAS
         val prefs = getSharedPreferences("IronPrefs", Context.MODE_PRIVATE)
         val soundEnabled = prefs.getBoolean("USER_SOUND", true)
         val vibrationEnabled = prefs.getBoolean("USER_VIBRATION", true)
 
-        // 2. VIBRACIÓN (Si está activa)
+        // 2. VIBRACIÓN
         if (vibrationEnabled) {
             val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
@@ -89,7 +93,6 @@ class TimerService : Service() {
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // Patrón de vibración doble: Brrr-Brrr
                 vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 500, 200, 500), -1))
             } else {
                 @Suppress("DEPRECATION")
@@ -97,7 +100,7 @@ class TimerService : Service() {
             }
         }
 
-        // 3. SONIDO (Si está activo)
+        // 3. SONIDO
         if (soundEnabled) {
             try {
                 val notificationUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
@@ -114,7 +117,7 @@ class TimerService : Service() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Temporizador de Descanso",
-                NotificationManager.IMPORTANCE_LOW // Low para que no haga ruido cada segundo
+                NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
@@ -126,8 +129,10 @@ class TimerService : Service() {
         .setContentText(text)
         .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
         .setOngoing(true)
+        .setOnlyAlertOnce(true)
         .build()
 
+    @SuppressLint("MissingPermission")
     private fun updateNotification(text: String) {
         val manager = getSystemService(NotificationManager::class.java)
         manager.notify(NOTIFICATION_ID, buildNotification(text))

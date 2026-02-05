@@ -16,17 +16,26 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// Definimos SOLAMENTE el esquema oscuro (Dark Gym Style)
+/**
+ * Definición del Esquema de Color Oscuro ("Dark Gym").
+ *
+ * Mapea los colores de marca definidos en [Color.kt] a los roles semánticos
+ * de Material Design 3. Se prioriza el contraste alto (Rojo/Negro)
+ * para entornos de gimnasio con poca luz.
+ */
 private val DarkColorScheme = darkColorScheme(
     primary = IronRed,
     onPrimary = Color.White,
     primaryContainer = IronRedContainer,
     onPrimaryContainer = IronRed,
 
-    secondary = IronRed, // Usamos rojo también como secundario para consistencia
+    // Se reutiliza el color primario como secundario para mantener
+    // una identidad visual monocromática y agresiva.
+    secondary = IronRed,
     onSecondary = Color.White,
 
-    tertiary = IronGold, // Dorado para detalles especiales
+    // Usado para elementos destacados especiales o funciones Premium.
+    tertiary = IronGold,
 
     background = IronBlack,
     onBackground = IronWhite,
@@ -40,12 +49,21 @@ private val DarkColorScheme = darkColorScheme(
     error = Color(0xFFCF6679)
 )
 
+/**
+ * Componente principal del Tema de IronProgress.
+ *
+ * Este Composable debe envolver la jerarquía de UI raíz de la aplicación.
+ * Se encarga de aplicar los esquemas de color, tipografía y configuración
+ * de las barras del sistema (Status/Navigation bars).
+ *
+ * @param darkTheme Indica si el sistema está en modo oscuro (por defecto true/system).
+ * @param dynamicColor Si es true, usa colores dinámicos de Android 12+.
+ * Se establece en `false` por defecto para forzar la identidad de marca.
+ */
 @Composable
 fun IronProgressTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color está disponible en Android 12+
-    // Lo pondremos en FALSE para forzar NUESTROS colores rojo/negro y no los del sistema del usuario
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = false, // Desactivado para mantener consistencia de marca
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -53,7 +71,8 @@ fun IronProgressTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        // Forzamos siempre el tema oscuro por diseño "Dark Gym"
+        // Por decisión de diseño, la app siempre utiliza el esquema oscuro
+        // independientemente de la configuración del sistema.
         else -> DarkColorScheme
     }
 
@@ -61,9 +80,13 @@ fun IronProgressTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Barra de estado negra para que se funda con la app
+
+            // Configuración de Barras del Sistema (Inmersión)
+            // Se configuran en negro puro para fundirse con el fondo de la app.
             window.statusBarColor = IronBlack.toArgb()
             window.navigationBarColor = IronBlack.toArgb()
+
+            // Asegura que los iconos de la barra de estado sean claros (para fondo oscuro)
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
