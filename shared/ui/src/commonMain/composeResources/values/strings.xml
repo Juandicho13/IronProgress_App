@@ -1,39 +1,39 @@
 <resources>
-    <string name="catalog_title">Exercises</string>
-    <string name="catalog_search_placeholder">Search in Spanish or English</string>
-    <string name="catalog_clear_search">Clear</string>
-    <string name="catalog_filter_all">All</string>
-    <string name="catalog_empty_title">No matching exercises</string>
-    <string name="catalog_empty_body">Try another word or clear the active filter.</string>
-    <string name="catalog_secondary_prefix">Secondary: %1$s</string>
+    <string name="catalog_title">Ejercicios</string>
+    <string name="catalog_search_placeholder">Buscar en español o inglés</string>
+    <string name="catalog_clear_search">Limpiar</string>
+    <string name="catalog_filter_all">Todos</string>
+    <string name="catalog_empty_title">Sin ejercicios que coincidan</string>
+    <string name="catalog_empty_body">Prueba con otra palabra o quita el filtro activo.</string>
+    <string name="catalog_secondary_prefix">Secundario: %1$s</string>
 
     <plurals name="catalog_exercise_count">
-        <item quantity="one">%1$d exercise</item>
-        <item quantity="other">%1$d exercises</item>
+        <item quantity="one">%1$d ejercicio</item>
+        <item quantity="other">%1$d ejercicios</item>
     </plurals>
 
-    <string name="muscle_chest">Chest</string>
-    <string name="muscle_shoulders">Shoulders</string>
-    <string name="muscle_biceps">Biceps</string>
-    <string name="muscle_triceps">Triceps</string>
-    <string name="muscle_forearms">Forearms</string>
-    <string name="muscle_abs">Abs</string>
-    <string name="muscle_lats">Lats</string>
-    <string name="muscle_traps">Traps</string>
-    <string name="muscle_lower_back">Lower back</string>
-    <string name="muscle_glutes">Glutes</string>
-    <string name="muscle_quads">Quads</string>
-    <string name="muscle_hamstrings">Hamstrings</string>
-    <string name="muscle_calves">Calves</string>
+    <string name="muscle_chest">Pecho</string>
+    <string name="muscle_shoulders">Hombros</string>
+    <string name="muscle_biceps">Bíceps</string>
+    <string name="muscle_triceps">Tríceps</string>
+    <string name="muscle_forearms">Antebrazos</string>
+    <string name="muscle_abs">Abdomen</string>
+    <string name="muscle_lats">Dorsales</string>
+    <string name="muscle_traps">Trapecio</string>
+    <string name="muscle_lower_back">Lumbares</string>
+    <string name="muscle_glutes">Glúteos</string>
+    <string name="muscle_quads">Cuádriceps</string>
+    <string name="muscle_hamstrings">Isquiosurales</string>
+    <string name="muscle_calves">Gemelos</string>
 
-    <string name="equipment_barbell">Barbell</string>
-    <string name="equipment_dumbbell">Dumbbell</string>
-    <string name="equipment_machine">Machine</string>
-    <string name="equipment_cable">Cable</string>
-    <string name="equipment_smith_machine">Smith machine</string>
-    <string name="equipment_ez_bar">EZ bar</string>
-    <string name="equipment_kettlebell">Kettlebell</string>
-    <string name="equipment_band">Band</string>
-    <string name="equipment_bodyweight">Bodyweight</string>
-    <string name="equipment_other">Other</string>
+    <string name="equipment_barbell">Barra</string>
+    <string name="equipment_dumbbell">Mancuernas</string>
+    <string name="equipment_machine">Máquina</string>
+    <string name="equipment_cable">Polea</string>
+    <string name="equipment_smith_machine">Máquina Smith</string>
+    <string name="equipment_ez_bar">Barra Z</string>
+    <string name="equipment_kettlebell">Pesa rusa</string>
+    <string name="equipment_band">Banda</string>
+    <string name="equipment_bodyweight">Peso corporal</string>
+    <string name="equipment_other">Otro</string>
 </resources>

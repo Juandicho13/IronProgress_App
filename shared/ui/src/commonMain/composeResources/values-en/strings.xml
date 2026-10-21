@@ -1,0 +1,39 @@
+<resources>
+    <string name="catalog_title">Exercises</string>
+    <string name="catalog_search_placeholder">Search in Spanish or English</string>
+    <string name="catalog_clear_search">Clear</string>
+    <string name="catalog_filter_all">All</string>
+    <string name="catalog_empty_title">No matching exercises</string>
+    <string name="catalog_empty_body">Try another word or clear the active filter.</string>
+    <string name="catalog_secondary_prefix">Secondary: %1$s</string>
+
+    <plurals name="catalog_exercise_count">
+        <item quantity="one">%1$d exercise</item>
+        <item quantity="other">%1$d exercises</item>
+    </plurals>
+
+    <string name="muscle_chest">Chest</string>
+    <string name="muscle_shoulders">Shoulders</string>
+    <string name="muscle_biceps">Biceps</string>
+    <string name="muscle_triceps">Triceps</string>
+    <string name="muscle_forearms">Forearms</string>
+    <string name="muscle_abs">Abs</string>
+    <string name="muscle_lats">Lats</string>
+    <string name="muscle_traps">Traps</string>
+    <string name="muscle_lower_back">Lower back</string>
+    <string name="muscle_glutes">Glutes</string>
+    <string name="muscle_quads">Quads</string>
+    <string name="muscle_hamstrings">Hamstrings</string>
+    <string name="muscle_calves">Calves</string>
+
+    <string name="equipment_barbell">Barbell</string>
+    <string name="equipment_dumbbell">Dumbbell</string>
+    <string name="equipment_machine">Machine</string>
+    <string name="equipment_cable">Cable</string>
+    <string name="equipment_smith_machine">Smith machine</string>
+    <string name="equipment_ez_bar">EZ bar</string>
+    <string name="equipment_kettlebell">Kettlebell</string>
+    <string name="equipment_band">Band</string>
+    <string name="equipment_bodyweight">Bodyweight</string>
+    <string name="equipment_other">Other</string>
+</resources>
