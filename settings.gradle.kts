@@ -29,3 +29,7 @@ dependencyResolutionManagement {
 
 include(":androidApp")
 include(":shared")
+include(":shared:domain")
+include(":shared:data")
+include(":shared:health")
+include(":shared:ui")
