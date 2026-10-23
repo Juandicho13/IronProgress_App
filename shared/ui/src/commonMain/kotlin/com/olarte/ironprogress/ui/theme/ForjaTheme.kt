@@ -7,6 +7,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.remember
 
 object ForjaTheme {
     val colors: ForjaColorPalette
@@ -18,23 +19,46 @@ object ForjaTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalForjaTypography.current
+
+    val shapes: ForjaShapes
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalForjaShapes.current
+
+    val motion: ForjaMotionScheme
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalForjaMotion.current
+
+    val haptics: ForjaHaptics
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalForjaHaptics.current
 }
 
 /**
  * Tema principal de IronProgress Forja.
- * Usa el tema oscuro por defecto ("Entrenar calienta. Descansar templa.").
+ * Usa el tema oscuro por defecto ("Entrenar calienta. Descansar templa.")[cite: 1].
  */
 @Composable
 fun ForjaTheme(
     darkTheme: Boolean = true,
+    reduceMotion: Boolean = false,
+    hapticsEnabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val palette = if (darkTheme) ForjaDarkColors else ForjaLightColors
     val typography = createForjaTypography()
+    val shapes = remember { ForjaShapes() }
+    val motion = remember(reduceMotion) { ForjaMotionScheme(reduceMotion = reduceMotion) }
+    val haptics = rememberForjaHaptics(enabled = hapticsEnabled)
 
     CompositionLocalProvider(
         LocalForjaColors provides palette,
         LocalForjaTypography provides typography,
+        LocalForjaShapes provides shapes,
+        LocalForjaMotion provides motion,
+        LocalForjaHaptics provides haptics,
     ) {
         MaterialTheme(
             colorScheme = palette.toMaterialColorScheme(),

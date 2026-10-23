@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   android-and-tests:
-    name: Pruebas JVM y compilacion Android
+    name: Pruebas JVM y compilacion Android + Wear OS
     runs-on: ubuntu-latest
     steps:
       - name: Descargar repositorio
@@ -37,8 +37,8 @@ jobs:
       - name: Correr pruebas unitarias de dominio y datos
         run: ./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest
 
-      - name: Compilar APK debug de Android
-        run: ./gradlew :androidApp:assembleDebug
+      - name: Compilar APK debug de telefono y reloj
+        run: ./gradlew :androidApp:assembleDebug :wearApp:assembleDebug
 
   ios-framework:
     name: Compilacion del framework Shared para iOS
