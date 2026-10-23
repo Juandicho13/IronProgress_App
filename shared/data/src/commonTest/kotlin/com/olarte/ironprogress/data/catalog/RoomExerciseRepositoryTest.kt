@@ -1,10 +1,10 @@
 package com.olarte.ironprogress.data.catalog
 
-import com.olarte.ironprogress.data.local.entity.dao.CatalogDao
-import com.olarte.ironprogress.data.local.entity.CatalogMetadataEntity
-import com.olarte.ironprogress.data.local.entity.ExerciseEntity
-import com.olarte.ironprogress.data.local.entity.ExerciseMuscleEntity
-import com.olarte.ironprogress.data.local.entity.ExerciseWithMusclesRelation
+import com.olarte.ironprogress.data.local.CatalogDao
+import com.olarte.ironprogress.data.local.CatalogMetadataEntity
+import com.olarte.ironprogress.data.local.ExerciseEntity
+import com.olarte.ironprogress.data.local.ExerciseMuscleEntity
+import com.olarte.ironprogress.data.local.ExerciseWithMusclesRelation
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +16,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 /**
- * Verifica que [RoomExerciseRepository] siembre automaticamente los 77 ejercicios de [SeedCatalog]
- * cuando la version almacenada es menor a [SeedCatalog.VERSION] y mapee correctamente a [Exercise].
+ * Verifica la lógica de [RoomExerciseRepository] con un DAO falso en memoria, sin SQLite.
+ * Corre en Android y en iOS; las pruebas con la base real están en androidHostTest.
  */
 class RoomExerciseRepositoryTest {
 
@@ -82,7 +82,7 @@ private class FakeCatalogDao : CatalogDao {
         emitCurrentRelations()
     }
 
-    override suspend fun insertExerciseMuscles(muscles: List<ExerciseMuscleEntity>) {
+    override suspend fun upsertExerciseMuscles(muscles: List<ExerciseMuscleEntity>) {
         muscles.forEach { muscle ->
             val list = musclesByExerciseId.getOrPut(muscle.exerciseId) { mutableListOf() }
             list.removeAll { it.muscleId == muscle.muscleId }
