@@ -2,37 +2,26 @@
 
 ## 1. Contexto de trabajo obligatorio
 - **Desarrollador:** Juan David Olarte Diaz (MacBook Air M4 con macOS 26.6.2, Galaxy S25 Ultra, Galaxy Watch4 44 mm, sin iPhone fisico).
+- **Equipo de Geminis:**
+    - **Gemini Jefe:** dirige la arquitectura y entrega cada bloque de archivos completos.
+    - **Gemini Hormiguita 1 / 2:** apoya en ajustes puntuales contra archivos locales y toma el relevo cuando se agota el cupo.
 - **Reglas de entrega:**
     1. Entregar siempre el **contenido completo de cada archivo** con su ruta exacta. Cero fragmentos sueltos, cero ZIPs y cero parches de git.
     2. Identificadores en ingles y comentarios en espanol.
     3. Hablar en espanol de Colombia con tuteo y **nunca usar la raya larga** en los textos.
     4. Incluir los comandos de `git` (`git add`, `git commit`, `git push`) al final de cada cambio.
-    5. Si un archivo ya existe en el repositorio y no tienes su contenido exacto en el chat, pidelo antes de reescribirlo para no borrar cambios previos.
 
-## 2. Estado actual del repositorio
-- **Ultimo commit base:** `d70fad64`
-- **Fase actual:** Fase 0 (Base tecnica).
-- **Lo que ya existe en el repositorio (`d70fad64`):**
-    - Division de `:shared` en `:shared:domain`, `:shared:data`, `:shared:health` y `:shared:ui`.
-    - Catalogo semilla de 77 ejercicios (`SeedCatalog.kt`, `SeedExerciseRepository.kt`) y 21 pruebas en `commonTest`.
-    - Pantalla de catalogo en MVI (`CatalogContract.kt`, `CatalogViewModel.kt`, `CatalogScreen.kt`) y textos ES/EN.
-    - Primera parte del tema Forja en `:shared:ui`: `ForjaColors.kt`, `ForjaMetrics.kt`, `ForjaTypography.kt`, `ForjaTheme.kt`, `ForjaIcons.kt`, `ForjaIsland.kt` e `IronProgressApp.kt`.
+## 2. Firmas y convenciones reales del repositorio
+- **Plugin KMP Android en submodulos:** `alias(libs.plugins.androidMultiplatformLibrary)`.
+- **Paquete unificado de Room 3 en `:shared:data`:** `com.olarte.ironprogress.data.local` (`CatalogEntities.kt`, `CatalogDao.kt`, `IronProgressDatabase.kt` viven en la misma carpeta `local/` para evitar errores de resolucion en KSP 2).
+- **Firma exacta de `Exercise` (`:shared:domain`):** `pattern: MovementPattern`, `unilateral: Boolean = false`, `preferredUnit: WeightUnit? = null`, `isCustom: Boolean = false`, `isArchived: Boolean = false`.
 
-## 3. Entregas de esta sesion (rama `feat/f0-forja-motion-haptics-ci`)
-- [x] `shared/ui/src/commonMain/kotlin/com/olarte/ironprogress/ui/theme/ForjaMotion.kt`
-- [x] `shared/ui/src/commonMain/kotlin/com/olarte/ironprogress/ui/theme/ForjaHaptics.kt`
-- [x] `shared/ui/src/androidMain/kotlin/com/olarte/ironprogress/ui/theme/ForjaHaptics.android.kt`
-- [x] `shared/ui/src/iosMain/kotlin/com/olarte/ironprogress/ui/theme/ForjaHaptics.ios.kt`
-- [x] `.github/workflows/ci.yml`
+## 3. Entregas completadas en Fase 0
+- [x] `ForjaMotion.kt`, `ForjaHaptics.kt` (`commonMain`, `androidMain`, `iosMain`) y `ForjaShapes.kt`.
+- [x] `.github/workflows/ci.yml` y `AndroidManifest.xml` con permiso `VIBRATE` y `minSdk = 28`.
+- [x] Room 3 en `:shared:data` compilando y pasando las 23 pruebas unitarias (`CatalogMigrationTest` y `RoomExerciseRepositoryTest`).
+- [x] Koin en `:shared` (`AppModule.kt`, `PlatformModule.kt`, `PlatformModule.android.kt`, `PlatformModule.ios.kt`) conectado en `App.kt` inyectando `RoomExerciseRepository`.
 
-## 4. Que falta para cerrar la Fase 0
-1. **Conectar `ForjaMotion` y `ForjaHaptics` en `ForjaTheme.kt` y subir `minSdk` a 28:**
-    - Requiere que Juan pegue en el chat `gradle/libs.versions.toml`, `shared/ui/build.gradle.kts` y `shared/ui/src/commonMain/kotlin/com/olarte/ironprogress/ui/theme/ForjaTheme.kt`.
-2. **Fuentes estaticas de Archivo en Compose Resources:**
-    - Colocar los TTF en `shared/ui/src/commonMain/composeResources/font/` y enlazarlos en `ForjaTypography.kt`.
-3. **Room 3 en `:shared:data`:**
-    - Configurar `androidx.room3` con KSP y `BundledSQLiteDriver`, crear entidades del catalogo (`ExerciseEntity`, `MuscleEntity`, `ExerciseMuscleEntity`), sembrar desde `SeedCatalog`, exportar esquema y crear prueba de migracion.
-4. **Koin y Navigation 3:**
-    - Reemplazar la inyeccion manual de `App.kt`[cite: 2] por Koin y conectar la navegacion entre las pestanas Hoy, Plan, Progreso y Buscar.
-5. **Modulo `:wearApp`:**
-    - Crear el modulo base de Wear OS con target API 35 y minSdk 28.
+## 4. Ultimo bloque pendiente para cerrar la Fase 0
+1. **Conectar `ForjaShapes`, `ForjaMotion` y `ForjaHaptics` en `ForjaTheme.kt` y Navigation 3 en `IronProgressApp.kt`** (requiere revisar el contenido actual de `ForjaTheme.kt` e `IronProgressApp.kt`).
+2. **Crear el modulo `:wearApp`** (Wear OS con `minSdk = 28` y `targetSdk = 35`).
