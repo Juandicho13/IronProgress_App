@@ -10,6 +10,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
+/**
+ * Base local de IronProgress. Si cambias una entidad, sube [SCHEMA_VERSION] y version a la vez,
+ * agrega la migración y amplía CatalogMigrationTest con el esquema anterior.
+ */
 @Database(
     entities = [
         ExerciseEntity::class,
@@ -31,7 +35,7 @@ abstract class IronProgressDatabase : RoomDatabase() {
 }
 
 /**
- * Constructor generado por KSP para Room en Kotlin Multiplatform.
+ * KSP genera el actual de este objeto en cada plataforma (Android, iosArm64 e iosSimulatorArm64).
  */
 @Suppress("NO_ACTUAL_FOR_EXPECT", "KotlinNoActualForExpect")
 expect object IronProgressDatabaseConstructor : RoomDatabaseConstructor<IronProgressDatabase> {
@@ -39,9 +43,10 @@ expect object IronProgressDatabaseConstructor : RoomDatabaseConstructor<IronProg
 }
 
 /**
- * Configura el builder de Room con el driver SQLite empaquetado y el hilo de disco.
+ * Termina de armar la base con el SQLite empaquetado (el mismo en Android e iOS)
+ * y las consultas fuera del hilo principal.
  */
-fun RoomDatabase.Builder<IronProgressDatabase>.configureForjaDatabase(
+fun RoomDatabase.Builder<IronProgressDatabase>.buildIronProgressDatabase(
     driver: SQLiteDriver = BundledSQLiteDriver(),
     queryDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ): IronProgressDatabase =

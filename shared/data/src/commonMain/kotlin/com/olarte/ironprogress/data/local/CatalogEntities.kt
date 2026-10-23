@@ -19,8 +19,8 @@ import com.olarte.ironprogress.domain.catalog.TrackingType
 import com.olarte.ironprogress.domain.catalog.WeightUnit
 
 /**
- * Tabla de ejercicios del catalogo (tanto semilla como personalizados por el usuario).
- * Todo peso se guarda internamente en kg; preferredUnit es nullable y solo cambia como se muestra.
+ * Tabla de ejercicios del catálogo, tanto los semilla como los que crea el usuario.
+ * Todo peso se guarda en kg; preferredUnit es opcional y solo cambia cómo se muestra.
  */
 @Entity(
     tableName = "exercises",
@@ -54,7 +54,8 @@ data class ExerciseEntity(
 )
 
 /**
- * Relacion entre ejercicio y musculo con su rol (PRIMARY = 1.0, SECONDARY = 0.5).
+ * Relación entre un ejercicio y un músculo con su rol (PRIMARY suma 1 serie, SECONDARY 0,5).
+ * muscle_id guarda [Muscle.id] ("chest"), el identificador estable que define el dominio.
  */
 @Entity(
     tableName = "exercise_muscles",
@@ -84,7 +85,7 @@ data class ExerciseMuscleEntity(
 )
 
 /**
- * Guarda metadatos locales como la version instalada del SeedCatalog.
+ * Metadatos locales, como la versión del SeedCatalog que ya está sembrada.
  */
 @Entity(tableName = "catalog_metadata")
 data class CatalogMetadataEntity(
@@ -100,20 +101,21 @@ data class CatalogMetadataEntity(
 }
 
 /**
- * Proyeccion relacional de Room para leer un ejercicio junto con todos sus musculos.
+ * Lectura de un ejercicio junto con todos sus músculos.
+ * En Room 3 la relación se declara con listas: parentColumns y entityColumns.
  */
 data class ExerciseWithMusclesRelation(
     @Embedded
     val exercise: ExerciseEntity,
     @Relation(
-        parentColumn = "id",
-        entityColumn = "exercise_id",
+        parentColumns = ["id"],
+        entityColumns = ["exercise_id"],
     )
     val muscles: List<ExerciseMuscleEntity>,
 )
 
 /**
- * Convierte la proyeccion de Room al modelo de dominio [Exercise].
+ * Convierte la lectura de Room al modelo de dominio [Exercise].
  */
 internal fun ExerciseWithMusclesRelation.toDomain(): Exercise =
     Exercise(
@@ -122,17 +124,19 @@ internal fun ExerciseWithMusclesRelation.toDomain(): Exercise =
             es = exercise.nameEs,
             en = exercise.nameEn,
         ),
+        trackingType = TrackingType.valueOf(exercise.trackingType),
+        equipment = Equipment.valueOf(exercise.equipment),
+        pattern = MovementPattern.valueOf(exercise.movementPattern),
         muscles = muscles
             .sortedBy { it.sortOrder }
             .map { muscleEntity ->
                 ExerciseMuscle(
-                    muscle = Muscle.valueOf(muscleEntity.muscleId),
+                    muscle = requireNotNull(Muscle.fromId(muscleEntity.muscleId)) {
+                        "Músculo desconocido en la base: ${muscleEntity.muscleId}"
+                    },
                     role = MuscleRole.valueOf(muscleEntity.role),
                 )
             },
-        trackingType = TrackingType.valueOf(exercise.trackingType),
-        equipment = Equipment.valueOf(exercise.equipment),
-        pattern = MovementPattern.valueOf(exercise.movementPattern),
         unilateral = exercise.isUnilateral,
         preferredUnit = exercise.preferredUnit?.let { WeightUnit.valueOf(it) },
         isCustom = exercise.isCustom,
@@ -140,7 +144,7 @@ internal fun ExerciseWithMusclesRelation.toDomain(): Exercise =
     )
 
 /**
- * Convierte un [Exercise] de dominio a su fila principal y sus filas de musculos.
+ * Convierte un [Exercise] del dominio en su fila principal y sus filas de músculos.
  */
 internal fun Exercise.toEntities(): Pair<ExerciseEntity, List<ExerciseMuscleEntity>> {
     val exerciseEntity = ExerciseEntity(
@@ -158,7 +162,7 @@ internal fun Exercise.toEntities(): Pair<ExerciseEntity, List<ExerciseMuscleEnti
     val muscleEntities = muscles.mapIndexed { index, item ->
         ExerciseMuscleEntity(
             exerciseId = id.value,
-            muscleId = item.muscle.name,
+            muscleId = item.muscle.id,
             role = item.role.name,
             sortOrder = index,
         )
