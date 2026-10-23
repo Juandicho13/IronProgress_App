@@ -2,6 +2,7 @@ package com.olarte.ironprogress.ui
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -39,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -77,6 +79,17 @@ import com.olarte.ironprogress.ui.theme.ForjaTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/**
+ * Destinos tipados de la pila de navegacion principal de IronProgress.
+ */
+enum class ForjaNavDestination {
+    TODAY,
+    PLAN,
+    PROGRESS,
+    SEARCH,
+    WORKOUT,
+}
+
 @Composable
 fun IronProgressApp(
     exerciseRepository: ExerciseRepository,
@@ -91,27 +104,29 @@ fun IronProgressApp(
     }
     val catalogState by viewModel.state.collectAsStateWithLifecycle()
 
-    var selectedTab by rememberSaveable { mutableStateOf(ForjaTab.TODAY) }
-    var isSearchActive by rememberSaveable { mutableStateOf(false) }
+    // Pila de navegacion estilo Navigation 3 (mantiene la pestana base y superpone Search o Workout)
+    val backStack = remember { mutableStateListOf(ForjaNavDestination.TODAY) }
+    val currentDestination = backStack.lastOrNull() ?: ForjaNavDestination.TODAY
+
+    val selectedTab = remember(backStack.toList()) {
+        backStack.lastOrNull {
+            it == ForjaNavDestination.TODAY ||
+                    it == ForjaNavDestination.PLAN ||
+                    it == ForjaNavDestination.PROGRESS
+        }?.toForjaTab() ?: ForjaTab.TODAY
+    }
+    val isSearchActive = currentDestination == ForjaNavDestination.SEARCH
+    val isWorkoutScreenOpen = currentDestination == ForjaNavDestination.WORKOUT
+
     var isIslandMinimized by rememberSaveable { mutableStateOf(false) }
 
     // Estado de la sesion de entreno interactiva
     var isSessionStarted by rememberSaveable { mutableStateOf(false) }
-    var isWorkoutScreenOpen by rememberSaveable { mutableStateOf(false) }
     var currentSetNumber by rememberSaveable { mutableIntStateOf(2) }
+    var recentlyCompletedSetNumber by rememberSaveable { mutableIntStateOf(-1) }
     var isResting by rememberSaveable { mutableStateOf(false) }
     var restSecondsRemaining by rememberSaveable { mutableIntStateOf(85) }
     var showUndoNotice by rememberSaveable { mutableStateOf(false) }
-
-    // Cuenta regresiva en vivo cuando el descanso esta activo
-    LaunchedEffect(isResting, restSecondsRemaining) {
-        if (isResting && restSecondsRemaining > 0) {
-            delay(1_000L)
-            restSecondsRemaining -= 1
-        } else if (isResting && restSecondsRemaining <= 0) {
-            isResting = false
-        }
-    }
 
     val catalogListState = rememberLazyListState()
     val todayListState = rememberLazyListState()
@@ -149,22 +164,66 @@ fun IronProgressApp(
     }
 
     ForjaTheme(darkTheme = true) {
+        val haptics = ForjaTheme.haptics
+
+        // Cuenta regresiva en vivo con hapticos en los ultimos 3 s y al terminar
+        LaunchedEffect(isResting, restSecondsRemaining) {
+            if (isResting && restSecondsRemaining > 0) {
+                delay(1_000L)
+                val nextValue = restSecondsRemaining - 1
+                restSecondsRemaining = nextValue
+                when {
+                    nextValue in 1..3 -> haptics.restCountdownTick()
+                    nextValue == 0 -> {
+                        haptics.restFinished()
+                        isResting = false
+                    }
+                }
+            } else if (isResting && restSecondsRemaining <= 0) {
+                isResting = false
+            }
+        }
+
+        // El fondo brasa-velo de la serie recien completada dura 900 ms y luego se asienta
+        LaunchedEffect(recentlyCompletedSetNumber) {
+            if (recentlyCompletedSetNumber > 0) {
+                delay(900L)
+                recentlyCompletedSetNumber = -1
+            }
+        }
+
+        // El aviso de Deshacer permanece visible durante 5 segundos
+        LaunchedEffect(showUndoNotice, currentSetNumber) {
+            if (showUndoNotice) {
+                delay(5_000L)
+                showUndoNotice = false
+            }
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(ForjaTheme.colors.background)
                 .nestedScroll(scrollConnection),
         ) {
-            when {
-                isWorkoutScreenOpen -> {
+            when (currentDestination) {
+                ForjaNavDestination.WORKOUT -> {
                     ForjaWorkoutScreen(
                         currentSetNumber = currentSetNumber,
+                        recentlyCompletedSetNumber = recentlyCompletedSetNumber,
                         isResting = isResting,
                         restSecondsRemaining = restSecondsRemaining,
                         showUndoNotice = showUndoNotice,
-                        onMinimizeToIsland = { isWorkoutScreenOpen = false },
+                        onMinimizeToIsland = {
+                            backStack.removeAll { it == ForjaNavDestination.WORKOUT }
+                            if (backStack.isEmpty()) {
+                                backStack.add(ForjaNavDestination.TODAY)
+                            }
+                        },
                         onCompleteSet = {
                             if (currentSetNumber <= 4) {
+                                haptics.setCompleted()
+                                recentlyCompletedSetNumber = currentSetNumber
                                 currentSetNumber += 1
                                 isResting = true
                                 restSecondsRemaining = 85
@@ -175,10 +234,12 @@ fun IronProgressApp(
                             if (currentSetNumber > 2) {
                                 currentSetNumber -= 1
                             }
+                            recentlyCompletedSetNumber = -1
                             isResting = false
                             showUndoNotice = false
                         },
                         onAdjustRest = { delta ->
+                            haptics.segmentTick()
                             restSecondsRemaining = (restSecondsRemaining + delta).coerceAtLeast(0)
                             if (restSecondsRemaining == 0) {
                                 isResting = false
@@ -191,7 +252,7 @@ fun IronProgressApp(
                     )
                 }
 
-                isSearchActive -> {
+                ForjaNavDestination.SEARCH -> {
                     CatalogScreen(
                         state = catalogState,
                         languageCode = languageCode,
@@ -200,31 +261,37 @@ fun IronProgressApp(
                     )
                 }
 
-                else -> {
-                    when (selectedTab) {
-                        ForjaTab.TODAY -> ForjaTodayScreen(
-                            listState = todayListState,
-                            onStartWorkout = {
-                                isSessionStarted = true
-                                isWorkoutScreenOpen = true
-                            },
-                        )
-                        ForjaTab.PLAN -> ForjaPlanScreen(
-                            listState = planListState,
-                            isSessionStarted = isSessionStarted,
-                            onOpenWorkout = {
-                                isSessionStarted = true
-                                isWorkoutScreenOpen = true
-                            },
-                        )
-                        ForjaTab.PROGRESS -> ForjaProgressScreen(
-                            listState = progressListState,
-                            catalogState = catalogState,
-                            languageCode = languageCode,
-                            onCatalogIntent = viewModel::onIntent,
-                            catalogListState = catalogListState,
-                        )
-                    }
+                ForjaNavDestination.TODAY -> {
+                    ForjaTodayScreen(
+                        listState = todayListState,
+                        onStartWorkout = {
+                            isSessionStarted = true
+                            backStack.removeAll { it == ForjaNavDestination.WORKOUT }
+                            backStack.add(ForjaNavDestination.WORKOUT)
+                        },
+                    )
+                }
+
+                ForjaNavDestination.PLAN -> {
+                    ForjaPlanScreen(
+                        listState = planListState,
+                        isSessionStarted = isSessionStarted,
+                        onOpenWorkout = {
+                            isSessionStarted = true
+                            backStack.removeAll { it == ForjaNavDestination.WORKOUT }
+                            backStack.add(ForjaNavDestination.WORKOUT)
+                        },
+                    )
+                }
+
+                ForjaNavDestination.PROGRESS -> {
+                    ForjaProgressScreen(
+                        listState = progressListState,
+                        catalogState = catalogState,
+                        languageCode = languageCode,
+                        onCatalogIntent = viewModel::onIntent,
+                        catalogListState = catalogListState,
+                    )
                 }
             }
 
@@ -256,7 +323,10 @@ fun IronProgressApp(
                     progressLabel = "Progreso",
                     searchContentDescription = "Buscar ejercicios",
                     activeSession = activeBanner,
-                    onOpenActiveSession = { isWorkoutScreenOpen = true },
+                    onOpenActiveSession = {
+                        backStack.removeAll { it == ForjaNavDestination.WORKOUT }
+                        backStack.add(ForjaNavDestination.WORKOUT)
+                    },
                     onSkipRest = { isResting = false },
                     onTabSelected = { tab ->
                         if (isIslandMinimized) {
@@ -268,19 +338,40 @@ fun IronProgressApp(
                                 progressListState.animateScrollToItem(0)
                             }
                         } else {
-                            isSearchActive = false
-                            selectedTab = tab
+                            backStack.clear()
+                            backStack.add(tab.toNavDestination())
                         }
                     },
                     onSearchClicked = {
                         isIslandMinimized = false
-                        isSearchActive = !isSearchActive
+                        if (isSearchActive) {
+                            backStack.removeAll { it == ForjaNavDestination.SEARCH }
+                            if (backStack.isEmpty()) {
+                                backStack.add(ForjaNavDestination.TODAY)
+                            }
+                        } else {
+                            backStack.removeAll { it == ForjaNavDestination.SEARCH }
+                            backStack.add(ForjaNavDestination.SEARCH)
+                        }
                     },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
         }
     }
+}
+
+private fun ForjaTab.toNavDestination(): ForjaNavDestination = when (this) {
+    ForjaTab.TODAY -> ForjaNavDestination.TODAY
+    ForjaTab.PLAN -> ForjaNavDestination.PLAN
+    ForjaTab.PROGRESS -> ForjaNavDestination.PROGRESS
+}
+
+private fun ForjaNavDestination.toForjaTab(): ForjaTab = when (this) {
+    ForjaNavDestination.TODAY -> ForjaTab.TODAY
+    ForjaNavDestination.PLAN -> ForjaTab.PLAN
+    ForjaNavDestination.PROGRESS -> ForjaTab.PROGRESS
+    ForjaNavDestination.SEARCH, ForjaNavDestination.WORKOUT -> ForjaTab.TODAY
 }
 
 /**
@@ -307,7 +398,7 @@ private fun ForjaTodayScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
                 Text(
-                    text = "MIÉRCOLES 21 DE OCTUBRE",
+                    text = "VIERNES 23 DE OCTUBRE",
                     style = typography.caption,
                     color = colors.text2,
                 )
@@ -781,6 +872,7 @@ private fun ForjaProgressScreen(
 ) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
+    val haptics = ForjaTheme.haptics
     var selectedSegment by rememberSaveable { mutableIntStateOf(1) }
     val segments = listOf("Ejercicios", "Músculos", "Cuerpo")
 
@@ -803,7 +895,12 @@ private fun ForjaProgressScreen(
                 ForjaSegmentedControl(
                     segments = segments,
                     selectedIndex = selectedSegment,
-                    onSegmentSelected = { selectedSegment = it },
+                    onSegmentSelected = { index ->
+                        if (selectedSegment != index) {
+                            haptics.segmentTick()
+                            selectedSegment = index
+                        }
+                    },
                 )
             }
             CatalogScreen(
@@ -849,7 +946,12 @@ private fun ForjaProgressScreen(
             ForjaSegmentedControl(
                 segments = segments,
                 selectedIndex = selectedSegment,
-                onSegmentSelected = { selectedSegment = it },
+                onSegmentSelected = { index ->
+                    if (selectedSegment != index) {
+                        haptics.segmentTick()
+                        selectedSegment = index
+                    }
+                },
             )
         }
 
@@ -957,7 +1059,7 @@ private fun ForjaProgressScreen(
                         color = colors.text1,
                     )
                     Text(
-                        text = "Últimos 7 días · 15 al 21 oct",
+                        text = "Últimos 7 días · 17 al 23 oct",
                         style = typography.body2,
                         color = colors.text2,
                     )
@@ -1152,11 +1254,13 @@ private fun CapsulePart(
 
 /**
  * Pantalla "Entreno" del sistema Forja (paginas 35 y 36 del diseno):
- * Filas de serie con calentamiento, record en oro-velo, serie actual y Barra del entreno que se transforma en el descanso.
+ * Filas de serie con calentamiento, record en oro-velo, destello en brasa-velo durante 900 ms
+ * y Barra del entreno que se transforma en el descanso.
  */
 @Composable
 private fun ForjaWorkoutScreen(
     currentSetNumber: Int,
+    recentlyCompletedSetNumber: Int,
     isResting: Boolean,
     restSecondsRemaining: Int,
     showUndoNotice: Boolean,
@@ -1328,6 +1432,7 @@ private fun ForjaWorkoutScreen(
                         reps = "10",
                         isWarmup = true,
                         isRecord = false,
+                        isRecentlyCompleted = false,
                         isCompleted = true,
                         isCurrent = false,
                         onComplete = {},
@@ -1341,6 +1446,7 @@ private fun ForjaWorkoutScreen(
                         reps = "11",
                         isWarmup = false,
                         isRecord = true,
+                        isRecentlyCompleted = false,
                         isCompleted = true,
                         isCurrent = false,
                         onComplete = {},
@@ -1356,6 +1462,7 @@ private fun ForjaWorkoutScreen(
                             reps = "10",
                             isWarmup = false,
                             isRecord = false,
+                            isRecentlyCompleted = setNum == recentlyCompletedSetNumber,
                             isCompleted = setNum < currentSetNumber,
                             isCurrent = setNum == currentSetNumber,
                             onComplete = onCompleteSet,
@@ -1576,6 +1683,7 @@ private fun WorkoutSetRow(
     reps: String,
     isWarmup: Boolean,
     isRecord: Boolean,
+    isRecentlyCompleted: Boolean,
     isCompleted: Boolean,
     isCurrent: Boolean,
     onComplete: () -> Unit,
@@ -1583,11 +1691,17 @@ private fun WorkoutSetRow(
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
 
-    val rowBackground = when {
+    val targetBackground = when {
         isRecord -> colors.goldVeil
+        isRecentlyCompleted -> colors.emberVeil
         isCurrent -> colors.surface2
         else -> Color.Transparent
     }
+    val rowBackground by animateColorAsState(
+        targetValue = targetBackground,
+        animationSpec = ForjaTheme.motion.effect(),
+        label = "SetRowBackground",
+    )
 
     Row(
         modifier = Modifier
@@ -1612,6 +1726,7 @@ private fun WorkoutSetRow(
             color = when {
                 isWarmup -> colors.iceInk
                 isRecord -> colors.goldInk
+                isRecentlyCompleted -> colors.emberInk
                 else -> colors.text2
             },
             modifier = Modifier.width(28.dp),
@@ -1635,7 +1750,7 @@ private fun WorkoutSetRow(
             Text(
                 text = weight,
                 style = typography.figure,
-                color = if (isCompleted && !isRecord) colors.text2 else colors.text1,
+                color = if (isCompleted && !isRecord && !isRecentlyCompleted) colors.text2 else colors.text1,
             )
         }
 
@@ -1650,7 +1765,7 @@ private fun WorkoutSetRow(
             Text(
                 text = reps,
                 style = typography.figure,
-                color = if (isCompleted && !isRecord) colors.text2 else colors.text1,
+                color = if (isCompleted && !isRecord && !isRecentlyCompleted) colors.text2 else colors.text1,
             )
         }
 

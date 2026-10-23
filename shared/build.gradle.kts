@@ -8,6 +8,15 @@ plugins {
 }
 
 kotlin {
+    android {
+        namespace = "com.olarte.ironprogress.shared"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64(),
@@ -18,24 +27,17 @@ kotlin {
         }
     }
 
-    android {
-        namespace = "com.olarte.ironprogress.shared"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
-        }
-    }
-
     sourceSets {
         commonMain.dependencies {
             api(project(":shared:domain"))
             implementation(project(":shared:data"))
             implementation(project(":shared:health"))
-            api(project(":shared:ui"))
+            implementation(project(":shared:ui"))
             implementation(compose.runtime)
             implementation(compose.ui)
+            implementation(libs.androidx.room3.runtime)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
         }
     }
 }

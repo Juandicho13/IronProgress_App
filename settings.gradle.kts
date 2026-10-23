@@ -1,4 +1,5 @@
 rootProject.name = "IronProgress"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
@@ -28,6 +29,7 @@ dependencyResolutionManagement {
 }
 
 include(":androidApp")
+include(":wearApp")
 include(":shared")
 include(":shared:domain")
 include(":shared:data")
