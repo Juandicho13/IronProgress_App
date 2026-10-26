@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+      - "fix/**"
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-and-tests:
+    name: Pruebas JVM y compilacion Android + Wear OS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21 (Azul Zulu)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Configurar cache de Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Dar permisos de ejecucion a gradlew
+        run: chmod +x gradlew
+
+      - name: Correr pruebas unitarias de dominio y datos
+        run: ./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest
+
+      - name: Compilar APK debug de telefono y reloj
+        run: ./gradlew :androidApp:assembleDebug :wearApp:assembleDebug
+
+  ios-framework:
+    name: Compilacion del framework Shared para iOS
+    runs-on: macos-15
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21 (Azul Zulu)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Configurar cache de Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Dar permisos de ejecucion a gradlew
+        run: chmod +x gradlew
+
+      - name: Compilar framework estatico de iOS para simulador Arm64
+        run: ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
