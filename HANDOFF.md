@@ -369,6 +369,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-04 | F0-08 · íconos Material Symbols | `feat/f0-claude` | APK compila con 18 vectores; falta verlos en los teléfonos |
 | 2026-11-04 | F0-13 · ktlint en el CI | `feat/f0-claude` | `ktlintCheck` y 31 pruebas en verde; Kover queda para F2-11 |
 | 2026-11-04 | F0-14 · README y cierre | `feat/f0-claude` | README real; F0 se cierra cuando Juan confirme F0-01 en los equipos |
+| 2026-11-04 | F1-02 · motor de tiempo | `feat/f0-claude` | 14 pruebas nuevas en verde; 45 en total |
 
 ---
 

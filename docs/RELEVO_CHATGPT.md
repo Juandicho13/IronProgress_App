@@ -27,7 +27,7 @@ Lo dejó Claude al terminar su turno de trabajo. Si eres ChatGPT (o Codex), empi
 | Rama | Commit | Qué tiene |
 | --- | --- | --- |
 | `main` | `2533c86` | Lo de `d3c2101` más `ForjaShapes.kt` (F0-00) y los documentos del 25 de octubre. Fusionado desde el PR #1 |
-| `feat/f0-claude` | 15 commits sobre `main` | Los tickets de hoy (tabla de abajo) y los documentos al día. Está en el Mac de Juan; él la sube y abre el PR |
+| `feat/f0-claude` | 17 commits sobre `main` | Los tickets de hoy (tabla de abajo) y los documentos al día. Está en el Mac de Juan; él la sube y abre el PR |
 
 Commits de `feat/f0-claude`, en orden:
 
@@ -47,6 +47,7 @@ Commits de `feat/f0-claude`, en orden:
 | F0-08 | `feat(ui): íconos Material Symbols Rounded en vez de los dibujados a mano (F0-08)` | APK compila. 18 vectores convertidos del paquete npm `@material-symbols/svg-400` 0.48.2; `ForjaIcons` devuelve `Painter`. Esos SVG son de tamaño óptico 48, no 24: si en el teléfono se ven gruesos a 24 dp, se cambian por los de 24 de fonts.google.com con los mismos nombres de archivo |
 | F0-13 | `style: formatear con ktlintFormat (F0-13)` y `ci: ktlint en todos los módulos y framework iOS de iPhone en el CI (F0-13)` | `ktlintCheck` en verde, 31 pruebas en verde. Estilo `intellij_idea` en `.editorconfig`. Kover se declaró en el catálogo pero se conecta en F2-11 |
 | F0-14 | `docs: README real, relevo y bitácora con el cierre de F0 (F0-14)` | README del proyecto, este archivo y la bitácora al día |
+| F1-02 | `feat(domain): motor de tiempo para descanso, intervalos, flujo y respiración (F1-02)` | 14 pruebas nuevas, exactas al milisegundo. Código en `shared/domain/.../domain/time/`: `TimerPlan.kt` (tipos), `TimerEngine.kt` (`stateAt`, `segmentEndsAtMs`, `eventsBetween`) y `TimerPlans.kt` (un constructor por formato) |
 
 Claude compiló y probó todo en Linux con `./gradlew :androidApp:assembleDebug :wearApp:assembleDebug :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest`. **No pudo compilar iOS** (hace falta macOS). Lo primero que hay que mirar es el job `ios-framework` del CI cuando Juan suba la rama, por dos cambios:
 
@@ -54,7 +55,7 @@ Claude compiló y probó todo en Linux con `./gradlew :androidApp:assembleDebug 
 - F0-09 y F0-10 agregan Navigation 3, kotlinx-serialization y Haze en `shared:ui`, que también se enlazan en iOS. Si el job de iOS falla en esas dependencias, pega el error completo antes de cambiar versiones.
 - F0-05 cambió de versión a material3. El accessor `compose.material3` resolvía la 1.9.0 aunque el catálogo dice 1.12.0-alpha03; ahora entra la 1.12.0-alpha03. En Android compila. Si algo se ve distinto en el iPhone o el framework no enlaza, ese es el sospechoso.
 
-Pruebas: 31 (domain: `ExerciseTest` 6 y `ExerciseSearchTest` 10; data: `SeedCatalogTest` 5, `RoomExerciseRepositoryTest` 2, `CatalogDatabaseTest` 6 y `CatalogMigrationTest` 2).
+Pruebas: 45 (domain: `ExerciseTest` 6, `ExerciseSearchTest` 10 y `TimerEngineTest` 14; data: `SeedCatalogTest` 5, `RoomExerciseRepositoryTest` 2, `CatalogDatabaseTest` 6 y `CatalogMigrationTest` 2).
 
 Lo que falta confirmar en los equipos de Juan (no lo ha visto nadie):
 
@@ -83,7 +84,8 @@ git push -u origin feat/f0-claude
 Después sigue F1 con 27 tickets (13.4 del manual):
 
 - **F1-01**, modelos de dominio de rutinas, sesión y bloques. Antes de escribirlo hay que confirmar con Juan los valores propuestos de 10.2 (tipos de serie, estados de sesión, perfil de gimnasio por defecto) y los nombres de 10.5.
-- **F1-02**, el motor de tiempo (11.9). Es Kotlin puro en `shared:domain/time` y no depende de esas decisiones, así que se puede hacer antes si Juan todavía no responde.
+- **F1-02**, el motor de tiempo, ya está hecho (sección 3). Las pantallas que lo usan (F1-11 descanso a pantalla completa, F1-18 intervalos, F1-19 funcional, F1-20 flujo y respiración) leen `stateAt(ahora)` en cada cuadro y la voz sale de `eventsBetween`. Nunca un `delay(1000)` para contar.
+- Después de F1-01 siguen F1-03 (Room versión 2 con la migración 1 a 2) y F1-04 (repositorios), en ese orden.
 
 ## 5. Cómo se trabajó hoy, por si ayuda
 
