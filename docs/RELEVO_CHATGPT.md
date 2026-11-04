@@ -27,7 +27,7 @@ Lo dejó Claude al terminar su turno de trabajo. Si eres ChatGPT (o Codex), empi
 | Rama | Commit | Qué tiene |
 | --- | --- | --- |
 | `main` | `2533c86` | Lo de `d3c2101` más `ForjaShapes.kt` (F0-00) y los documentos del 25 de octubre. Fusionado desde el PR #1 |
-| `feat/f0-claude` | 17 commits sobre `main` | Los tickets de hoy (tabla de abajo) y los documentos al día. Está en el Mac de Juan; él la sube y abre el PR |
+| `feat/f0-claude` | 19 commits sobre `main` (con este) | Los tickets de hoy (tabla de abajo) y los documentos al día. Está en el Mac de Juan; él la sube y abre el PR |
 
 Commits de `feat/f0-claude`, en orden:
 
