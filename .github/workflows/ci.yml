@@ -34,6 +34,9 @@ jobs:
       - name: Dar permisos de ejecucion a gradlew
         run: chmod +x gradlew
 
+      - name: Revisar estilo con ktlint
+        run: ./gradlew ktlintCheck
+
       - name: Correr pruebas unitarias de dominio y datos
         run: ./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest
 
@@ -61,3 +64,6 @@ jobs:
 
       - name: Compilar framework estatico de iOS para simulador Arm64
         run: ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
+
+      - name: Compilar framework estatico de iOS para iPhone (arm64)
+        run: ./gradlew :shared:linkDebugFrameworkIosArm64

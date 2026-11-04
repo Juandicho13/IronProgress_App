@@ -22,6 +22,8 @@ room3 = "3.0.3"
 sqlite = "2.7.1"
 navigation3 = "1.1.2"
 haze = "2.0.1"
+ktlint-gradle = "14.2.0"
+kover = "0.9.9"
 wear-compose = "1.7.1"
 wear-minSdk = "30"
 wear-targetSdk = "35"
@@ -71,4 +73,6 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room3 = { id = "androidx.room3", version.ref = "room3" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
