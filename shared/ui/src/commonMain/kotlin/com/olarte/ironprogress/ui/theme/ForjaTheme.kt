@@ -50,7 +50,7 @@ fun ForjaTheme(
     content: @Composable () -> Unit,
 ) {
     val palette = if (darkTheme) ForjaDarkColors else ForjaLightColors
-    val typography = createForjaTypography()
+    val typography = rememberForjaTypography()
     val shapes = remember { ForjaShapes() }
     val motion = remember(reduceMotion) { ForjaMotionScheme(reduceMotion = reduceMotion) }
     val haptics = rememberForjaHaptics(enabled = hapticsEnabled)

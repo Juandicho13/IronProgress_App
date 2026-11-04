@@ -1,5 +1,15 @@
 package com.olarte.ironprogress.ui.theme
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.archivo_bold
+import com.olarte.ironprogress.ui.resources.archivo_medium
+import com.olarte.ironprogress.ui.resources.archivo_regular
+import com.olarte.ironprogress.ui.resources.archivo_semibold
+import com.olarte.ironprogress.ui.resources.archivo_semiexpanded_bold
+import com.olarte.ironprogress.ui.resources.archivo_semiexpanded_semibold
+import org.jetbrains.compose.resources.Font
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
@@ -136,3 +146,23 @@ fun createForjaTypography(
 )
 
 internal val LocalForjaTypography = staticCompositionLocalOf { createForjaTypography() }
+
+/**
+ * Tipografía con Archivo (OFL 1.1, licencia en licenses/Archivo-OFL.txt). Textos con Archivo
+ * de ancho normal; cifras con "Archivo Cifras", la instancia SemiExpanded (ancho 112,5).
+ * Los TTF estáticos salen de la fuente variable de Google Fonts.
+ */
+@Composable
+fun rememberForjaTypography(): ForjaTypography {
+    val textFamily = FontFamily(
+        Font(Res.font.archivo_regular, FontWeight.Normal),
+        Font(Res.font.archivo_medium, FontWeight.Medium),
+        Font(Res.font.archivo_semibold, FontWeight.SemiBold),
+        Font(Res.font.archivo_bold, FontWeight.Bold),
+    )
+    val figureFamily = FontFamily(
+        Font(Res.font.archivo_semiexpanded_semibold, FontWeight.SemiBold),
+        Font(Res.font.archivo_semiexpanded_bold, FontWeight.Bold),
+    )
+    return remember(textFamily, figureFamily) { createForjaTypography(textFamily, figureFamily) }
+}
