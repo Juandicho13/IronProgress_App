@@ -2,7 +2,7 @@
 
 **Estado:** 25 de octubre de 2026 · **Plan:** v3, en cuatro etapas · **Repositorio:** https://github.com/Juandicho13/IronProgress_App · **Rama de trabajo:** `feat/f0-forja-motion-haptics-ci`, commit `d3c2101`, PR #1 abierto contra `main` (`d70fad6`). **Ese commit no compila:** falta `ForjaShapes.kt` (sección 4.6, ticket F0-00).
 
-> **Actualización del 4 de noviembre de 2026:** F0-00 y la fusión del PR #1 ya están en `main` (`2533c86`), y la rama `feat/f0-claude` trae F0-02, F0-03, F0-04, F0-05, F0-06, F0-09, F0-10, F0-11 y F0-12. El estado al día y el siguiente paso están en `docs/RELEVO_CHATGPT.md`, que manda sobre la sección 4 y sobre los estados de 13.3 hasta que alguien los reescriba.
+> **Actualización del 4 de noviembre de 2026:** F0-00 y la fusión del PR #1 ya están en `main` (`2533c86`), y la rama `feat/f0-claude` trae todo el código de F0 (F0-02 a F0-14); falta verlo en los equipos (F0-01). El estado al día y el siguiente paso están en `docs/RELEVO_CHATGPT.md`, que manda sobre la sección 4 y sobre los estados de 13.3 hasta que alguien los reescriba.
 >
 > Este archivo reemplaza a la "Bitácora de Relevo" corta que trae `d3c2101`, que volvió a dar por hechas cosas que no están en el repo (sección 4.7). Si algo de aquí choca con el código del repositorio, manda el repositorio: se corrige el código o se corrige este archivo, pero nunca se adivina.
 >
@@ -365,6 +365,10 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-04 | F0-04 · idioma del sistema | `feat/f0-claude` | APK compila; falta verlo en inglés y español en los teléfonos |
 | 2026-11-04 | F0-09 · Navigation 3 y Koin | `feat/f0-claude` | APK compila; falta probar atrás, girar y segundo plano en los teléfonos y el framework iOS (CI de macOS) |
 | 2026-11-04 | F0-10 · vidrio con Haze | `feat/f0-claude` | APK compila; falta verlo en el iPhone a 120 Hz y el framework iOS (CI de macOS) |
+| 2026-11-04 | F0-07 · fuentes Archivo | `feat/f0-claude` | APK compila con los 6 TTF; falta verlo en los teléfonos |
+| 2026-11-04 | F0-08 · íconos Material Symbols | `feat/f0-claude` | APK compila con 18 vectores; falta verlos en los teléfonos |
+| 2026-11-04 | F0-13 · ktlint en el CI | `feat/f0-claude` | `ktlintCheck` y 31 pruebas en verde; Kover queda para F2-11 |
+| 2026-11-04 | F0-14 · README y cierre | `feat/f0-claude` | README real; F0 se cierra cuando Juan confirme F0-01 en los equipos |
 
 ---
 

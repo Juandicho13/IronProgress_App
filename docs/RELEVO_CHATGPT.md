@@ -27,7 +27,7 @@ Lo dejó Claude al terminar su turno de trabajo. Si eres ChatGPT (o Codex), empi
 | Rama | Commit | Qué tiene |
 | --- | --- | --- |
 | `main` | `2533c86` | Lo de `d3c2101` más `ForjaShapes.kt` (F0-00) y los documentos del 25 de octubre. Fusionado desde el PR #1 |
-| `feat/f0-claude` | 10 commits sobre `main` | Los tickets de hoy (tabla de abajo) y los documentos al día. Está en el Mac de Juan; él la sube y abre el PR |
+| `feat/f0-claude` | 15 commits sobre `main` | Los tickets de hoy (tabla de abajo) y los documentos al día. Está en el Mac de Juan; él la sube y abre el PR |
 
 Commits de `feat/f0-claude`, en orden:
 
@@ -43,6 +43,10 @@ Commits de `feat/f0-claude`, en orden:
 | F0-04 | `feat(ui): idioma del sistema y textos de la isla en recursos (F0-04)` | APK compila. `values/` en inglés, `values-es/` en español, sin `values-en/`. Idioma con `Locale.current.language`. Pestañas, Buscar y banner en recursos; los datos de ejemplo de las pantallas prototipo se quedaron escritos en el código a propósito, porque F1 las reemplaza |
 | F0-09 | `feat(nav): Navigation 3 y CatalogViewModel con Koin (F0-09)` | APK compila. `rememberNavBackStack` con `navConfiguration` (rutas en `ui/navigation/Route.kt`), `NavDisplay` con los dos decoradores, `uiModule` en `ui/di/UiModule.kt` y `koinViewModel` con `parametersOf(idioma)` |
 | F0-10 | `feat(ui): vidrio con Haze 2.0.1 en la isla, Buscar y el accesorio (F0-10)` | APK compila. `NavDisplay` con `hazeSource`; `Modifier.forjaGlass()` en `components/ForjaGlass.kt` lee el `HazeState` de `LocalForjaHazeState` |
+| F0-07 | `feat(ui): fuentes Archivo en la tipografía de Forja (F0-07)` | APK compila y trae los 6 TTF. Salen de la fuente variable de Google Fonts con fontTools (no hizo falta que Juan los bajara). `rememberForjaTypography()` en `ForjaTypography.kt` |
+| F0-08 | `feat(ui): íconos Material Symbols Rounded en vez de los dibujados a mano (F0-08)` | APK compila. 18 vectores convertidos del paquete npm `@material-symbols/svg-400` 0.48.2; `ForjaIcons` devuelve `Painter`. Esos SVG son de tamaño óptico 48, no 24: si en el teléfono se ven gruesos a 24 dp, se cambian por los de 24 de fonts.google.com con los mismos nombres de archivo |
+| F0-13 | `style: formatear con ktlintFormat (F0-13)` y `ci: ktlint en todos los módulos y framework iOS de iPhone en el CI (F0-13)` | `ktlintCheck` en verde, 31 pruebas en verde. Estilo `intellij_idea` en `.editorconfig`. Kover se declaró en el catálogo pero se conecta en F2-11 |
+| F0-14 | `docs: README real, relevo y bitácora con el cierre de F0 (F0-14)` | README del proyecto, este archivo y la bitácora al día |
 
 Claude compiló y probó todo en Linux con `./gradlew :androidApp:assembleDebug :wearApp:assembleDebug :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest`. **No pudo compilar iOS** (hace falta macOS). Lo primero que hay que mirar es el job `ios-framework` del CI cuando Juan suba la rama, por dos cambios:
 
@@ -62,21 +66,24 @@ Lo que falta confirmar en los equipos de Juan (no lo ha visto nadie):
 - Navegar entre pestañas y Buscar, girar el teléfono y mandar la app a segundo plano no pierde la pestaña ni la búsqueda; el gesto de atrás cierra Buscar o el entreno y, en la raíz, sale de la app (F0-09).
 - El contenido se ve desenfocado detrás de la isla y el scroll sigue fluido en el iPhone a 120 Hz (F0-10).
 
-## 4. Lo que queda de F0, en orden
+## 4. Lo que queda de F0 y lo que sigue
 
-1. **Juan:** subir la rama, abrir el PR, mirar el CI (sobre todo iOS) y probar en los equipos lo de la lista de arriba. Comandos:
+Todo el código de F0 está hecho (F0-00 y F0-02 a F0-14). Falta solo lo que hay que ver con los ojos:
+
+1. **Juan:** subir la rama y abrir el PR:
 
 ```
 git push -u origin feat/f0-claude
 ```
 
-2. **F0-07 · Fuentes Archivo** y **F0-08 · Íconos Material Symbols Rounded.** Necesitan archivos que Juan descarga (pasos en 13.3 del manual). Con los íconos reales se borra `ForjaIcons.kt`, que hoy los dibuja a mano.
-3. **F0-13 · Calidad en el CI** (ktlint, Kover y `:shared:linkDebugFrameworkIosArm64`).
-4. **F0-14 · Cierre de F0:** README real, bitácora y estado.
+2. Mirar el CI del PR. El job de iOS es el primero que corre los cambios de hoy en macOS (sección 3).
+3. Probar en los equipos la lista de la sección 3. Con eso se cierra F0-01 y F0 queda lista.
+4. Fusionar el PR en `main`.
 
-Ya hechos y no hay que repetirlos: F0-00, F0-02, F0-03, F0-04, F0-05, F0-06, F0-09, F0-10, F0-11 y F0-12. F0-01 queda hecho cuando Juan confirme los equipos.
+Después sigue F1 con 27 tickets (13.4 del manual):
 
-Después de F0 sigue F1 con 27 tickets (13.4 del manual), empezando por F1-01 (modelos de dominio de rutinas, sesión y bloques) y F1-02 (motor de tiempo). Los valores propuestos de 10.2 y los nombres de 10.5 se confirman con Juan antes de F1-01.
+- **F1-01**, modelos de dominio de rutinas, sesión y bloques. Antes de escribirlo hay que confirmar con Juan los valores propuestos de 10.2 (tipos de serie, estados de sesión, perfil de gimnasio por defecto) y los nombres de 10.5.
+- **F1-02**, el motor de tiempo (11.9). Es Kotlin puro en `shared:domain/time` y no depende de esas decisiones, así que se puede hacer antes si Juan todavía no responde.
 
 ## 5. Cómo se trabajó hoy, por si ayuda
 
