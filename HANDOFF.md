@@ -2,6 +2,8 @@
 
 **Estado:** 25 de octubre de 2026 · **Plan:** v3, en cuatro etapas · **Repositorio:** https://github.com/Juandicho13/IronProgress_App · **Rama de trabajo:** `feat/f0-forja-motion-haptics-ci`, commit `d3c2101`, PR #1 abierto contra `main` (`d70fad6`). **Ese commit no compila:** falta `ForjaShapes.kt` (sección 4.6, ticket F0-00).
 
+> **Actualización del 4 de noviembre de 2026:** F0-00 y la fusión del PR #1 ya están en `main` (`2533c86`), y la rama `feat/f0-claude` trae F0-02, F0-03, F0-05, F0-06, F0-11 y F0-12. El estado al día y el siguiente paso están en `docs/RELEVO_CHATGPT.md`, que manda sobre la sección 4 y sobre los estados de 13.3 hasta que alguien los reescriba.
+>
 > Este archivo reemplaza a la "Bitácora de Relevo" corta que trae `d3c2101`, que volvió a dar por hechas cosas que no están en el repo (sección 4.7). Si algo de aquí choca con el código del repositorio, manda el repositorio: se corrige el código o se corrige este archivo, pero nunca se adivina.
 >
 > Viene con dos documentos más: `docs/PLAN_V3.md` (el qué y el porqué del plan v3: salud, relojes, disciplinas, plataforma, cobros y legal) y `docs/PANTALLAS.md` (las 29 pantallas diseñadas, descritas para construirlas sin verlas).
@@ -33,7 +35,7 @@
 | Documento | Qué tiene | Quién lo lee |
 | --- | --- | --- |
 | `HANDOFF.md` (este) | Cómo se trabaja, estado real del código, reglas, arquitectura, motores, Forja, tickets y comandos | El jefe, entero. Cada hormiga, como mínimo las secciones 2, 3, 7 y 8 y las que cite su ticket |
-| `docs/PLAN_V3.md` | El plan v3 completo: etapas, salud antes y durante, iPhone y Samsung al máximo, disciplinas, plataforma, cobros, legal, los 78 requisitos funcionales y 9 no funcionales nuevos, y las decisiones | El jefe, entero, antes de escribir tickets de F1 en adelante. La hormiga, la sección que cite su ticket |
+| `docs/PLAN_V3.md` | El plan v3 completo: etapas, salud antes y durante, iPhone y Samsung al máximo, disciplinas, plataforma, cobros, legal, los 80 requisitos funcionales y 10 no funcionales nuevos, y las decisiones | El jefe, entero, antes de escribir tickets de F1 en adelante. La hormiga, la sección que cite su ticket |
 | `docs/PANTALLAS.md` | Las 29 pantallas del lienzo con estructura, medidas, estados, textos y toques | La hormiga que construye una pantalla, la sección de esa pantalla |
 
 - **Juan:** en cada conversación nueva con el Gemini jefe, adjunta los tres archivos y pega el prompt 15.1. A cada hormiga le pegas el prompt 15.2, el ticket del jefe y la salida de los `cat` que pide el ticket, y le adjuntas `HANDOFF.md` (más `docs/PANTALLAS.md` si el ticket construye una pantalla).
@@ -353,6 +355,13 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-10-23 | Room 3 en verde | rama de trabajo, `259ff91` y `d43c9bc` | 18 pruebas en verde; APK debug compila |
 | 2026-10-23 | Koin con Room 3 | rama de trabajo, `8da5805` | Falta confirmar en los teléfonos (F0-01) |
 | 2026-10-23 | Navegación propia, vibración en el prototipo y wearApp | rama de trabajo, `d3c2101` | No compila: falta `ForjaShapes.kt`. Con un archivo de prueba compilan los dos APK y pasan las 18 pruebas (Claude, 25 oct) |
+| 2026-10-26 | F0-00 · `ForjaShapes.kt` | `feat/f0-forja-motion-haptics-ci`, `ed93bb1` | Compila; PR #1 fusionado en `main` (`2533c86`) |
+| 2026-11-04 | F0-02 · ExerciseSearchTest | `feat/f0-claude` | 10 pruebas nuevas; domain pasa de 6 a 16 (Claude, en Linux) |
+| 2026-11-04 | F0-03 · minSdk 28 y VIBRATE | `feat/f0-claude` | APK del teléfono compila; falta probar la vibración en el S25 Ultra |
+| 2026-11-04 | F0-11 · wearApp con Wear Compose | `feat/f0-claude` | APK del reloj compila; falta abrirlo en el Galaxy Watch4 |
+| 2026-11-04 | F0-05 · sin accessors `compose.*` | `feat/f0-claude` | Compilan los dos APK; material3 pasa de 1.9.0 (lo que resolvía el accessor) a 1.12.0-alpha03; falta el framework iOS (CI de macOS) |
+| 2026-11-04 | F0-06 · tema y Reducir movimiento del sistema | `feat/f0-claude` | Compilan los dos APK; falta el framework iOS (CI de macOS) y verlo en los teléfonos |
+| 2026-11-04 | F0-12 · archivar y restaurar | `feat/f0-claude` | 31 pruebas en verde; falta probarlo en los dos teléfonos |
 
 ---
 
@@ -1109,7 +1118,7 @@ Los 51 requisitos de la v2 siguen vigentes; los nuevos del v3 están en 9.4 y, c
 | RNF-09 Batería | El reloj mide pulso solo durante una sesión activa; sin sensores en segundo plano fuera de ella | Consumo medido en una sesión de 60 min |
 | RNF-10 Compatibilidad | Android 9 (API 28) o superior, mínimo de Health Connect; Wear OS en Galaxy Watch4 o superior; iOS 17 o superior (propuesta; decisión abierta 13.10); target API 36 en teléfono y 35 en Wear OS | Matriz de dispositivos en la prueba cerrada |
 
-### 9.4 Requisitos nuevos del plan v3 en la Etapa 1 (32)
+### 9.4 Requisitos nuevos del plan v3 en la Etapa 1 (34)
 
 El texto completo de cada uno está en `docs/PLAN_V3.md`, sección 13. Cuando amplían o reemplazan uno de la v2 (por ejemplo, RF-SAL-11 reemplaza la "app mínima" de RF-SAL-03), manda el del v3. Los de las etapas 2 a 4 no se programan todavía.
 
@@ -1137,10 +1146,12 @@ El texto completo de cada uno está en `docs/PLAN_V3.md`, sección 13. Cuando am
 | RF-ADA-01 | Adaptación antes de empezar con sueño, pulso en reposo, VFC, check-in, molestias y carga de otras apps | F4 |
 | RF-ADA-02 | Adaptación durante la sesión cuando los datos lo piden (11.8) | F4 |
 | RF-ADA-03 | Registro de cada adaptación (señales, cambio y si se aceptó) | F4 |
+| RF-ADA-04 | Ciclo menstrual en la adaptación, opcional: línea base por fase, síntomas y patrón personal; nunca cambia cargas solo por la fase; nada sale del teléfono (11.12) | F4 |
 | RF-SEG-02 | Molestias y lesiones: zona y dolor de 0 a 10; el motor evita o cambia lo que carga esa zona | F4 |
 | RF-SAL-07 | App de Apple Watch: rutina sin el teléfono, Doble toque, Corona, cronómetro animado, intervalos y pulso reflejado en el iPhone | F4 |
 | RF-SAL-10 | Escribir cada sesión en Salud y Health Connect con el tipo de su disciplina y el esfuerzo | F4 |
 | RF-SAL-11 | App de Galaxy Watch: rutina, cronómetro con el anillo en el borde, bisel, intervalos y pulso | F4 |
+| RF-SAL-12 | Movilidad al caminar desde Salud (velocidad, paso, apoyo doble, asimetría y estabilidad) como señal de recuperación de pierna, pregunta por molestias y tendencia; solo iPhone (11.13) | F4 |
 | RF-INT-01 | Leer entrenos y sueño de otras apps y relojes (Garmin, Strava, Oura, Apple Fitness) desde Salud y Health Connect | F4 |
 | RF-PRG-07 | Zonas de pulso personales y esfuerzo por serie (pico y segundos de recuperación) | F4 |
 | RF-VIV-03 | La Live Activity en el Smart Stack del Apple Watch, con Doble toque | F4 |
@@ -1148,7 +1159,7 @@ El texto completo de cada uno está en `docs/PLAN_V3.md`, sección 13. Cuando am
 | RF-DIS-11 | Ejercicios marcados para silla de ruedas o sentado, y sesiones con sus tipos en Salud y Health Connect | F5 |
 | RF-DIS-14 | Catálogo que crece hacia más de 2.000 entradas con variantes de agarre, postura y equipo | F5 |
 
-No funcionales nuevos de la Etapa 1: RNF-15 Batería en vivo (F1 y F4), RNF-16 Licencias limpias (F5), RNF-17 Tiempo exacto (F1) y RNF-19 Protección de menores (F1). RNF-18 Movimiento fluido es de la Etapa 2.
+No funcionales nuevos de la Etapa 1: RNF-15 Batería en vivo (F1 y F4), RNF-16 Licencias limpias (F5), RNF-17 Tiempo exacto (F1) y RNF-19 Protección de menores (F1) y RNF-20 Privacidad del ciclo (F4). RNF-18 Movimiento fluido es de la Etapa 2.
 
 ### 9.5 Edad mínima y modo joven (decidido el 25 de octubre)
 
@@ -1173,7 +1184,7 @@ Desde los 13 años; por debajo no entra nadie por ahora. De 13 a 17, modo joven 
 
 Son 29 en el lienzo de Claude: 15 de la v2 (el entreno de punta a punta, progreso, plan, ajuste del día, tema claro y dos caras del Galaxy Watch4) y 14 del v3 (descanso a pantalla completa, intervalos, adaptación antes y durante, cuatro del Apple Watch, disciplinas, yoga, respiración, AMRAP y la ficha de ejercicio). Todas están descritas en `docs/PANTALLAS.md` con estructura, medidas, estados, textos y toques.
 
-Siguen sin diseño: el PAR-Q+, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, la Live Update y la Now Bar. Una hormiga que llegue a una pantalla sin diseño se detiene y el jefe se la pide a Juan; nunca se inventa una pantalla.
+Siguen sin diseño: el PAR-Q+, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, la Live Update y la Now Bar, el ajuste del ciclo menstrual y la tarjeta de movilidad al caminar. Una hormiga que llegue a una pantalla sin diseño se detiene y el jefe se la pide a Juan; nunca se inventa una pantalla.
 
 ---
 
@@ -1217,6 +1228,7 @@ Todo en kg, metros y segundos, con ids UUID v7 creados en el dispositivo. Los no
 - La unidad preferida solo cambia cómo se muestra el dato, nunca cómo se guarda.
 - Nuevo del v3: cada rutina guarda quién la creó (`createdBy`: el usuario o, desde la Etapa 4, un profesional) y de qué programa publicado viene (`sourceProgramVersionId`, nulo hasta la Etapa 4).
 - Nuevo del v3: los entrenos y el sueño que vienen de otras apps no se copian a la base; se leen de Salud y Health Connect cuando el motor los necesita (F4-01). Si la línea base de 14 días necesita guardarlos, el jefe propone la tabla en ese ticket.
+- Nuevo del 26 de octubre: el ciclo menstrual y la movilidad al caminar tampoco se copian; se leen en el teléfono cada vez (11.12 y 11.13). Del ciclo no queda nada en Room ni en Supabase: en `AdaptationLog.signals` solo el código `CYCLE`, sin fase ni fechas (RNF-20).
 
 **Valores propuestos que la especificación no fija (el jefe los confirma con Juan antes de F1-01):** tipos de serie `WARMUP`, `WORKING`, `DROP` y `FAILURE` de la v2, más `REST_PAUSE`, `MYO_REPS` y `CLUSTER` del v3 (todos menos `WARMUP` cuentan como series de trabajo); estados de sesión `IN_PROGRESS`, `FINISHED` y `DISCARDED`; lado `LEFT` o `RIGHT` para unilaterales; perfil de gimnasio por defecto con barra de 20 kg y discos de 25, 20, 15, 10, 5, 2,5 y 1,25 kg.
 
@@ -1333,6 +1345,8 @@ Es el "ajuste diario" de la v2, ampliado por el v3 (RF-PRG-04 y RF-ADA-01). Se c
 | Check-in | Energía 1 de 5 o agujetas fuertes en los músculos de hoy |
 | Mapa de recuperación | Músculos de la sesión de hoy en rojo |
 | Carga de otras apps (nuevo) | Un entreno de otra app en las últimas 24 h con más de 60 min o de intensidad alta que cargó los músculos de hoy (una carrera larga antes de piernas) |
+| Ciclo menstrual (opcional, 11.12) | Un síntoma moderado o fuerte registrado hoy. Además, con dos ciclos registrados, el pulso, la VFC y la temperatura se comparan con la misma fase de los ciclos anteriores |
+| Movilidad al caminar (iPhone, 11.13) | Solo para sesiones de pierna: el día después de pierna caminaste 7 % o más lento que tu mediana de 28 días, o con pasos 5 % o más cortos (activa después de 4 semanas de observación) |
 | Molestia o lesión (nuevo) | Una zona con dolor de 4 o más en los últimos 3 días, o una lesión activa: no cuenta como señal, pero obliga a cambiar lo que carga esa zona |
 
 Qué cambia, siempre en este orden: **1** peso, **2** series o reps, **3** cardio, **4** ejercicio.
@@ -1488,8 +1502,37 @@ La carga en la columna va de 3 (bisagra con barra, sentadilla con barra en la es
 - Ajuste más prudente: el paso 1 de 11.8 salta con la primera señal y el umbral para proponer parar baja al 85 % del máximo estimado.
 - Intervalos y retos sin el modo intenso; el límite exacto de intensidad lo propone el jefe con Juan antes de F1-26.
 
----
+### 11.12 Ciclo menstrual (decidido el 26 de octubre)
 
+Opcional (RF-ADA-04 y RNF-20; el porqué y la evidencia en `docs/PLAN_V3.md`, sección 2). La idea: la fase no decide cargas; corrige cómo se leen las señales y aprende el patrón de cada persona.
+
+- **Activación:** ajuste "Usar mi ciclo en la adaptación", con permiso aparte. No se pregunta el género: lo activa quien quiera. No aparece en modo joven.
+- **iPhone (HealthKit):** `menstrualFlow`, `intermenstrualBleeding`, `ovulationTestResult`, `basalBodyTemperature`, `contraceptive`, `pregnancy` y los síntomas (`abdominalCramps`, `fatigue`, `headache` y parecidos). Confirmar los nombres con el autocompletado de Xcode.
+- **Android (Health Connect):** `MenstruationPeriodRecord`, `MenstruationFlowRecord`, `OvulationTestRecord`, `CervicalMucusRecord`, `IntermenstrualBleedingRecord` y `BasalBodyTemperatureRecord`, con sus permisos `READ_*`. Health Connect no tiene síntomas: el check-in suma una pregunta opcional, que se guarda solo en el teléfono y no se sincroniza.
+- **Nunca** se pide `sexualActivity` ni `SexualActivityRecord`.
+- **Fases (valores iniciales):** menstrual (días de sangrado), folicular (hasta la ovulación) y lútea (desde la ovulación hasta el siguiente periodo). La ovulación sale de una prueba positiva; si no hay, se estima 14 días antes del siguiente periodo previsto con la duración media de tus ciclos. Si los ciclos varían más de 7 días entre sí, no se usa la línea base por fase, solo los síntomas.
+- **Línea base por fase:** con dos ciclos completos, las señales de 11.6 (pulso en reposo, VFC, temperatura) se comparan con la mediana de la misma fase. Antes de eso, en los 7 días previos al periodo previsto, el pulso en reposo cuenta como señal solo con 8 lpm o más sobre tu mediana, en vez de 5.
+- **Síntomas:** uno moderado o fuerte registrado hoy es una señal de 11.6, como el check-in.
+- **Patrón personal:** desde el tercer ciclo, compara el 1RM estimado y el RPE por día de ciclo con tu media. Si una ventana de días queda 5 % o más abajo en 3 ciclos seguidos, la app lo muestra y pregunta si quieres versión ligera esos días. Es una pregunta, nunca un cambio automático.
+- **Anticonceptivo hormonal:** sin línea base por fase; solo síntomas. **Embarazo registrado:** no sube cargas y recomienda consultar; el modo embarazo es de la Etapa 3.
+- **Nunca:** cambiar cargas solo por la fase, decir qué fase es "mejor" para entrenar, hablar de fertilidad, ni mencionar el ciclo en notificaciones, en la Live Activity, en la Live Update o en el reloj (se ven con el teléfono bloqueado).
+- **Guardado:** nada del ciclo en Room ni en Supabase; se lee de Salud o Health Connect cuando el motor lo necesita y solo vive en memoria. En `AdaptationLog` queda `CYCLE` como señal, sin fase ni fechas. Fuera de las exportaciones salvo que la persona lo elija; en la Etapa 4, fuera del alcance de los profesionales salvo un permiso específico.
+- Ejemplo: "Tu pulso en reposo suele subir antes de tu periodo; lo comparo con tus ciclos anteriores: hoy, plan normal".
+
+### 11.13 Movilidad al caminar (decidido el 26 de octubre)
+
+Solo iPhone (RF-SAL-12). El iPhone mide solo, mientras caminas con él encima, y lo deja en Salud: `walkingSpeed`, `walkingStepLength`, `walkingDoubleSupportPercentage`, `walkingAsymmetryPercentage` y `appleWalkingSteadiness`. Health Connect no tiene un equivalente directo, así que en Android la función no aparece.
+
+| Uso | Regla (valores iniciales) |
+| --- | --- |
+| Recuperación de pierna | El día después de una sesión que cargó piernas: velocidad 7 % o más por debajo de tu mediana de 28 días, o paso 5 % o más corto, cuenta como señal de 11.6, solo para la siguiente sesión de pierna. Las primeras 4 semanas solo se muestra; entra al ajuste cuando se compruebe con los entrenos de Juan |
+| Asimetría | 3 puntos o más sobre tu mediana dos días seguidos: antes de una sesión de pierna, pregunta si te molesta una pierna; si dice que sí, abre molestias y lesiones (F4-06) |
+| Estabilidad | Clasificación "Baja" o "Muy baja" de Salud: propone variantes más estables (menos técnica y sin unilaterales de pie inestables, 11.10) y un bloque corto de equilibrio |
+| Tendencia | Tarjeta en Progreso con velocidad y asimetría de los últimos meses |
+
+Los datos llegan con un día de retraso y solo los días que la persona camina con el teléfono, así que sirven antes de entrenar, no durante. Nunca diagnostica: muestra la tendencia y pregunta. No se copian a la base: se leen de Salud cada vez.
+
+---
 ## 12. Sistema de diseño Forja
 
 Concepto: "Entrenar calienta. Descansar templa." Brasa (naranja) es esfuerzo y acción, Hielo (azul) es recuperación y Oro marca los récords. El tema oscuro es el principal. Los valores ya están en `ForjaColors.kt` y coinciden con la especificación; no los cambies.
@@ -1711,7 +1754,7 @@ El plan v3 tiene cuatro etapas (sección 1 y `docs/PLAN_V3.md`, sección 14). So
 | F1 Núcleo sin conexión, disciplinas y tiempo | Lo de la v2 (catálogo y ejercicios propios, carpetas y rutinas, sesión con registro rápido, superseries, tipos de registro, temporizador, calculadoras, historial, copia, exportación y onboarding) más bloques con formato y disciplinas, el motor de tiempo, el descanso a pantalla completa, la Live Activity y la Live Update, voz, intervalos a tu medida, funcional, flujo y respiración, PAR-Q+, modo joven y ocultar números | Juan usa la app 2 semanas en entrenos reales (fuerza y al menos unos intervalos y un flujo) sin perder un dato, y el descanso avisa a su hora con el teléfono bloqueado | 12 a 17 |
 | F2 Progresión y análisis | Lo de la v2 (sugerencias, récords, gráficas, estancamiento, feedback, series por músculo, mapa, medidas, fotos y resúmenes) más escaleras de ejercicios, resultado y récords por formato, calentamiento según recuperación y récord en vivo en la isla | El motor tiene 90 % de cobertura y sus sugerencias cuadran con el historial de Juan | 6 a 8 |
 | F3 Cuenta y sincronización | Supabase, PowerSync, inicio de sesión con correo, Google y Apple, y borrado de cuenta | El mismo historial aparece en dos dispositivos tras editar ambos en modo avión | 3 a 4 |
-| F4 Salud, adaptación y relojes | Leer y escribir Salud y Health Connect, check-in, adaptación antes y durante la sesión, molestias, zonas de pulso, descanso por pulso, la app completa del Galaxy Watch y la del Apple Watch | 2 semanas entrenando con los dos relojes y ajustes que se entienden | 11 a 16 |
+| F4 Salud, adaptación y relojes | Leer y escribir Salud y Health Connect, check-in, adaptación antes y durante la sesión, molestias, ciclo menstrual, movilidad al caminar, zonas de pulso, descanso por pulso, la app completa del Galaxy Watch y la del Apple Watch | 2 semanas entrenando con los dos relojes y ajustes que se entienden | 11 a 16 |
 | F5 Programas, catálogo y extras | Lo de la v2 (programas por semanas, biblioteca, perfiles de gimnasio, sustitutos, fusionar, importar Hevy y Strong, tarjeta para compartir, logros y rachas) más el catálogo de unos 1.000 ejercicios y posturas y los ejercicios adaptados | Un CSV real de Hevy o Strong entra sin errores y el catálogo pasa la revisión de licencias | 6 a 10 |
 | F6 Lanzamiento | Pulido, accesibilidad, privacidad (salud y menores), declaraciones de las tiendas, apps de reloj publicadas, prueba cerrada, TestFlight, fichas y nombre definitivo | Aprobada en Google Play y en App Store, con los dos relojes | 4 a 6 |
 
@@ -2087,6 +2130,8 @@ F4 volvió a la Etapa 1 y creció. Los tickets del Apple Watch (F4-10 a F4-12) v
 | F4-12 | nuevo | watchApp: intervalos, EMOM y Tabata en la muñeca con vibraciones distintas para trabajo y descanso; pulso en vivo reflejado en el iPhone; la Live Activity en el Smart Stack (`supplementalActivityFamilies([.small])`) con Doble toque; widget "Hoy: Empuje A". Bloqueado por diseño: intervalos en el reloj | SAL-07, VIV-03 |
 | F4-13 | nuevo | wearApp completo: rutina del día, serie, cronómetro con el anillo siguiendo el borde (`docs/PANTALLAS.md` 4.1 y 4.2), bisel para el peso o el descanso, intervalos, actividad en curso en la esfera y un Tile con el entreno de hoy. Bloqueado por diseño: rutina e intervalos en el Galaxy Watch | SAL-11 |
 | F4-14 | nuevo | Ajuste durante la sesión (11.8) en el teléfono, la isla y los dos relojes (`docs/PANTALLAS.md` 6.1 y 6.2) | ADA-02, ADA-03 |
+| F4-15 | nuevo | Movilidad al caminar en iPhone (11.13): permisos por tipo, mediana de 28 días, las tres señales y la tarjeta de tendencia en Progreso. Va después de F4-05. Bloqueado por diseño: la tarjeta de Progreso y las cajas nuevas del detalle de la adaptación | SAL-12 |
+| F4-16 | nuevo | Ciclo menstrual en la adaptación (11.12): ajuste opcional, lectura de Salud y Health Connect, fases, línea base por fase, síntomas y patrón personal; nada se guarda ni se sincroniza. Va después de F4-05. Antes, probar qué apps de ciclo escriben de verdad en Salud y en Health Connect (la de Apple, Clue, Flo y Samsung Health). Bloqueado por diseño: el ajuste con su explicación de privacidad y cómo se ve en el detalle de la adaptación | ADA-04, RNF-20 |
 
 ### 13.8 Tickets de F5 y F6
 
@@ -2104,7 +2149,7 @@ F4 volvió a la Etapa 1 y creció. Los tickets del Apple Watch (F4-10 a F4-12) v
 | F5-10 | Ejercicios adaptados (silla de ruedas o sentado) y sesiones con los tipos de silla de ruedas de Salud y Health Connect | DIS-11 |
 | F5-11 | Variantes de agarre, postura y equipo para crecer hacia más de 2.000 entradas | DIS-14 |
 | F6-01 | Pulido y revisión de accesibilidad con Accessibility Scanner y VoiceOver | RNF-06 |
-| F6-02 | Privacidad: política (Ley 1581 de 2012, RGPD y LOPDGDD, COPPA), formulario de apps de salud y declaración de Health Connect en Play, etiquetas de privacidad y uso de HealthKit en App Store, y revisión del modo joven | RNF-05, RNF-19 |
+| F6-02 | Privacidad: política (Ley 1581 de 2012, RGPD y LOPDGDD, COPPA, y las leyes de EE. UU. sobre datos de salud reproductiva por el ciclo), formulario de apps de salud y declaración de Health Connect en Play, etiquetas de privacidad y uso de HealthKit en App Store, y revisión del modo joven | RNF-05, RNF-19 |
 | F6-03 | App Bundle firmado con Play App Signing y R8; archivo de Xcode a TestFlight | |
 | F6-04 | Prueba cerrada en Play: 12 testers durante 14 días seguidos (cuentas personales creadas desde el 13 de noviembre de 2023) | |
 | F6-05 | Fichas de las tiendas (Isla Dinámica, relojes, disciplinas y adaptación) y nombre definitivo, justo antes de publicar; el identificador `com.olarte.ironprogress` no cambia aunque cambie el nombre | |
@@ -2126,7 +2171,7 @@ Antes de la tienda de la Etapa 4: empresa en EE. UU., términos y cómo pagar a 
 
 ### 13.10 Decisiones
 
-Del plan v3 (detalle en `docs/PLAN_V3.md`, sección 15): 12 decididas y 8 abiertas; ninguna abierta frena F1.
+Del plan v3 (detalle en `docs/PLAN_V3.md`, sección 15): 14 decididas y 7 abiertas; ninguna abierta frena F1.
 
 | # | Decisión | Estado | Respuesta o recomendación |
 | --- | --- | --- | --- |
@@ -2148,8 +2193,9 @@ Del plan v3 (detalle en `docs/PLAN_V3.md`, sección 15): 12 decididas y 8 abiert
 | 16 | Beta abierta | Abierta | Sí, con gente del gimnasio en TestFlight y en la prueba cerrada de Play, desde la mitad de la Etapa 1 |
 | 17 | Panel web profesional | Abierta | Exploración de una semana al empezar la Etapa 4 |
 | 18 | Velocidad de la barra | Abierta | Beta solo en iPhone con LiDAR, sin tocar el motor hasta validarla (Etapa 3) |
-| 19 | Ciclo menstrual como contexto | Abierta | Opcional, solo para ver tendencias (Etapa 3) |
+| 19 | Ciclo menstrual en la adaptación | Decidida | Sí, desde F4 y opcional: línea base por fase, síntomas y patrón personal; nunca cambia cargas solo por la fase; nada sale del teléfono (11.12) |
 | 20 | Adelantar la plataforma | Abierta | Se puede: la Etapa 4 no depende de la 3 |
+| 21 | Movilidad al caminar (iPhone) | Decidida | Leer desde F4 como contexto y para preguntar por molestias; mueve cargas solo después de validarla (11.13) |
 
 Decisiones técnicas para el jefe (se confirman con Juan en el ticket que las necesita):
 
@@ -2166,6 +2212,8 @@ Decisiones técnicas para el jefe (se confirman con Juan en el ticket que las ne
 - [ ] Voz grabada: quién la graba y en qué idiomas; mientras tanto, la del sistema.
 - [ ] PAR-Q+: confirmar con sus autores las condiciones para una app comercial (antes de F1-26).
 - [ ] Límite de intensidad de los intervalos en modo joven (11.11, antes de F1-26).
+- [ ] Ciclo menstrual en modo joven: hoy no se ofrece; confirmarlo con Juan antes de F4-16.
+- [ ] Umbrales del ciclo y de la movilidad (11.12 y 11.13): valores iniciales que se calibran con datos reales.
 
 ### 13.11 Riesgos
 
@@ -2184,6 +2232,7 @@ Decisiones técnicas para el jefe (se confirman con Juan en el ticket que las ne
 | Límites y costos de Supabase y PowerSync | Medio | Revisarlos en F3-00; plan B con sincronización propia |
 | Que las sugerencias se tomen como consejo médico | Medio | Aviso claro, valores conservadores, PAR-Q+ y la decisión siempre de la persona |
 | Traducir el catálogo (873 de free-exercise-db más yoga y respiración) | Medio | Por partes en F5-09, empezando por los 200 más usados |
+| Datos del ciclo menstrual (leyes de salud reproductiva en EE. UU. y confianza de las usuarias) | Alto | Opcional, solo en el teléfono, sin nube, sin exportar y sin profesionales salvo permiso específico (RNF-20); asesoría legal antes de publicar |
 | El Apple Watch Series 12 todavía no llega | Bajo | F4-10 a F4-12 van al final de F4 |
 
 ---
@@ -2263,6 +2312,7 @@ Si Gradle se porta raro tras cambiar plugins: `./gradlew --stop` y volver a corr
 | Voz con música | Intervalos con música sonando y la pantalla apagada: la música baja mientras habla la voz y vuelve | RF-DIS-08 |
 | Botones fuera de la app | Completar serie, -15 s, +15 s y Saltar desde la isla y desde la Now Bar, con el teléfono bloqueado; la serie queda en la base | RF-VIV-02, RF-VIV-04 |
 | Relojes sin teléfono | Una sesión entera con el teléfono en otra habitación; al volver, las series aparecen en el teléfono | RF-SAL-07, RF-SAL-11 |
+| Privacidad del ciclo | Con el ciclo activado, revisar el tráfico de red, la base de Room y una exportación: no aparece ningún dato del ciclo | RNF-20 |
 | Modo joven | Cuentas de 13, 15 y 17 años en Colombia, España y EE. UU.: sin fotos, mensajes, tienda ni peso visible por defecto, y el permiso guardado | RNF-19 |
 
 El simulador de iOS muestra la Isla Dinámica y las Live Activities, pero el bloqueo real, StandBy, la pantalla siempre activa, el Doble toque y el reloj solo se prueban en los equipos de Juan.
@@ -2430,4 +2480,7 @@ Nuevos del v3 (más fuentes en `docs/PLAN_V3.md`, sección 16):
 - Guías de revisión de App Store: https://developer.apple.com/app-store/review/guidelines/
 - PAR-Q+ (Warburton y otros, 2011): https://hfjc.library.ubc.ca/index.php/HFJC/article/view/103
 - Compendio de actividades físicas 2024 (MET): https://doaj.org/article/91ffa80dcdef401c9db9fc7db2a08e42
+- Tipos de datos de Health Connect, incluido el seguimiento del ciclo: https://developer.android.com/health-and-fitness/health-connect/data-types
+- Fase del ciclo y rendimiento, metaanálisis de McNulty y otros, 2020: https://rrmacademy.org/library/the-effects-of-menstrual-cycle-phase-on-exercise-performance-in-eumenorrheic-wom-ouqt6anh/
+- Temperatura, pulso y VFC a lo largo del ciclo, Goodale y otros, 2019: https://jmir.org/2019/4/e13404/
 - Marca CrossFit y afiliados (por qué se dice "Funcional"): https://www.crossfit.com/faq/affiliates

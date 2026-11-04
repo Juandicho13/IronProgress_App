@@ -417,4 +417,4 @@ Cambiar de pestaña y hacer scroll nunca vibran.
 
 ## 9. Qué falta por diseñar
 
-Siguen sin diseño en el lienzo (Etapa 1): el PAR-Q+ al crear la cuenta, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, la Live Update y la Now Bar. Hasta que estén, una hormiga que llegue a ellas pide el diseño al jefe y el jefe se lo pide a Juan; no se inventa una pantalla nueva.
+Siguen sin diseño en el lienzo (Etapa 1): el PAR-Q+ al crear la cuenta, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, la Live Update y la Now Bar, el ajuste del ciclo menstrual con su explicación de privacidad y la tarjeta de movilidad al caminar. Hasta que estén, una hormiga que llegue a ellas pide el diseño al jefe y el jefe se lo pide a Juan; no se inventa una pantalla nueva.

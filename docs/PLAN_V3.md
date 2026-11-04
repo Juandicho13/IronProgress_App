@@ -88,6 +88,42 @@ Del paso 2 en adelante llega una tarjeta que se acepta en un toque desde el tel�
 
 Los umbrales de los ejemplos son valores iniciales que se calibran con tus datos, como en el motor de la v2. Nada de esto es consejo médico y la app lo dice.
 
+### Ciclo menstrual en la adaptación
+
+Decidido el 26 de octubre: la app usa el ciclo para adaptar el entreno a quien lo active, desde la Etapa 1 (F4). La evidencia no permite una regla general por fase: un metaanálisis de 2020 encontró que el rendimiento quizá baja de forma trivial al inicio de la fase folicular y recomienda un enfoque personal ([McNulty y otros, 2020](https://rrmacademy.org/library/the-effects-of-menstrual-cycle-phase-on-exercise-performance-in-eumenorrheic-wom-ouqt6anh/)). Por eso la app no cambia cargas solo por la fase: corrige cómo lee el cuerpo y aprende el patrón de cada persona.
+
+| Qué hace | Cómo | Ejemplo de lo que dice la app |
+| --- | --- | --- |
+| Línea base por fase | El pulso nocturno y la temperatura de la muñeca suben en la fase lútea y la VFC tiende a bajar: en un estudio con 193 mujeres, al final de la lútea el pulso nocturno iba unos 4 lpm y la temperatura unos 0,45 °C sobre la fase folicular ([Goodale y otros, 2019](https://jmir.org/2019/4/e13404/)). Con dos ciclos registrados, la preparación compara cada día con la misma fase de tus ciclos anteriores, así esa subida normal no cuenta como día bajo | "Tu pulso en reposo suele subir antes de tu periodo; lo comparo con tus ciclos anteriores: hoy, plan normal" |
+| Síntomas | Cólicos, cansancio, dolor de cabeza o sangrado abundante registrados hoy cuentan como una señal, igual que el check-in | "Registraste cólicos fuertes: mismo peso y una serie menos" |
+| Tu propio patrón | Desde el tercer ciclo, la app compara tus marcas, reps y RPE por fase con tu media; si unos días rindes menos de forma constante, te lo muestra y pregunta si quieres versión ligera esos días | "Los dos primeros días de tus últimos 3 ciclos rendiste 6 % menos: ¿versión ligera mañana?" |
+| Anticonceptivo hormonal | La línea base por fase no aplica; solo cuentan los síntomas | |
+| Embarazo registrado en Salud | No sube cargas y recomienda consultar; el modo embarazo llega en la Etapa 3 | |
+
+De dónde salen los datos: en iPhone, de Salud (flujo menstrual, síntomas, pruebas de ovulación, temperatura basal, anticonceptivos y embarazo), que reúne el seguimiento de ciclo de Apple y apps como Clue, que escribe sus periodos en Salud ([Clue](https://support.helloclue.com/hc/en-us/articles/20199556038813-Can-I-export-my-data-from-Clue-to-Apple-Health-or-Apple-Health-to-Clue)). En Android, de Health Connect: menstruación, ovulación, moco cervical, sangrado entre periodos y temperatura basal ([tipos de datos](https://developer.android.com/health-and-fitness/health-connect/data-types)). Health Connect no trae síntomas, así que el check-in suma una pregunta opcional. En F4 se comprueba qué apps escriben de verdad en cada uno (Flo, por ejemplo, lee de Salud pero no escribe ahí sus periodos). La actividad sexual no se lee nunca.
+
+Privacidad, más estricta que con el resto de datos:
+
+- Es opcional, con un permiso aparte, y no depende de declarar un género: lo activa quien quiera.
+- Se lee y se calcula en el teléfono. IronProgress no copia el ciclo a su base ni lo sube a la nube; en el registro de adaptaciones solo queda que la señal "ciclo" pesó.
+- No sale en las exportaciones salvo que la persona lo elija, y en la Etapa 4 ningún profesional lo ve sin un permiso específico para ese dato.
+- No se ofrece en modo joven.
+- En EE. UU. hay leyes estatales sobre datos de salud reproductiva, como la de Washington (sección 10); se revisa con asesoría legal antes de publicar.
+
+### Movilidad al caminar (solo iPhone)
+
+El iPhone mide solo, mientras caminas con él encima, la velocidad, la longitud del paso, el tiempo de apoyo doble, la asimetría y la estabilidad al caminar, y lo deja en Salud. Health Connect no tiene un equivalente directo, así que en Android esto no está.
+
+| Uso | Cómo | Etapa |
+| --- | --- | --- |
+| Recuperación de pierna | Caminar más lento o con pasos más cortos que tu media de 28 días, el día después de pierna, cuenta como señal para la sesión de pierna siguiente. Las primeras 4 semanas solo se muestra; entra al ajuste cuando se compruebe con tus entrenos | 1 (F4) |
+| Asimetría | Si sube 3 puntos o más sobre tu línea base dos días seguidos, antes de una sesión de pierna la app pregunta si te molesta una pierna; si dices que sí, pasa a molestias y lesiones | 1 (F4) |
+| Estabilidad baja | Con estabilidad "Baja" o "Muy baja" según Salud, propone variantes más estables y un bloque corto de equilibrio | 1 (F4) |
+| Tendencia | Velocidad y asimetría como tendencia de meses en Progreso | 1 (F4) |
+| Fisioterapia | Con permiso del paciente, el fisioterapeuta ve la asimetría y la velocidad durante la rehabilitación | 4 |
+
+Los datos llegan con un día de retraso y solo los días que caminas con el teléfono, así que sirven antes de entrenar, no durante. Nunca diagnostica: muestra la tendencia y pregunta.
+
 ## 3. iPhone al máximo
 
 El iPhone 18 Pro trae una Isla Dinámica más pequeña que muestra hasta tres Live Activities a la vez, el botón de cámara táctil y el LiDAR; con los tres se puede entrenar casi sin abrir la app.
@@ -662,7 +698,7 @@ Exercise (v2) suma disciplina, nivel, alias, progresiones, fuente y exigencia; E
 
 ## 13. Requisitos nuevos
 
-Son 78 requisitos funcionales y 9 no funcionales que se suman a los 51 y 10 de la v2, ordenados por etapa. La columna Etapa usa las cuatro etapas de la sección 14: 1 (app personal con salud y relojes), 2 (pulido de movimiento), 3 (salud avanzada y cámara) y 4 (plataforma de profesionales).
+Son 80 requisitos funcionales y 10 no funcionales que se suman a los 51 y 10 de la v2, ordenados por etapa. La columna Etapa usa las cuatro etapas de la sección 14: 1 (app personal con salud y relojes), 2 (pulido de movimiento), 3 (salud avanzada y cámara) y 4 (plataforma de profesionales).
 
 | ID | Requisito | Etapa |
 | --- | --- | --- |
@@ -698,6 +734,8 @@ Son 78 requisitos funcionales y 9 no funcionales que se suman a los 51 y 10 de l
 | RF-VIV-04 | Live Update en Android (barra de estado, pantalla bloqueada y Now Bar) y plantilla Metric Style donde exista | 1 |
 | RF-VIV-05 | Alertas en vivo de récord y de "listo" por pulso | 1 |
 | RF-VIV-08 | Descanso a pantalla completa dentro de la app, que pasa a la Live Activity o a la Live Update al salir de la app o al apagar la pantalla | 1 |
+| RF-ADA-04 | Ciclo menstrual en la adaptación, opcional: línea base por fase, síntomas como señal y patrón personal desde el tercer ciclo; nunca cambia cargas solo por la fase; se calcula en el teléfono, sin subir a la nube | 1 |
+| RF-SAL-12 | Movilidad al caminar desde Salud (velocidad, longitud del paso, apoyo doble, asimetría y estabilidad) como señal de recuperación de pierna, pregunta por molestias y tendencia; solo iPhone | 1 |
 | RF-PUL-01 | Transiciones compartidas, gestos interrumpibles, cifras que ruedan y vibración sincronizada en los 10 flujos clave, con versión para Reducir movimiento | 2 |
 | RF-PUL-02 | Catálogo de movimiento en Forja, con cada transición, su nombre y su resorte | 2 |
 | RF-SAL-05 | Leer de HealthKit lo avanzado: temperatura de muñeca, frecuencia respiratoria, oxígeno, VO2 máx y recuperación del pulso al minuto | 3 |
@@ -756,6 +794,7 @@ Son 78 requisitos funcionales y 9 no funcionales que se suman a los 51 y 10 de l
 | RNF-17 Tiempo exacto | La pantalla, la isla, la barra de estado y los relojes muestran el mismo tiempo, y el descanso avisa a su hora aunque la app esté cerrada | Prueba de 20 descansos con la app cerrada y el teléfono bloqueado |
 | RNF-18 Movimiento fluido | 5 ms o menos de tirones por segundo de animación en iPhone y sin cuadros perdidos visibles en Android en los 10 flujos clave; todo interrumpible y con versión para Reducir movimiento | Métricas de animación de XCTest, JankStats y Macrobenchmark, y video antes y después |
 | RNF-19 Protección de menores | En modo joven no hay fotos de progreso, mensajes, tienda ni peso visible por defecto, y el permiso de los padres queda guardado | Pruebas con cuentas de 13, 15 y 17 años en cada país |
+| RNF-20 Privacidad del ciclo | Los datos del ciclo no salen del teléfono, no se exportan sin elegirlo, ningún profesional los ve sin un permiso específico y no se ofrecen en modo joven | Revisión del tráfico de red, de la base y de las exportaciones con el ciclo activado |
 
 ## 14. Plan por etapas
 
@@ -775,14 +814,14 @@ Qué cambia en las fases de la v2:
 
 - **F1:** suma el modelo de bloques y disciplinas, el motor de tiempo con el descanso a pantalla completa, los intervalos a tu medida con voz, la Live Activity y la Live Update, y el PAR-Q+ con el modo joven en el onboarding; las rutinas guardan quién las creó.
 - **F2:** el motor también sube por escaleras de ejercicios (calistenia, yoga) y guarda el resultado de cada formato.
-- **F4:** se queda en la Etapa 1 y crece: lectura y escritura de Salud y Health Connect, adaptación inteligente con molestias y las apps de Apple Watch y Galaxy Watch con la rutina y el cronómetro.
+- **F4:** se queda en la Etapa 1 y crece: lectura y escritura de Salud y Health Connect, adaptación inteligente con molestias, ciclo menstrual y movilidad al caminar y las apps de Apple Watch y Galaxy Watch con la rutina y el cronómetro.
 - **F5:** suma el catálogo de más de 1.000 ejercicios con su exigencia, sus músculos con porcentaje, su fuente y su licencia.
 - **F6:** las fichas de las tiendas anuncian la Isla Dinámica, los relojes, las disciplinas y la adaptación; el nombre definitivo se decide al final, justo antes de publicar.
 - **F3:** sin cambios.
 
 ## 15. Decisiones: las que tomaste y las que faltan
 
-Con tu último mensaje quedaron 12 decididas y 8 abiertas; ninguna de las abiertas frena la F1.
+Con tu último mensaje quedaron 14 decididas y 7 abiertas; ninguna de las abiertas frena la F1.
 
 | # | Decisión | Estado | Respuesta o recomendación | Cuándo |
 | --- | --- | --- | --- | --- |
@@ -804,8 +843,9 @@ Con tu último mensaje quedaron 12 decididas y 8 abiertas; ninguna de las abiert
 | 16 | Beta abierta | Abierta | Sí, con gente del gimnasio en TestFlight y en la prueba cerrada de Play, desde la mitad de la Etapa 1 | Mitad de la Etapa 1 |
 | 17 | Panel web profesional: Compose Multiplatform para web o una web aparte | Abierta | Exploración de una semana al empezar la Etapa 4 y decidir con código en la mano | Etapa 4 |
 | 18 | Velocidad de la barra | Abierta | Beta solo en iPhone con LiDAR y sin tocar el motor hasta validarla con un transductor | Etapa 3 |
-| 19 | Ciclo menstrual como dato de contexto (lo dan HealthKit y Health Connect) | Abierta | Opcional y solo para observar tendencias, sin cambiar cargas solo por eso | Etapa 3 |
+| 19 | Ciclo menstrual en la adaptación (lo dan HealthKit y Health Connect) | Decidida | Sí, desde la Etapa 1 (F4) y opcional: línea base por fase, síntomas y patrón personal; nunca cambia cargas solo por la fase; se calcula en el teléfono y no sube a la nube (sección 2) | 26 oct |
 | 20 | Adelantar la plataforma | Abierta | Se puede: la Etapa 4 no depende de la 3 | Al cerrar la Etapa 2 |
+| 21 | Movilidad al caminar (iPhone) | Decidida | Leer desde F4 como contexto y para preguntar por molestias; mueve cargas solo después de validarla con tus datos (sección 2) | 26 oct |
 
 ## 16. Fuentes
 
@@ -870,6 +910,11 @@ Disciplinas, catálogo y seguridad:
 - [Afiliación y marca CrossFit](https://www.crossfit.com/faq/affiliates)
 - [PAR-Q+ y ePARmed-X+, Warburton y otros, 2011](https://hfjc.library.ubc.ca/index.php/HFJC/article/view/103)
 - [Hiperventilar antes de una apnea, Chan, Singapore General Hospital](https://www.activesgcircle.gov.sg/read/breath-holding-with-hyperventilation-an-invisible-danger)
+- [Fase del ciclo y rendimiento, metaanálisis de McNulty y otros, 2020](https://rrmacademy.org/library/the-effects-of-menstrual-cycle-phase-on-exercise-performance-in-eumenorrheic-wom-ouqt6anh/)
+- [Cambios de temperatura, pulso y VFC a lo largo del ciclo, Goodale y otros, JMIR 2019](https://jmir.org/2019/4/e13404/)
+- [Tipos de datos de Health Connect, incluido el seguimiento del ciclo](https://developer.android.com/health-and-fitness/health-connect/data-types)
+- [Clue y Apple Salud](https://support.helloclue.com/hc/en-us/articles/20199556038813-Can-I-export-my-data-from-Clue-to-Apple-Health-or-Apple-Health-to-Clue)
+- [Flo y Apple Salud](https://help.flo.health/hc/en-us/articles/34890229122068)
 
 Legal y mercado:
 
