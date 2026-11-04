@@ -1,5 +1,9 @@
 package com.olarte.ironprogress.ui
 
+import androidx.compose.runtime.CompositionLocalProvider
+import com.olarte.ironprogress.ui.components.LocalForjaHazeState
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -107,6 +111,7 @@ fun IronProgressApp() {
     // Pila de Navigation 3: la raíz es una pestaña y encima pueden ir Catálogo o Entreno.
     // Sobrevive a girar el teléfono y al cierre del sistema (se guarda con navConfiguration).
     val backStack = rememberNavBackStack(navConfiguration, Route.Today)
+    val hazeState = rememberHazeState()
     val currentDestination = backStack.lastOrNull() ?: Route.Today
 
     val selectedTab = remember(backStack.toList()) {
@@ -206,6 +211,8 @@ fun IronProgressApp() {
         ) {
             NavDisplay(
                 backStack = backStack,
+                // El contenido que pasa por detrás de la isla se desenfoca en el vidrio (F0-10).
+                modifier = Modifier.hazeSource(hazeState),
                 onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
@@ -320,48 +327,50 @@ fun IronProgressApp() {
                     null
                 }
 
-                ForjaIsland(
-                    selectedTab = selectedTab,
-                    isSearchActive = isSearchActive,
-                    isMinimized = isIslandMinimized,
-                    todayLabel = stringResource(Res.string.nav_today),
-                    planLabel = stringResource(Res.string.nav_plan),
-                    progressLabel = stringResource(Res.string.nav_progress),
-                    searchContentDescription = stringResource(Res.string.nav_search_exercises),
-                    activeSession = activeBanner,
-                    onOpenActiveSession = {
-                        backStack.removeAll { it == Route.Workout }
-                        backStack.add(Route.Workout)
-                    },
-                    onSkipRest = { isResting = false },
-                    onTabSelected = { tab ->
-                        if (isIslandMinimized) {
+                CompositionLocalProvider(LocalForjaHazeState provides hazeState) {
+                    ForjaIsland(
+                        selectedTab = selectedTab,
+                        isSearchActive = isSearchActive,
+                        isMinimized = isIslandMinimized,
+                        todayLabel = stringResource(Res.string.nav_today),
+                        planLabel = stringResource(Res.string.nav_plan),
+                        progressLabel = stringResource(Res.string.nav_progress),
+                        searchContentDescription = stringResource(Res.string.nav_search_exercises),
+                        activeSession = activeBanner,
+                        onOpenActiveSession = {
+                            backStack.removeAll { it == Route.Workout }
+                            backStack.add(Route.Workout)
+                        },
+                        onSkipRest = { isResting = false },
+                        onTabSelected = { tab ->
+                            if (isIslandMinimized) {
+                                isIslandMinimized = false
+                            } else if (selectedTab == tab && !isSearchActive) {
+                                coroutineScope.launch {
+                                    todayListState.animateScrollToItem(0)
+                                    planListState.animateScrollToItem(0)
+                                    progressListState.animateScrollToItem(0)
+                                }
+                            } else {
+                                backStack.clear()
+                                backStack.add(tab.toNavDestination())
+                            }
+                        },
+                        onSearchClicked = {
                             isIslandMinimized = false
-                        } else if (selectedTab == tab && !isSearchActive) {
-                            coroutineScope.launch {
-                                todayListState.animateScrollToItem(0)
-                                planListState.animateScrollToItem(0)
-                                progressListState.animateScrollToItem(0)
+                            if (isSearchActive) {
+                                backStack.removeAll { it == Route.Catalog }
+                                if (backStack.isEmpty()) {
+                                    backStack.add(Route.Today)
+                                }
+                            } else {
+                                backStack.removeAll { it == Route.Catalog }
+                                backStack.add(Route.Catalog)
                             }
-                        } else {
-                            backStack.clear()
-                            backStack.add(tab.toNavDestination())
-                        }
-                    },
-                    onSearchClicked = {
-                        isIslandMinimized = false
-                        if (isSearchActive) {
-                            backStack.removeAll { it == Route.Catalog }
-                            if (backStack.isEmpty()) {
-                                backStack.add(Route.Today)
-                            }
-                        } else {
-                            backStack.removeAll { it == Route.Catalog }
-                            backStack.add(Route.Catalog)
-                        }
-                    },
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                )
+                        },
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
+                }
             }
         }
     }

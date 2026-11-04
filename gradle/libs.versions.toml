@@ -21,6 +21,7 @@ room3 = "3.0.3"
 # Room 3.0.3 trae SQLite 2.7.1 y Gradle alinea todo androidx.sqlite a esa versión.
 sqlite = "2.7.1"
 navigation3 = "1.1.2"
+haze = "2.0.1"
 wear-compose = "1.7.1"
 wear-minSdk = "30"
 wear-targetSdk = "35"
@@ -57,6 +58,8 @@ androidx-sqlite-bundled-jvm = { module = "androidx.sqlite:sqlite-bundled-jvm", v
 androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 androidx-lifecycle-viewmodelNavigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+haze-core = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
+haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
 wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wear-compose" }
 wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
 

@@ -43,6 +43,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelNavigation3)
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.koin.compose.viewmodel)
+            implementation(libs.haze.core)
+            implementation(libs.haze.blur)
         }
     }
 }

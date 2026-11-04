@@ -158,7 +158,7 @@ fun ForjaIsland(
                                 .size(ForjaMeasures.islandHeight)
                                 .shadow(16.dp, CircleShape)
                                 .clip(CircleShape)
-                                .background(colors.glass)
+                                .forjaGlass()
                                 .border(1.dp, colors.glassBorder, CircleShape)
                                 .clickable { onTabSelected(selectedTab) },
                             contentAlignment = Alignment.Center,
@@ -177,7 +177,7 @@ fun ForjaIsland(
                                 .height(ForjaMeasures.islandHeight)
                                 .shadow(16.dp, CircleShape)
                                 .clip(CircleShape)
-                                .background(colors.glass)
+                                .forjaGlass()
                                 .border(1.dp, colors.glassBorder, CircleShape)
                                 .padding(4.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -221,7 +221,7 @@ fun ForjaIsland(
                         .size(ForjaMeasures.islandHeight)
                         .shadow(16.dp, CircleShape)
                         .clip(CircleShape)
-                        .background(if (isSearchActive) colors.emberVeil else colors.glass)
+                        .forjaGlass(tint = if (isSearchActive) colors.emberVeil else colors.glass)
                         .border(
                             width = 1.dp,
                             color = if (isSearchActive) colors.emberInk else colors.glassBorder,
@@ -266,7 +266,7 @@ private fun ForjaSessionAccessory(
             .height(ForjaMeasures.accessoryHeight)
             .shadow(16.dp, CircleShape)
             .clip(CircleShape)
-            .background(colors.glass)
+            .forjaGlass()
             .border(1.dp, colors.glassBorder, CircleShape)
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp),
