@@ -374,7 +374,8 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-04 | F1-03 · Room versión 2 | `feat/f0-claude` | 15 tablas nuevas, migración 1 a 2 con AutoMigration, `2.json` y copia antes de migrar; la prueba desde `1.json` con un ejercicio archivado pasa; 66 pruebas |
 | 2026-11-04 | F1-04 · repositorios de rutinas y sesiones | `feat/f0-claude` | Conectados en Koin; 71 pruebas en verde (domain 44, data 27) |
 | 2026-11-04 | F1-05 · formato local | `feat/f0-claude` | `FormatsTest` 4 en verde en la JVM; 75 pruebas; falta verlo en los dos teléfonos y el framework iOS (CI de macOS) |
-| 2026-11-04 | F1-07 · ejercicios propios | `feat/f0-claude`, commit de F1-07 | UUID v7, guardado transaccional, editor MVI, filtros y pruebas. Comando completo de estilo, tres suites y dos APK: BUILD SUCCESSFUL local. Pendiente revisión en teléfonos. CI de base: Android success, iOS cancelado |
+| 2026-11-04 | F1-07 · ejercicios propios | `feat/f0-claude`, `feab7e6` | UUID v7, guardado transaccional, editor MVI, filtros y pruebas. Comando completo de estilo, tres suites y dos APK: BUILD SUCCESSFUL local. Pendiente revisión en teléfonos. CI de base: Android success, iOS cancelado |
+| 2026-11-04 | F1-08 · carpetas y editor de rutinas | `feat/f0-claude`, commit de F1-08 | Plan con Room, borrador MVI, bloques de series, orden, duplicado y borrado. 81 pruebas sin fallos, ktlintCheck, ambos APK y frameworks iOS: BUILD SUCCESSFUL local. Falta aceptación visual en teléfonos; sin push |
 
 ---
 

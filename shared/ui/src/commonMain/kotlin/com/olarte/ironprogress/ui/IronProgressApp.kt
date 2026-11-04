@@ -296,14 +296,13 @@ fun IronProgressApp() {
                     }
 
                     entry<Route.Plan> {
-                        ForjaPlanScreen(
-                            listState = planListState,
-                            isSessionStarted = isSessionStarted,
-                            onOpenWorkout = {
-                                isSessionStarted = true
-                                backStack.removeAll { it == Route.Workout }
-                                backStack.add(Route.Workout)
-                            },
+                        com.olarte.ironprogress.ui.plan.PlanRoute { backStack.add(Route.RoutineEditor(it)) }
+                    }
+                    entry<Route.RoutineEditor> { route ->
+                        com.olarte.ironprogress.ui.plan.RoutineEditorRoute(
+                            route.id,
+                            onClose = { backStack.removeLastOrNull() },
+                            setBack = { editorBack = it },
                         )
                     }
 
@@ -319,7 +318,7 @@ fun IronProgressApp() {
                 },
             )
 
-            if (!isWorkoutScreenOpen) {
+            if (!isWorkoutScreenOpen && currentDestination !is Route.ExerciseEditor && currentDestination !is Route.RoutineEditor) {
                 val activeBanner = if (isSessionStarted) {
                     val minutes = restSecondsRemaining / 60
                     val seconds = (restSecondsRemaining % 60).toString().padStart(2, '0')
@@ -397,6 +396,7 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     Route.Today -> ForjaTab.TODAY
     Route.Plan -> ForjaTab.PLAN
     Route.Progress -> ForjaTab.PROGRESS
+    is Route.RoutineEditor -> ForjaTab.PLAN
     is Route.ExerciseEditor -> ForjaTab.TODAY
     Route.Catalog, Route.Workout -> ForjaTab.TODAY
 }

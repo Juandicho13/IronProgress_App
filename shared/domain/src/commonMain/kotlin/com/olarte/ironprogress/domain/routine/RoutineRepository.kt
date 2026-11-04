@@ -14,6 +14,10 @@ interface RoutineRepository {
     /** Guarda la rutina entera en una transacción: lo que no viene en [detail] se borra. */
     suspend fun saveRoutine(detail: RoutineDetail)
 
+    suspend fun reorderRoutines(ids: List<RoutineId>)
+
+    suspend fun reorderFolders(ids: List<FolderId>)
+
     suspend fun deleteRoutine(id: RoutineId)
 
     suspend fun saveFolder(folder: Folder)

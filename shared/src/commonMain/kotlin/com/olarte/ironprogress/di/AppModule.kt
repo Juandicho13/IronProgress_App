@@ -16,6 +16,7 @@ import com.olarte.ironprogress.domain.common.IdGenerator
 import com.olarte.ironprogress.domain.common.UuidV7IdGenerator
 import com.olarte.ironprogress.domain.health.HealthRepository
 import com.olarte.ironprogress.domain.routine.CreateRoutine
+import com.olarte.ironprogress.domain.routine.EditRoutines
 import com.olarte.ironprogress.domain.routine.RoutineRepository
 import com.olarte.ironprogress.domain.session.CompleteSet
 import com.olarte.ironprogress.domain.session.EndSession
@@ -47,6 +48,7 @@ val sharedAppModule: Module = module {
     factory { SaveCustomExercise(get(), get()) }
     factory { SearchExercises(get()) }
     factory { SetExerciseArchived(get()) }
+    factory { EditRoutines(get(), get()) }
     factory { CreateRoutine(get(), get()) }
     factory { StartSession(get(), get(), get()) }
     factory { CompleteSet(get(), get()) }

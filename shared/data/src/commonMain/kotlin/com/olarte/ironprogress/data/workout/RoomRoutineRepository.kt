@@ -47,6 +47,10 @@ class RoomRoutineRepository(private val dao: RoutineDao, private val clock: Cloc
         )
     }
 
+    override suspend fun reorderRoutines(ids: List<RoutineId>) = dao.reorderRoutines(ids.map { it.value }, now())
+
+    override suspend fun reorderFolders(ids: List<FolderId>) = dao.reorderFolders(ids.map { it.value }, now())
+
     override suspend fun deleteRoutine(id: RoutineId) {
         dao.markRoutineDeleted(id.value, now())
     }

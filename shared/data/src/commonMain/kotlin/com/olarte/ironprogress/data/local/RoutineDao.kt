@@ -13,6 +13,22 @@ interface RoutineDao {
     @Query("SELECT * FROM folders WHERE deleted_at IS NULL ORDER BY sort_order ASC, name ASC")
     fun observeFolders(): Flow<List<FolderEntity>>
 
+    @Query("UPDATE routines SET sort_order = :position, updated_at = :now WHERE id = :id AND deleted_at IS NULL")
+    suspend fun setRoutineOrder(id: String, position: Int, now: Long)
+
+    @Query("UPDATE folders SET sort_order = :position, updated_at = :now WHERE id = :id AND deleted_at IS NULL")
+    suspend fun setFolderOrder(id: String, position: Int, now: Long)
+
+    @Transaction
+    suspend fun reorderRoutines(ids: List<String>, now: Long) {
+        ids.forEachIndexed { index, id -> setRoutineOrder(id, index, now) }
+    }
+
+    @Transaction
+    suspend fun reorderFolders(ids: List<String>, now: Long) {
+        ids.forEachIndexed { index, id -> setFolderOrder(id, index, now) }
+    }
+
     @Upsert
     suspend fun upsertFolder(folder: FolderEntity)
 

@@ -19,6 +19,8 @@ sealed interface Route : NavKey {
 
     @Serializable data object Workout : Route
 
+    @Serializable data class RoutineEditor(val id: String? = null) : Route
+
     @Serializable data class ExerciseEditor(val id: String? = null) : Route
 }
 
@@ -34,6 +36,7 @@ val navConfiguration = SavedStateConfiguration {
             subclass(Route.Progress::class, Route.Progress.serializer())
             subclass(Route.Catalog::class, Route.Catalog.serializer())
             subclass(Route.Workout::class, Route.Workout.serializer())
+            subclass(Route.RoutineEditor::class, Route.RoutineEditor.serializer())
             subclass(Route.ExerciseEditor::class, Route.ExerciseEditor.serializer())
         }
     }

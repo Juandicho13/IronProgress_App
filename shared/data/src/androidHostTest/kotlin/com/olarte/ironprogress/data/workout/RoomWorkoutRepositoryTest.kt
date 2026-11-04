@@ -61,6 +61,30 @@ class RoomWorkoutRepositoryTest {
     }
 
     @Test
+    fun duplicatesReordersAndDeletesWithoutChangingTheOriginal() = runTest {
+        val edit = com.olarte.ironprogress.domain.routine.EditRoutines(routines, ids)
+        edit.folder("Gimnasio")
+        edit.folder("Casa")
+        val folders = routines.observeFolders().first()
+        edit.moveFolder(folders.last().id, 0)
+        assertEquals(folders.last().id, routines.observeFolders().first().first().id)
+        val original = edit.draft("Torso", folders.first().id).let {
+            it.addExercise(ids, it.blocks.single().id, ExerciseId("barbell-row"))
+        }
+        edit.save(original)
+        val copy = edit.duplicate(original.routine.id, "Torso copia")
+        edit.move(copy.routine.id, 0)
+        assertEquals(copy.routine.id, routines.observeRoutines().first().first().id)
+        assertEquals(original.exercises, routines.findRoutine(original.routine.id)!!.exercises)
+        assertEquals(copy.setTemplates, routines.findRoutine(copy.routine.id)!!.setTemplates)
+        routines.deleteFolder(folders.first().id)
+        assertTrue(routines.observeRoutines().first().all { it.folderId == null })
+        routines.deleteRoutine(copy.routine.id)
+        assertNull(routines.findRoutine(copy.routine.id))
+        assertNotNull(routines.findRoutine(original.routine.id))
+    }
+
+    @Test
     fun aRoutineRoundTripsWithBlocksSupersetsAndTemplates() = runTest {
         routines.saveFolder(Folder(FolderId("f1"), "Fuerza", 0))
         var detail = CreateRoutine(routines, ids)("Torso A", FolderId("f1"))
