@@ -20,6 +20,9 @@ material3 = "1.12.0-alpha03"
 room3 = "3.0.3"
 # Room 3.0.3 trae SQLite 2.7.1 y Gradle alinea todo androidx.sqlite a esa versión.
 sqlite = "2.7.1"
+wear-compose = "1.7.1"
+wear-minSdk = "30"
+wear-targetSdk = "35"
 
 [libraries]
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -49,6 +52,8 @@ androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref 
 androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room3" }
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-sqlite-bundled-jvm = { module = "androidx.sqlite:sqlite-bundled-jvm", version.ref = "sqlite" }
+wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wear-compose" }
+wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
