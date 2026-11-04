@@ -3,7 +3,6 @@ package com.olarte.ironprogress.ui
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -11,8 +10,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,7 +51,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -120,12 +116,12 @@ fun IronProgressApp() {
     }
     val isSearchActive = currentDestination == Route.Catalog
     var editorBack by remember { mutableStateOf<(() -> Unit)?>(null) }
-    val isWorkoutScreenOpen = currentDestination == Route.Workout
+    val isWorkoutScreenOpen = currentDestination is Route.Workout
 
     var isIslandMinimized by rememberSaveable { mutableStateOf(false) }
 
     // Estado de la sesion de entreno interactiva
-    var isSessionStarted by rememberSaveable { mutableStateOf(false) }
+    var startedSessionId by rememberSaveable { mutableStateOf<String?>(null) }
     var currentSetNumber by rememberSaveable { mutableIntStateOf(2) }
     var recentlyCompletedSetNumber by rememberSaveable { mutableIntStateOf(-1) }
     var isResting by rememberSaveable { mutableStateOf(false) }
@@ -230,7 +226,7 @@ fun IronProgressApp() {
                             restSecondsRemaining = restSecondsRemaining,
                             showUndoNotice = showUndoNotice,
                             onMinimizeToIsland = {
-                                backStack.removeAll { it == Route.Workout }
+                                backStack.removeAll { it is Route.Workout }
                                 if (backStack.isEmpty()) {
                                     backStack.add(Route.Today)
                                 }
@@ -285,12 +281,15 @@ fun IronProgressApp() {
                     }
 
                     entry<Route.Today> {
-                        ForjaTodayScreen(
+                        com.olarte.ironprogress.ui.today.TodayRoute(
                             listState = todayListState,
-                            onStartWorkout = {
-                                isSessionStarted = true
-                                backStack.removeAll { it == Route.Workout }
-                                backStack.add(Route.Workout)
+                            onOpenWorkout = { sessionId ->
+                                startedSessionId = sessionId
+                                backStack.removeAll { it is Route.Workout }
+                                backStack.add(Route.Workout(sessionId))
+                            },
+                            onCreateRoutine = {
+                                backStack.add(Route.RoutineEditor(null))
                             },
                         )
                     }
@@ -319,7 +318,7 @@ fun IronProgressApp() {
             )
 
             if (!isWorkoutScreenOpen && currentDestination !is Route.ExerciseEditor && currentDestination !is Route.RoutineEditor) {
-                val activeBanner = if (isSessionStarted) {
+                val activeBanner = if (startedSessionId != null) {
                     val minutes = restSecondsRemaining / 60
                     val seconds = (restSecondsRemaining % 60).toString().padStart(2, '0')
                     ActiveSessionBannerState(
@@ -348,8 +347,8 @@ fun IronProgressApp() {
                         searchContentDescription = stringResource(Res.string.nav_search_exercises),
                         activeSession = activeBanner,
                         onOpenActiveSession = {
-                            backStack.removeAll { it == Route.Workout }
-                            backStack.add(Route.Workout)
+                            backStack.removeAll { it is Route.Workout }
+                            backStack.add(Route.Workout(startedSessionId))
                         },
                         onSkipRest = { isResting = false },
                         onTabSelected = { tab ->
@@ -398,288 +397,8 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     Route.Progress -> ForjaTab.PROGRESS
     is Route.RoutineEditor -> ForjaTab.PLAN
     is Route.ExerciseEditor -> ForjaTab.TODAY
-    Route.Catalog, Route.Workout -> ForjaTab.TODAY
-}
-
-/**
- * Pantalla "Hoy" del sistema Forja (seccion 15 del diseno).
- */
-@Composable
-private fun ForjaTodayScreen(listState: LazyListState, onStartWorkout: () -> Unit) {
-    val motion = ForjaTheme.motion
-    val colors = ForjaTheme.colors
-    val typography = ForjaTheme.typography
-
-    LazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-            .statusBarsPadding()
-            .padding(horizontal = ForjaSpacing.esp5),
-        verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-        contentPadding = PaddingValues(top = ForjaSpacing.esp3, bottom = 148.dp),
-    ) {
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
-                Text(
-                    text = "VIERNES 23 DE OCTUBRE",
-                    style = typography.caption,
-                    color = colors.text2,
-                )
-                Text(
-                    text = "Hoy",
-                    style = typography.title1,
-                    color = colors.text1,
-                )
-            }
-        }
-
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(ForjaRadius.shapeL)
-                    .background(colors.iceVeil)
-                    .padding(ForjaSpacing.esp4),
-                verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
-            ) {
-                Text(
-                    text = "RECUPERACIÓN",
-                    style = typography.caption,
-                    color = colors.iceInk,
-                )
-                Text(
-                    text = "Lista para entrenar completo",
-                    style = typography.title3,
-                    color = colors.text1,
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "7 h 42 min",
-                            style = typography.smallFigure,
-                            color = colors.text1,
-                        )
-                        Text(
-                            text = " de sueño",
-                            style = typography.body2,
-                            color = colors.text2,
-                        )
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "52",
-                            style = typography.smallFigure,
-                            color = colors.text1,
-                        )
-                        Text(
-                            text = " lpm en reposo",
-                            style = typography.body2,
-                            color = colors.text2,
-                        )
-                    }
-                }
-            }
-        }
-
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(ForjaRadius.shapeL)
-                    .background(colors.surface1)
-                    .padding(ForjaSpacing.esp4),
-                verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "Esta semana",
-                        style = typography.title3,
-                        color = colors.text1,
-                    )
-                    Text(
-                        text = "2 de 5 · racha de 6 semanas",
-                        style = typography.body2,
-                        color = colors.text2,
-                    )
-                }
-
-                val days = listOf("L", "M", "X", "J", "V", "S", "D")
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    days.forEachIndexed { index, day ->
-                        val completed = index < 2
-                        val isToday = index == 2
-                        Box(
-                            modifier = Modifier
-                                .size(38.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    when {
-                                        completed -> colors.ember
-                                        index in 4..5 -> colors.surface3
-                                        else -> colors.surface1
-                                    },
-                                )
-                                .then(
-                                    if (isToday) {
-                                        Modifier.border(2.dp, colors.ember, CircleShape)
-                                    } else {
-                                        Modifier
-                                    },
-                                ),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            if (completed) {
-                                Icon(
-                                    painter = ForjaIcons.Check,
-                                    contentDescription = "Completado",
-                                    tint = colors.onEmber,
-                                    modifier = Modifier.size(18.dp),
-                                )
-                            } else {
-                                Text(
-                                    text = day,
-                                    style = typography.label,
-                                    color = if (isToday) colors.text1 else colors.text2,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        item {
-            val previewExercises = listOf(
-                Triple("Press banca con barra", "62,5 kg", true),
-                Triple("Press militar con barra", "40 kg", false),
-                Triple("Cruce de poleas", "+1 rep", true),
-                Triple("Fondos en paralelas", "+10 kg", false),
-                Triple("Extensión de tríceps en polea", "25 kg", false),
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(ForjaRadius.shapeL)
-                    .background(colors.surface1)
-                    .padding(ForjaSpacing.esp4),
-                verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
-                    Text(
-                        text = "SIGUIENTE · SEMANA 3 DE 6",
-                        style = typography.caption,
-                        color = colors.text2,
-                    )
-                    Text(
-                        text = "Empuje A",
-                        style = typography.title2,
-                        color = colors.text1,
-                    )
-                    Text(
-                        text = "5 ejercicios · 55 min · Gimnasio",
-                        style = typography.body2,
-                        color = colors.text2,
-                    )
-                }
-
-                Column {
-                    previewExercises.forEachIndexed { index, (name, target, isProgression) ->
-                        if (index > 0) {
-                            HorizontalDivider(thickness = 1.dp, color = colors.line)
-                        }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 11.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = name,
-                                style = typography.body,
-                                color = colors.text1,
-                            )
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            ) {
-                                if (isProgression) {
-                                    Icon(
-                                        painter = ForjaIcons.NorthEast,
-                                        contentDescription = "Progresión",
-                                        tint = colors.emberInk,
-                                        modifier = Modifier.size(16.dp),
-                                    )
-                                }
-                                Text(
-                                    text = target,
-                                    style = typography.smallFigure,
-                                    color = if (isProgression) colors.emberInk else colors.text2,
-                                )
-                            }
-                        }
-                    }
-                }
-
-                val buttonInteraction = remember { MutableInteractionSource() }
-                val isButtonPressed by buttonInteraction.collectIsPressedAsState()
-                val buttonScale by animateFloatAsState(
-                    targetValue = if (isButtonPressed) 0.97f else 1f,
-                    animationSpec = motion.spatialFast(),
-                    label = "PrimaryButtonScale",
-                )
-
-                Box(
-                    modifier = Modifier
-                        .graphicsLayer {
-                            scaleX = buttonScale
-                            scaleY = buttonScale
-                        }
-                        .fillMaxWidth()
-                        .height(ForjaMeasures.primaryButtonHeight)
-                        .clip(CircleShape)
-                        .background(if (isButtonPressed) colors.emberPressed else colors.ember)
-                        .clickable(
-                            interactionSource = buttonInteraction,
-                            indication = null,
-                            onClick = onStartWorkout,
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Icon(
-                            painter = ForjaIcons.PlayFilled,
-                            contentDescription = null,
-                            tint = colors.onEmber,
-                            modifier = Modifier.size(20.dp),
-                        )
-                        Spacer(modifier = Modifier.width(ForjaSpacing.esp2))
-                        Text(
-                            text = "Empezar",
-                            style = typography.primaryButton,
-                            color = colors.onEmber,
-                        )
-                    }
-                }
-            }
-        }
-    }
+    Route.Catalog -> ForjaTab.TODAY
+    is Route.Workout -> ForjaTab.TODAY
 }
 
 /**

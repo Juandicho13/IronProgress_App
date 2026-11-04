@@ -65,6 +65,8 @@ Relojes:
 - **Toques:** Empezar abre Entreno (1 toque). Tocar la tarjeta de recuperación abre el detalle de la adaptación (sección 5.4).
 - **Variante de recuperación baja:** ver 2.4.
 
+**Alcance implementado en F1-09:** Hoy obtiene rutinas, ejercicios y sesiones desde Room. Sin rutinas, muestra una invitación a crear la primera. La tarjeta Siguiente usa la posición dentro de la rotación, las series objetivo y una duración marcada como aproximada. Esta semana cuenta días entrenados y racha según la zona horaria local. Recuperación, metas semanales y cambios de carga esperan datos y motores reales. Una sesión abierta ofrece Continuar, incluso si su rutina ya no existe. La entrada a Entreno conserva el id de sesión, pero el registro de series y el accesorio siguen pendientes de F1-10.
+
 ### 1.2 Entreno (`Entreno.dc.html`)
 
 - **Para qué:** registrar series. Completar la serie sugerida toma 1 toque.

@@ -10,6 +10,7 @@ import com.olarte.ironprogress.domain.routine.CreateRoutine
 import com.olarte.ironprogress.domain.routine.CreatedBy
 import com.olarte.ironprogress.domain.routine.Folder
 import com.olarte.ironprogress.domain.routine.FolderId
+import com.olarte.ironprogress.domain.routine.ObserveNextRoutine
 import com.olarte.ironprogress.domain.routine.addExercise
 import com.olarte.ironprogress.domain.routine.groupAsSuperset
 import com.olarte.ironprogress.domain.routine.removeExercise
@@ -58,6 +59,35 @@ class RoomWorkoutRepositoryTest {
     @AfterTest
     fun closeDatabase() {
         database.close()
+    }
+
+    @Test
+    fun nextRoutineUsesPersistedOrderAndOnlyAdvancesAfterFinishing() = runTest {
+        val folder = Folder(FolderId("rotation"), "Gimnasio", 0)
+        routines.saveFolder(folder)
+        val first = CreateRoutine(routines, ids)("Torso", folder.id).let {
+            it.addExercise(ids, it.blocks.single().id, ExerciseId("bench"))
+        }
+        val second = CreateRoutine(routines, ids)("Pierna", folder.id).let {
+            it.addExercise(ids, it.blocks.single().id, ExerciseId("squat"))
+        }
+        routines.saveRoutine(first)
+        routines.saveRoutine(second)
+        routines.reorderRoutines(listOf(first.routine.id, second.routine.id))
+        val observe = ObserveNextRoutine(routines, sessions)
+        assertEquals(first.routine.id, observe().first()?.detail?.routine?.id)
+
+        val active = StartSession(sessions, ids, clock)(first)
+        assertTrue(observe().first()?.isActiveSession == true)
+        assertEquals(first.routine.id, observe().first()?.detail?.routine?.id)
+        clock.now += 40.minutes
+        EndSession(sessions, clock)(active.session)
+
+        val next = assertNotNull(observe().first())
+        assertEquals(second.routine.id, next.detail.routine.id)
+        assertEquals(second.setTemplates.toSet(), next.detail.setTemplates.toSet())
+        assertEquals(2, next.positionInRotation)
+        assertEquals(folder, next.folder)
     }
 
     @Test

@@ -174,4 +174,47 @@
     <string name="plan_set">Serie %1$d</string>
     <string name="plan_confirm">Confirmar borrado</string>
     <string name="plan_folder_delete">Borrar carpeta (conservar rutinas)</string>
+
+    <string name="today_week_title">Esta semana</string>
+    <string name="today_week_streak">%1$s · racha de %2$s</string>
+    <string name="today_day_monday_short">L</string>
+    <string name="today_day_tuesday_short">M</string>
+    <string name="today_day_wednesday_short">X</string>
+    <string name="today_day_thursday_short">J</string>
+    <string name="today_day_friday_short">V</string>
+    <string name="today_day_saturday_short">S</string>
+    <string name="today_day_sunday_short">D</string>
+    <string name="today_day_monday_name">Lunes</string>
+    <string name="today_day_tuesday_name">Martes</string>
+    <string name="today_day_wednesday_name">Miércoles</string>
+    <string name="today_day_thursday_name">Jueves</string>
+    <string name="today_day_friday_name">Viernes</string>
+    <string name="today_day_saturday_name">Sábado</string>
+    <string name="today_day_sunday_name">Domingo</string>
+    <string name="today_day_status_done">%1$s: entrenaste</string>
+    <string name="today_day_status_today">%1$s: hoy</string>
+    <string name="today_day_status_rest">%1$s: sin entreno</string>
+    <string name="today_next_label">Siguiente</string>
+    <string name="today_next_rotation">Siguiente · Rutina %1$d de %2$d</string>
+    <string name="today_next_in_progress">Siguiente · En curso</string>
+    <string name="today_minutes_short">~%1$d min</string>
+    <string name="today_start">Empezar</string>
+    <string name="today_continue">Continuar</string>
+    <string name="today_empty_title">Aún no tienes rutinas</string>
+    <string name="today_empty_body">Crea tu primera rutina en Plan para que Hoy te proponga la que sigue por rotación.</string>
+
+    <plurals name="today_workout_count">
+        <item quantity="one">%1$d día entrenado</item>
+        <item quantity="other">%1$d días entrenados</item>
+    </plurals>
+
+    <plurals name="today_week_count">
+        <item quantity="one">%1$d semana</item>
+        <item quantity="other">%1$d semanas</item>
+    </plurals>
+
+    <plurals name="today_set_count">
+        <item quantity="one">%1$d serie</item>
+        <item quantity="other">%1$d series</item>
+    </plurals>
 </resources>

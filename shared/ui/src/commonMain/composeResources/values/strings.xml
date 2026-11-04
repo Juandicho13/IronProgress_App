@@ -174,4 +174,47 @@
     <string name="plan_set">Set %1$d</string>
     <string name="plan_confirm">Confirm deletion</string>
     <string name="plan_folder_delete">Delete folder (keep routines)</string>
+
+    <string name="today_week_title">This week</string>
+    <string name="today_week_streak">%1$s · %2$s streak</string>
+    <string name="today_day_monday_short">M</string>
+    <string name="today_day_tuesday_short">T</string>
+    <string name="today_day_wednesday_short">W</string>
+    <string name="today_day_thursday_short">T</string>
+    <string name="today_day_friday_short">F</string>
+    <string name="today_day_saturday_short">S</string>
+    <string name="today_day_sunday_short">S</string>
+    <string name="today_day_monday_name">Monday</string>
+    <string name="today_day_tuesday_name">Tuesday</string>
+    <string name="today_day_wednesday_name">Wednesday</string>
+    <string name="today_day_thursday_name">Thursday</string>
+    <string name="today_day_friday_name">Friday</string>
+    <string name="today_day_saturday_name">Saturday</string>
+    <string name="today_day_sunday_name">Sunday</string>
+    <string name="today_day_status_done">%1$s: trained</string>
+    <string name="today_day_status_today">%1$s: today</string>
+    <string name="today_day_status_rest">%1$s: rest</string>
+    <string name="today_next_label">Next</string>
+    <string name="today_next_rotation">Next · Routine %1$d of %2$d</string>
+    <string name="today_next_in_progress">Next · In progress</string>
+    <string name="today_minutes_short">~%1$d min</string>
+    <string name="today_start">Start</string>
+    <string name="today_continue">Continue</string>
+    <string name="today_empty_title">No routines yet</string>
+    <string name="today_empty_body">Create your first routine in Plan so Today proposes the next one in rotation.</string>
+
+    <plurals name="today_workout_count">
+        <item quantity="one">%1$d day trained</item>
+        <item quantity="other">%1$d days trained</item>
+    </plurals>
+
+    <plurals name="today_week_count">
+        <item quantity="one">%1$d week</item>
+        <item quantity="other">%1$d weeks</item>
+    </plurals>
+
+    <plurals name="today_set_count">
+        <item quantity="one">%1$d set</item>
+        <item quantity="other">%1$d sets</item>
+    </plurals>
 </resources>

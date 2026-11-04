@@ -17,7 +17,7 @@ sealed interface Route : NavKey {
 
     @Serializable data object Catalog : Route
 
-    @Serializable data object Workout : Route
+    @Serializable data class Workout(val sessionId: String? = null) : Route
 
     @Serializable data class RoutineEditor(val id: String? = null) : Route
 
