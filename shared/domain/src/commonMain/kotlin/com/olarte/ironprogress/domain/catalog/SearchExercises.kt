@@ -9,6 +9,7 @@ data class ExerciseQuery(
     val muscle: Muscle? = null,
     val equipment: Equipment? = null,
     val includeArchived: Boolean = false,
+    val discipline: Discipline? = null,
 )
 
 /** Caso de uso: los ejercicios que coinciden con la búsqueda, en vivo. */
@@ -34,6 +35,7 @@ object ExerciseSearch {
             .filter { query.includeArchived || !it.isArchived }
             .filter { query.muscle == null || query.muscle in it.primaryMuscles }
             .filter { query.equipment == null || it.equipment == query.equipment }
+            .filter { query.discipline == null || it.discipline == query.discipline }
             .mapNotNull { exercise -> relevance(exercise, terms)?.let { exercise to it } }
             .sortedWith(
                 compareBy<Pair<Exercise, Int>> { it.second }

@@ -33,6 +33,12 @@ class RoomExerciseRepository(private val catalogDao: CatalogDao) : ExerciseRepos
         return catalogDao.findExerciseWithMuscles(id.value)?.toDomain()
     }
 
+    override suspend fun saveCustomExercise(exercise: Exercise) {
+        ensureSeeded()
+        val (entity, muscles) = exercise.toEntities()
+        catalogDao.saveCustomExercise(entity, muscles)
+    }
+
     override suspend fun setArchived(id: ExerciseId, archived: Boolean) {
         ensureSeeded()
         catalogDao.setArchived(id.value, archived)

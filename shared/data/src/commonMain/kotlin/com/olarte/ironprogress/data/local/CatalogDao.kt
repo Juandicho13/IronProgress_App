@@ -41,6 +41,16 @@ interface CatalogDao {
     @Upsert
     suspend fun upsertExerciseMuscles(muscles: List<ExerciseMuscleEntity>)
 
+    @Transaction
+    suspend fun saveCustomExercise(exercise: ExerciseEntity, muscles: List<ExerciseMuscleEntity>) {
+        require(exercise.isCustom)
+        val existing = findExerciseWithMuscles(exercise.id)
+        require(existing == null || existing.exercise.isCustom)
+        upsertExercise(exercise)
+        deleteMusclesForExercises(listOf(exercise.id))
+        upsertExerciseMuscles(muscles)
+    }
+
     /**
      * Siembra o actualiza el catalogo base en una sola transaccion atomica sin tocar
      * los ejercicios personalizados creados por el usuario. Conserva el archivado: un

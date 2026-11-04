@@ -46,6 +46,39 @@ class CatalogDatabaseTest {
     }
 
     @Test
+    fun customExerciseSurvivesEditingArchivingAndReseeding() = runTest {
+        val repository = RoomExerciseRepository(dao)
+        val save = com.olarte.ironprogress.domain.catalog.SaveCustomExercise(
+            repository,
+            com.olarte.ironprogress.domain.common.UuidV7IdGenerator,
+        )
+        val custom = save(SeedCatalog.exercises.first().copy(name = LocalizedText("Mi ejercicio", "My exercise")))
+        assertTrue(custom.isCustom)
+        assertEquals('7', custom.id.value[14])
+        repository.setArchived(custom.id, true)
+        val edited = save(custom.copy(muscles = listOf(ExerciseMuscle(Muscle.BICEPS, MuscleRole.PRIMARY))), custom.id)
+        assertTrue(edited.isArchived)
+        assertEquals(edited, repository.findExercise(custom.id))
+        repository.setArchived(custom.id, false)
+        for (language in listOf("es", "en")) {
+            for (text in listOf("mi ejercicio", "my exercise")) {
+                assertEquals(
+                    custom.id,
+                    com.olarte.ironprogress.domain.catalog.ExerciseSearch.filter(
+                        repository.observeExercises().first(),
+                        com.olarte.ironprogress.domain.catalog.ExerciseQuery(text = text),
+                        language,
+                    ).single().id,
+                )
+            }
+        }
+        dao.upsertMetadata(CatalogMetadataEntity(CatalogMetadataEntity.KEY_SEED_CATALOG_VERSION, intValue = 0))
+        RoomExerciseRepository(dao).ensureSeeded()
+        assertEquals(edited.copy(isArchived = false), repository.findExercise(custom.id))
+        kotlin.test.assertFailsWith<IllegalArgumentException> { save(custom, SeedCatalog.exercises.first().id) }
+    }
+
+    @Test
     fun seedsTheWholeCatalogTheFirstTimeItIsObserved() = runTest {
         val exercises = RoomExerciseRepository(dao).observeExercises().first()
 

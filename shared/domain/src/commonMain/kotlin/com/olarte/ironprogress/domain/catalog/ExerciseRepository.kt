@@ -8,6 +8,8 @@ interface ExerciseRepository {
     /** El catálogo base y los ejercicios propios; emite de nuevo cada vez que algo cambia. */
     fun observeExercises(): Flow<List<Exercise>>
 
+    suspend fun saveCustomExercise(exercise: Exercise)
+
     suspend fun findExercise(id: ExerciseId): Exercise?
 
     /** Archiva o restaura un ejercicio. Archivar lo oculta de la búsqueda sin borrar su historial. */

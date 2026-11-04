@@ -119,6 +119,7 @@ fun IronProgressApp() {
             ?.toForjaTab() ?: ForjaTab.TODAY
     }
     val isSearchActive = currentDestination == Route.Catalog
+    var editorBack by remember { mutableStateOf<(() -> Unit)?>(null) }
     val isWorkoutScreenOpen = currentDestination == Route.Workout
 
     var isIslandMinimized by rememberSaveable { mutableStateOf(false) }
@@ -209,7 +210,13 @@ fun IronProgressApp() {
                 backStack = backStack,
                 // El contenido que pasa por detrás de la isla se desenfoca en el vidrio (F0-10).
                 modifier = Modifier.hazeSource(hazeState),
-                onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+                onBack = {
+                    if (editorBack != null) {
+                        editorBack?.invoke()
+                    } else if (backStack.size > 1) {
+                        backStack.removeLastOrNull()
+                    }
+                },
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
                     rememberViewModelStoreNavEntryDecorator(),
@@ -260,12 +267,20 @@ fun IronProgressApp() {
                         )
                     }
 
+                    entry<Route.ExerciseEditor> { route ->
+                        com.olarte.ironprogress.ui.catalog.ExerciseEditorRoute(
+                            route.id,
+                            onClose = { backStack.removeLastOrNull() },
+                            setBack = { editorBack = it },
+                        )
+                    }
                     entry<Route.Catalog> {
                         CatalogScreen(
                             state = catalogState,
                             languageCode = languageCode,
                             onIntent = viewModel::onIntent,
                             listState = catalogListState,
+                            onEdit = { backStack.add(Route.ExerciseEditor(it)) },
                         )
                     }
 
@@ -382,6 +397,7 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     Route.Today -> ForjaTab.TODAY
     Route.Plan -> ForjaTab.PLAN
     Route.Progress -> ForjaTab.PROGRESS
+    is Route.ExerciseEditor -> ForjaTab.TODAY
     Route.Catalog, Route.Workout -> ForjaTab.TODAY
 }
 

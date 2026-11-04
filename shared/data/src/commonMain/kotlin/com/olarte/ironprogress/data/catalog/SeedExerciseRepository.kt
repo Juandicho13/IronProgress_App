@@ -16,6 +16,14 @@ class SeedExerciseRepository(initialExercises: List<Exercise> = SeedCatalog.exer
 
     override suspend fun findExercise(id: ExerciseId): Exercise? = exercises.value.firstOrNull { it.id == id }
 
+    override suspend fun saveCustomExercise(exercise: Exercise) {
+        require(exercise.isCustom)
+        exercises.update { list ->
+            require(list.none { it.id == exercise.id && !it.isCustom })
+            list.filterNot { it.id == exercise.id } + exercise
+        }
+    }
+
     override suspend fun setArchived(id: ExerciseId, archived: Boolean) {
         exercises.update { list -> list.map { if (it.id == id) it.copy(isArchived = archived) else it } }
     }

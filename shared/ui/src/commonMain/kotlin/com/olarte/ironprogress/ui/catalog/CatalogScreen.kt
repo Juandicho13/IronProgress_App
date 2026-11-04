@@ -42,8 +42,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import com.olarte.ironprogress.domain.catalog.Discipline
+import com.olarte.ironprogress.domain.catalog.Equipment
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.Muscle
+import com.olarte.ironprogress.ui.components.EditorAction
+import com.olarte.ironprogress.ui.components.EditorChoice
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.label
 import com.olarte.ironprogress.ui.resources.Res
@@ -58,6 +62,11 @@ import com.olarte.ironprogress.ui.resources.catalog_restore
 import com.olarte.ironprogress.ui.resources.catalog_search_placeholder
 import com.olarte.ironprogress.ui.resources.catalog_secondary_prefix
 import com.olarte.ironprogress.ui.resources.catalog_title
+import com.olarte.ironprogress.ui.resources.editor_all
+import com.olarte.ironprogress.ui.resources.editor_create
+import com.olarte.ironprogress.ui.resources.editor_discipline
+import com.olarte.ironprogress.ui.resources.editor_edit
+import com.olarte.ironprogress.ui.resources.editor_equipment
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
@@ -72,6 +81,7 @@ fun CatalogScreen(
     onIntent: (CatalogIntent) -> Unit,
     listState: LazyListState = rememberLazyListState(),
     modifier: Modifier = Modifier,
+    onEdit: (String?) -> Unit = {},
 ) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
@@ -103,6 +113,21 @@ fun CatalogScreen(
             color = colors.text1,
         )
 
+        EditorAction(stringResource(Res.string.editor_create)) { onEdit(null) }
+        Row {
+            EditorChoice(
+                stringResource(Res.string.editor_equipment),
+                state.equipment,
+                listOf(null) + Equipment.entries,
+                { it?.label() ?: stringResource(Res.string.editor_all) },
+            ) { onIntent(CatalogIntent.EquipmentSelected(it)) }
+            EditorChoice(
+                stringResource(Res.string.editor_discipline),
+                state.discipline,
+                listOf(null) + Discipline.entries,
+                { it?.editorLabel() ?: stringResource(Res.string.editor_all) },
+            ) { onIntent(CatalogIntent.DisciplineSelected(it)) }
+        }
         // Campo de busqueda Forja en superficie-3 con radio-m y foco en brasa
         Box(
             modifier = Modifier
@@ -245,6 +270,7 @@ fun CatalogScreen(
                     ForjaExerciseCard(
                         exercise = exercise,
                         languageCode = languageCode,
+                        onEdit = { onEdit(exercise.id.value) },
                         onArchiveToggle = {
                             onIntent(CatalogIntent.ArchiveToggled(exercise.id, !exercise.isArchived))
                         },
@@ -300,7 +326,7 @@ private fun ForjaFilterChip(label: String, selected: Boolean, onClick: () -> Uni
 }
 
 @Composable
-private fun ForjaExerciseCard(exercise: Exercise, languageCode: String, onArchiveToggle: () -> Unit) {
+private fun ForjaExerciseCard(exercise: Exercise, languageCode: String, onArchiveToggle: () -> Unit, onEdit: () -> Unit) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val primaryLabels = exercise.primaryMuscles.map { it.label() }.joinToString(" · ")
@@ -345,6 +371,7 @@ private fun ForjaExerciseCard(exercise: Exercise, languageCode: String, onArchiv
             style = typography.body2,
             color = colors.text2,
         )
+        if (exercise.isCustom) EditorAction(stringResource(Res.string.editor_edit), onClick = onEdit)
         if (secondaryLabels.isNotEmpty()) {
             Text(
                 text = stringResource(Res.string.catalog_secondary_prefix, secondaryLabels),

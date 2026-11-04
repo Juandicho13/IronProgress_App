@@ -9,6 +9,7 @@ import com.olarte.ironprogress.data.local.StageOneDao
 import com.olarte.ironprogress.data.workout.RoomRoutineRepository
 import com.olarte.ironprogress.data.workout.RoomSessionRepository
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
+import com.olarte.ironprogress.domain.catalog.SaveCustomExercise
 import com.olarte.ironprogress.domain.catalog.SearchExercises
 import com.olarte.ironprogress.domain.catalog.SetExerciseArchived
 import com.olarte.ironprogress.domain.common.IdGenerator
@@ -43,6 +44,7 @@ val sharedAppModule: Module = module {
     single<SessionRepository> { RoomSessionRepository(get(), get()) }
     single<HealthRepository> { UnavailableHealthRepository() }
 
+    factory { SaveCustomExercise(get(), get()) }
     factory { SearchExercises(get()) }
     factory { SetExerciseArchived(get()) }
     factory { CreateRoutine(get(), get()) }

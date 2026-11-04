@@ -121,3 +121,11 @@ Siguen, en este orden:
 ```
 | <fecha> | F0-01 · Base fusionada y probada | main, <commit> | Abre en S25 Ultra, iPhone 18 Pro y Galaxy Watch4; Buscar muestra 77 ejercicios |
 ```
+
+## 7. Continuación de Codex, 4 de noviembre de 2026
+
+- PR #2 de feat/f0-claude: ejecución 41872646175. Android terminó en success; iOS fue cancelado sin pasos ejecutados. No hay fallo de código de iOS observado en CI.
+- Base 8ed4f60: los frameworks de simulador e iPhone terminaron localmente con BUILD SUCCESSFUL en macOS. Esto no sustituye el CI ni abrir la app en el teléfono.
+- F1-07 implementado: SaveCustomExercise, escritura transaccional de ejercicio y músculos, protección de semilla, UUID v7, formulario MVI y filtros de equipo/disciplina. Diseños autorizados por Juan en PANTALLAS sección 9. No se tocó F1-06.
+- Verificación F1-07: comando completo pedido por Juan con BUILD SUCCESSFUL; pruebas nuevas de persistencia y ViewModel. Falta probar crear, editar, archivar/restaurar y buscar en ES/EN tras cerrar la app en ambos teléfonos, además del descarte al volver.
+- No se hizo push. F1-08 sigue a continuación.

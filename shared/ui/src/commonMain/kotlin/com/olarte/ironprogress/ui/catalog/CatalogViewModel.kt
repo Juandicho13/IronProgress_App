@@ -24,6 +24,8 @@ class CatalogViewModel(searchExercises: SearchExercises, private val setExercise
         searchExercises(query, languageCode),
     ) { currentQuery, results ->
         CatalogState(
+            equipment = currentQuery.equipment,
+            discipline = currentQuery.discipline,
             searchText = currentQuery.text,
             selectedMuscle = currentQuery.muscle,
             showArchived = currentQuery.includeArchived,
@@ -38,6 +40,8 @@ class CatalogViewModel(searchExercises: SearchExercises, private val setExercise
 
     fun onIntent(intent: CatalogIntent) {
         when (intent) {
+            is CatalogIntent.EquipmentSelected -> query.update { it.copy(equipment = intent.value) }
+            is CatalogIntent.DisciplineSelected -> query.update { it.copy(discipline = intent.value) }
             is CatalogIntent.SearchChanged -> {
                 query.update { it.copy(text = intent.text) }
             }

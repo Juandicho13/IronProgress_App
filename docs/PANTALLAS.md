@@ -417,4 +417,32 @@ Cambiar de pestaña y hacer scroll nunca vibran.
 
 ## 9. Qué falta por diseñar
 
+### Diseños autorizados por Juan el 4 de noviembre de 2026
+
+Estos formularios sencillos siguen Forja y se pueden cambiar sin modificar los casos de uso.
+
+**Crear y editar ejercicio propio (F1-07)**
+
+- Qué tiene que mostrar: título Crear ejercicio o Editar ejercicio, nombres en español e inglés, equipo, disciplina, patrón, tipo de registro, músculos primarios y secundarios y opción unilateral. Guardar es la acción principal. Archivar y restaurar siguen disponibles en el catálogo. No se editan ejercicios de la semilla.
+- Estructura: formulario vertical desplazable, tarjetas surface1, campos surface3, márgenes y separaciones de ForjaSpacing, tipografía Forja; botón Guardar en ember y Volver secundario. Selectores sencillos con etiquetas traducidas, áreas táctiles de al menos 48 dp. Sin campos de exigencia de F1-06.
+- Estados: nuevo vacío, cargando, edición con datos, validación de nombres y músculos, guardando, error de lectura o guardado con reintento. Mientras guarda no se envían duplicados. Salir con cambios pide descartar o seguir editando.
+- Toques: desde Buscar, Crear ejercicio abre en un toque; Guardar toma un toque con los campos válidos. Editar se abre desde una fila propia del catálogo.
+- De dónde se abre y a dónde lleva: Buscar abre el formulario y Guardar vuelve a Buscar, donde el ejercicio aparece con su nombre local. Los filtros de equipo y disciplina acompañan los filtros existentes.
+
+**Carpetas y lista de rutinas (F1-08)**
+
+- Qué tiene que mostrar: Plan con carpetas y rutinas reales, crear carpeta y rutina, cambiar nombre, duplicar y borrar rutina, mover a carpeta y ordenar por arrastre. Sin inventar programas ni métricas calculadas.
+- Estructura: título Plan y tarjetas de rutinas agrupadas por carpeta con los tokens de 2.3; cada fila muestra nombre y cantidad de ejercicios. Formularios cortos de nombre en una hoja o diálogo; acciones secundarias separadas del botón principal.
+- Estados: lista vacía con Crear rutina, cargando, contenido, error con reintento y confirmación antes de borrar. Borrar carpeta conserva las rutinas sin carpeta.
+- Toques: crear abre el editor en un toque; duplicar y borrar se eligen en las acciones de cada rutina; ordenar con pulsación larga y arrastre, con alternativa accesible de subir o bajar.
+- De dónde se abre y a dónde lleva: pestaña Plan; tocar rutina abre su editor; volver conserva la lista.
+
+**Editor de rutina por bloques (F1-08)**
+
+- Qué tiene que mostrar: nombre, carpeta, notas y bloques de series; en cada bloque, ejercicios ordenables, series objetivo con rango de reps, RIR y descanso, y notas del ejercicio. Añadir o quitar bloques, ejercicios y series. Los otros formatos conservan sus datos y se editan en F1-18 a F1-20.
+- Estructura: formulario vertical con título Editar rutina, tarjetas surface1 por bloque y ejercicio, campos surface3, tipografía y espaciado Forja, Guardar en ember. El selector de ejercicios permite buscar por nombre y elegir en un toque. Arrastre desde el asa del ejercicio y botones accesibles de subir o bajar.
+- Estados: rutina nueva, cargando, contenido, campos inválidos, guardando, error con reintento, confirmación de descarte al salir con cambios. Guardar solo se habilita con nombre y rangos válidos; el borrador no altera lo persistido antes de guardar.
+- Toques: añadir ejercicio abre el selector en un toque y elegirlo requiere otro; Guardar toma un toque.
+- De dónde se abre y a dónde lleva: Plan, Crear rutina o tocar una existente; guardar vuelve a Plan. No inicia una sesión ni modifica sesiones pasadas.
+
 Siguen sin diseño en el lienzo (Etapa 1): el PAR-Q+ al crear la cuenta, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, la Live Update y la Now Bar, el ajuste del ciclo menstrual con su explicación de privacidad y la tarjeta de movilidad al caminar. Hasta que estén, una hormiga que llegue a ellas pide el diseño al jefe y el jefe se lo pide a Juan; no se inventa una pantalla nueva.
