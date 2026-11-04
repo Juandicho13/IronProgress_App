@@ -44,7 +44,7 @@ iPhone: abrir `iosApp/iosApp.xcodeproj` en Xcode, elegir el Team en Signing & Ca
 
 ```
 ./gradlew ktlintCheck
-./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest
+./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest :shared:ui:testAndroidHostTest
 ./gradlew :androidApp:assembleDebug :wearApp:assembleDebug
 ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
 ```

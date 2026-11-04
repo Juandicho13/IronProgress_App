@@ -25,6 +25,7 @@ kotlin {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_11
         }
+        withHostTest {}
     }
 
     sourceSets {
@@ -45,6 +46,9 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.haze.core)
             implementation(libs.haze.blur)
+        }
+        getByName("androidHostTest").dependencies {
+            implementation(libs.kotlin.test)
         }
     }
 }

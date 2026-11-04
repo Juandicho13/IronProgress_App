@@ -286,7 +286,7 @@ Son 18. Con un `ForjaShapes.kt` de prueba en el sandbox de Claude, todo lo demá
 | data | CatalogDatabaseTest | androidHostTest | 4 |
 | data | CatalogMigrationTest | androidHostTest | 2 |
 
-Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest`. Las pruebas de `commonTest` corren en la JVM con esa tarea; las de `androidHostTest` necesitan el SQLite nativo del computador.
+Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest :shared:ui:testAndroidHostTest`. Las pruebas de `commonTest` corren en la JVM con esa tarea; las de `androidHostTest` necesitan el SQLite nativo del computador.
 
 ### 4.5 Real frente a prototipo
 
@@ -2255,7 +2255,7 @@ Decisiones técnicas para el jefe (se confirman con Juan en el ticket que las ne
 ```
 git status
 git log --oneline -5
-./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest
+./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest :shared:ui:testAndroidHostTest
 ./gradlew :androidApp:assembleDebug
 ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
 ./gradlew :shared:linkDebugFrameworkIosArm64
