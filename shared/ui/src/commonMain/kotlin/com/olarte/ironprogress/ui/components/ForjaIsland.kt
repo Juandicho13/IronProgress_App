@@ -143,11 +143,11 @@ fun ForjaIsland(
                     targetState = isMinimized,
                     transitionSpec = {
                         fadeIn(animationSpec = motion.effectFast()) togetherWith
-                                fadeOut(animationSpec = motion.effectFast()) using
-                                SizeTransform(
-                                    clip = false,
-                                    sizeAnimationSpec = { _, _ -> motion.spatial() },
-                                )
+                            fadeOut(animationSpec = motion.effectFast()) using
+                            SizeTransform(
+                                clip = false,
+                                sizeAnimationSpec = { _, _ -> motion.spatial() },
+                            )
                     },
                     modifier = Modifier.weight(1f, fill = !isMinimized),
                     label = "ForjaIslandMorph",
@@ -250,11 +250,7 @@ fun ForjaIsland(
  * Capsula de vidrio de 56 dp que mantiene visible el entreno en curso cuando sales de el.
  */
 @Composable
-private fun ForjaSessionAccessory(
-    state: ActiveSessionBannerState,
-    onClick: () -> Unit,
-    onSkipRest: () -> Unit,
-) {
+private fun ForjaSessionAccessory(state: ActiveSessionBannerState, onClick: () -> Unit, onSkipRest: () -> Unit) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val ringColor = if (state.isReady) colors.ember else colors.ice
@@ -334,13 +330,7 @@ private fun ForjaSessionAccessory(
 }
 
 @Composable
-private fun IslandTabItem(
-    tab: ForjaTab,
-    label: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+private fun IslandTabItem(tab: ForjaTab, label: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography

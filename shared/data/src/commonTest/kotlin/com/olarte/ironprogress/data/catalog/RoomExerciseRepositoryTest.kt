@@ -68,8 +68,7 @@ private class FakeCatalogDao : CatalogDao {
     private val metadataByKey = mutableMapOf<String, Int>()
     private val relationsFlow = MutableStateFlow<List<ExerciseWithMusclesRelation>>(emptyList())
 
-    override fun observeAllExercisesWithMuscles(): Flow<List<ExerciseWithMusclesRelation>> =
-        relationsFlow
+    override fun observeAllExercisesWithMuscles(): Flow<List<ExerciseWithMusclesRelation>> = relationsFlow
 
     override suspend fun findExerciseWithMuscles(exerciseId: String): ExerciseWithMusclesRelation? {
         val entity = exercisesById[exerciseId] ?: return null

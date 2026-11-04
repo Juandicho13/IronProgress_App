@@ -69,52 +69,50 @@ fun ForjaTheme(
     }
 }
 
-private fun ForjaColorPalette.toMaterialColorScheme(): ColorScheme {
-    return if (isDark) {
-        darkColorScheme(
-            primary = ember,
-            onPrimary = onEmber,
-            primaryContainer = emberVeil,
-            onPrimaryContainer = emberInk,
-            secondary = ice,
-            onSecondary = onEmber,
-            secondaryContainer = iceVeil,
-            onSecondaryContainer = iceInk,
-            tertiary = gold,
-            onTertiary = onGold,
-            background = background,
-            onBackground = text1,
-            surface = surface1,
-            onSurface = text1,
-            surfaceVariant = surface3,
-            onSurfaceVariant = text2,
-            error = danger,
-            onError = onDanger,
-            outline = controlLine,
-            outlineVariant = line,
-        )
-    } else {
-        lightColorScheme(
-            primary = ember,
-            onPrimary = onEmber,
-            primaryContainer = emberVeil,
-            onPrimaryContainer = emberInk,
-            secondary = ice,
-            onSecondary = surface1,
-            secondaryContainer = iceVeil,
-            onSecondaryContainer = iceInk,
-            tertiary = gold,
-            onTertiary = onGold,
-            background = background,
-            onBackground = text1,
-            surface = surface1,
-            onSurface = text1,
-            surfaceVariant = surface3,
-            onSurfaceVariant = text2,
-            error = danger,
-            onError = onDanger,
-            outline = controlLine,
-            outlineVariant = line,
-        )
-    }
+private fun ForjaColorPalette.toMaterialColorScheme(): ColorScheme = if (isDark) {
+    darkColorScheme(
+        primary = ember,
+        onPrimary = onEmber,
+        primaryContainer = emberVeil,
+        onPrimaryContainer = emberInk,
+        secondary = ice,
+        onSecondary = onEmber,
+        secondaryContainer = iceVeil,
+        onSecondaryContainer = iceInk,
+        tertiary = gold,
+        onTertiary = onGold,
+        background = background,
+        onBackground = text1,
+        surface = surface1,
+        onSurface = text1,
+        surfaceVariant = surface3,
+        onSurfaceVariant = text2,
+        error = danger,
+        onError = onDanger,
+        outline = controlLine,
+        outlineVariant = line,
+    )
+} else {
+    lightColorScheme(
+        primary = ember,
+        onPrimary = onEmber,
+        primaryContainer = emberVeil,
+        onPrimaryContainer = emberInk,
+        secondary = ice,
+        onSecondary = surface1,
+        secondaryContainer = iceVeil,
+        onSecondaryContainer = iceInk,
+        tertiary = gold,
+        onTertiary = onGold,
+        background = background,
+        onBackground = text1,
+        surface = surface1,
+        onSurface = text1,
+        surfaceVariant = surface3,
+        onSurfaceVariant = text2,
+        error = danger,
+        onError = onDanger,
+        outline = controlLine,
+        outlineVariant = line,
+    )
 }

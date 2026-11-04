@@ -17,19 +17,16 @@ import kotlinx.coroutines.sync.withLock
  * Implementacion de [ExerciseRepository] respaldada por Room 3.
  * Verifica y siembra el [SeedCatalog] de forma perezosa y segura para concurrencia.
  */
-class RoomExerciseRepository(
-    private val catalogDao: CatalogDao,
-) : ExerciseRepository {
+class RoomExerciseRepository(private val catalogDao: CatalogDao) : ExerciseRepository {
 
     private val seedMutex = Mutex()
     private var seedVerified = false
 
-    override fun observeExercises(): Flow<List<Exercise>> =
-        catalogDao.observeAllExercisesWithMuscles()
-            .onStart { ensureSeeded() }
-            .map { relations ->
-                relations.map { it.toDomain() }
-            }
+    override fun observeExercises(): Flow<List<Exercise>> = catalogDao.observeAllExercisesWithMuscles()
+        .onStart { ensureSeeded() }
+        .map { relations ->
+            relations.map { it.toDomain() }
+        }
 
     override suspend fun findExercise(id: ExerciseId): Exercise? {
         ensureSeeded()

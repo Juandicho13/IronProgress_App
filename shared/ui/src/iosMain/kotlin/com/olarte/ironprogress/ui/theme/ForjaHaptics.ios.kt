@@ -9,14 +9,13 @@ import platform.UIKit.UINotificationFeedbackType
 import platform.UIKit.UISelectionFeedbackGenerator
 
 @Composable
-actual fun rememberForjaHaptics(enabled: Boolean): ForjaHaptics =
-    remember(enabled) {
-        if (!enabled) {
-            NoOpForjaHaptics
-        } else {
-            IosForjaHaptics()
-        }
+actual fun rememberForjaHaptics(enabled: Boolean): ForjaHaptics = remember(enabled) {
+    if (!enabled) {
+        NoOpForjaHaptics
+    } else {
+        IosForjaHaptics()
     }
+}
 
 private class IosForjaHaptics : ForjaHaptics {
     private val mediumImpact = UIImpactFeedbackGenerator(

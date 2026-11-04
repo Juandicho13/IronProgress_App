@@ -83,11 +83,7 @@ class CatalogMigrationTest {
     }
 
     /** Crea la base tal como la dejaba la versión [version], igual que MigrationTestHelper. */
-    private fun createDatabaseFromSchema(
-        file: File,
-        version: Int,
-        insertData: (SQLiteConnection) -> Unit,
-    ) {
+    private fun createDatabaseFromSchema(file: File, version: Int, insertData: (SQLiteConnection) -> Unit) {
         val schema = readSchema(version)
         val connection = BundledSQLiteDriver().open(file.absolutePath)
         try {

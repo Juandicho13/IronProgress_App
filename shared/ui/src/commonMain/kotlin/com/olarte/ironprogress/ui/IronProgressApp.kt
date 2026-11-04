@@ -1,28 +1,5 @@
 package com.olarte.ironprogress.ui
 
-import androidx.compose.runtime.CompositionLocalProvider
-import com.olarte.ironprogress.ui.components.LocalForjaHazeState
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
-import androidx.navigation3.ui.NavDisplay
-import com.olarte.ironprogress.ui.navigation.Route
-import com.olarte.ironprogress.ui.navigation.navConfiguration
-import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
-import androidx.compose.ui.text.intl.Locale
-import com.olarte.ironprogress.ui.resources.Res
-import com.olarte.ironprogress.ui.resources.nav_plan
-import com.olarte.ironprogress.ui.resources.nav_progress
-import com.olarte.ironprogress.ui.resources.nav_search_exercises
-import com.olarte.ironprogress.ui.resources.nav_today
-import com.olarte.ironprogress.ui.resources.session_ready
-import com.olarte.ironprogress.ui.resources.session_rest
-import com.olarte.ironprogress.ui.resources.session_set_of
-import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
@@ -60,6 +37,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -81,21 +59,43 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import com.olarte.ironprogress.ui.catalog.CatalogScreen
 import com.olarte.ironprogress.ui.catalog.CatalogViewModel
 import com.olarte.ironprogress.ui.components.ActiveSessionBannerState
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaIsland
 import com.olarte.ironprogress.ui.components.ForjaTab
+import com.olarte.ironprogress.ui.components.LocalForjaHazeState
+import com.olarte.ironprogress.ui.navigation.Route
+import com.olarte.ironprogress.ui.navigation.navConfiguration
+import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.nav_plan
+import com.olarte.ironprogress.ui.resources.nav_progress
+import com.olarte.ironprogress.ui.resources.nav_search_exercises
+import com.olarte.ironprogress.ui.resources.nav_today
+import com.olarte.ironprogress.ui.resources.session_ready
+import com.olarte.ironprogress.ui.resources.session_rest
+import com.olarte.ironprogress.ui.resources.session_set_of
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun IronProgressApp() {
@@ -144,11 +144,7 @@ fun IronProgressApp() {
         var accumulatedScroll = 0f
 
         object : NestedScrollConnection {
-            override fun onPostScroll(
-                consumed: Offset,
-                available: Offset,
-                source: NestedScrollSource,
-            ): Offset {
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
                 val deltaY = consumed.y
                 if (deltaY < 0f) {
                     accumulatedScroll = if (accumulatedScroll < 0f) accumulatedScroll + deltaY else deltaY
@@ -219,92 +215,92 @@ fun IronProgressApp() {
                     rememberViewModelStoreNavEntryDecorator(),
                 ),
                 entryProvider = entryProvider {
-                        entry<Route.Workout> {
-                            ForjaWorkoutScreen(
-                                currentSetNumber = currentSetNumber,
-                                recentlyCompletedSetNumber = recentlyCompletedSetNumber,
-                                isResting = isResting,
-                                restSecondsRemaining = restSecondsRemaining,
-                                showUndoNotice = showUndoNotice,
-                                onMinimizeToIsland = {
-                                    backStack.removeAll { it == Route.Workout }
-                                    if (backStack.isEmpty()) {
-                                        backStack.add(Route.Today)
-                                    }
-                                },
-                                onCompleteSet = {
-                                    if (currentSetNumber <= 4) {
-                                        haptics.setCompleted()
-                                        recentlyCompletedSetNumber = currentSetNumber
-                                        currentSetNumber += 1
-                                        isResting = true
-                                        restSecondsRemaining = 85
-                                        showUndoNotice = true
-                                    }
-                                },
-                                onUndoSet = {
-                                    if (currentSetNumber > 2) {
-                                        currentSetNumber -= 1
-                                    }
-                                    recentlyCompletedSetNumber = -1
+                    entry<Route.Workout> {
+                        ForjaWorkoutScreen(
+                            currentSetNumber = currentSetNumber,
+                            recentlyCompletedSetNumber = recentlyCompletedSetNumber,
+                            isResting = isResting,
+                            restSecondsRemaining = restSecondsRemaining,
+                            showUndoNotice = showUndoNotice,
+                            onMinimizeToIsland = {
+                                backStack.removeAll { it == Route.Workout }
+                                if (backStack.isEmpty()) {
+                                    backStack.add(Route.Today)
+                                }
+                            },
+                            onCompleteSet = {
+                                if (currentSetNumber <= 4) {
+                                    haptics.setCompleted()
+                                    recentlyCompletedSetNumber = currentSetNumber
+                                    currentSetNumber += 1
+                                    isResting = true
+                                    restSecondsRemaining = 85
+                                    showUndoNotice = true
+                                }
+                            },
+                            onUndoSet = {
+                                if (currentSetNumber > 2) {
+                                    currentSetNumber -= 1
+                                }
+                                recentlyCompletedSetNumber = -1
+                                isResting = false
+                                showUndoNotice = false
+                            },
+                            onAdjustRest = { delta ->
+                                haptics.segmentTick()
+                                restSecondsRemaining = (restSecondsRemaining + delta).coerceAtLeast(0)
+                                if (restSecondsRemaining == 0) {
                                     isResting = false
-                                    showUndoNotice = false
-                                },
-                                onAdjustRest = { delta ->
-                                    haptics.segmentTick()
-                                    restSecondsRemaining = (restSecondsRemaining + delta).coerceAtLeast(0)
-                                    if (restSecondsRemaining == 0) {
-                                        isResting = false
-                                    }
-                                },
-                                onSkipRest = {
-                                    isResting = false
-                                    showUndoNotice = false
-                                },
-                            )
-                        }
+                                }
+                            },
+                            onSkipRest = {
+                                isResting = false
+                                showUndoNotice = false
+                            },
+                        )
+                    }
 
-                        entry<Route.Catalog> {
-                            CatalogScreen(
-                                state = catalogState,
-                                languageCode = languageCode,
-                                onIntent = viewModel::onIntent,
-                                listState = catalogListState,
-                            )
-                        }
+                    entry<Route.Catalog> {
+                        CatalogScreen(
+                            state = catalogState,
+                            languageCode = languageCode,
+                            onIntent = viewModel::onIntent,
+                            listState = catalogListState,
+                        )
+                    }
 
-                        entry<Route.Today> {
-                            ForjaTodayScreen(
-                                listState = todayListState,
-                                onStartWorkout = {
-                                    isSessionStarted = true
-                                    backStack.removeAll { it == Route.Workout }
-                                    backStack.add(Route.Workout)
-                                },
-                            )
-                        }
+                    entry<Route.Today> {
+                        ForjaTodayScreen(
+                            listState = todayListState,
+                            onStartWorkout = {
+                                isSessionStarted = true
+                                backStack.removeAll { it == Route.Workout }
+                                backStack.add(Route.Workout)
+                            },
+                        )
+                    }
 
-                        entry<Route.Plan> {
-                            ForjaPlanScreen(
-                                listState = planListState,
-                                isSessionStarted = isSessionStarted,
-                                onOpenWorkout = {
-                                    isSessionStarted = true
-                                    backStack.removeAll { it == Route.Workout }
-                                    backStack.add(Route.Workout)
-                                },
-                            )
-                        }
+                    entry<Route.Plan> {
+                        ForjaPlanScreen(
+                            listState = planListState,
+                            isSessionStarted = isSessionStarted,
+                            onOpenWorkout = {
+                                isSessionStarted = true
+                                backStack.removeAll { it == Route.Workout }
+                                backStack.add(Route.Workout)
+                            },
+                        )
+                    }
 
-                        entry<Route.Progress> {
-                            ForjaProgressScreen(
-                                listState = progressListState,
-                                catalogState = catalogState,
-                                languageCode = languageCode,
-                                onCatalogIntent = viewModel::onIntent,
-                                catalogListState = catalogListState,
-                            )
-                        }
+                    entry<Route.Progress> {
+                        ForjaProgressScreen(
+                            listState = progressListState,
+                            catalogState = catalogState,
+                            languageCode = languageCode,
+                            onCatalogIntent = viewModel::onIntent,
+                            catalogListState = catalogListState,
+                        )
+                    }
                 },
             )
 
@@ -393,10 +389,7 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
  * Pantalla "Hoy" del sistema Forja (seccion 15 del diseno).
  */
 @Composable
-private fun ForjaTodayScreen(
-    listState: LazyListState,
-    onStartWorkout: () -> Unit,
-) {
+private fun ForjaTodayScreen(listState: LazyListState, onStartWorkout: () -> Unit) {
     val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
@@ -678,11 +671,7 @@ private fun ForjaTodayScreen(
  * Programa Hipertrofia 6 semanas y lista de rutinas de la carpeta Gimnasio.
  */
 @Composable
-private fun ForjaPlanScreen(
-    listState: LazyListState,
-    isSessionStarted: Boolean,
-    onOpenWorkout: () -> Unit,
-) {
+private fun ForjaPlanScreen(listState: LazyListState, isSessionStarted: Boolean, onOpenWorkout: () -> Unit) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
 
@@ -1154,11 +1143,7 @@ private fun ForjaProgressScreen(
 }
 
 @Composable
-private fun ForjaSegmentedControl(
-    segments: List<String>,
-    selectedIndex: Int,
-    onSegmentSelected: (Int) -> Unit,
-) {
+private fun ForjaSegmentedControl(segments: List<String>, selectedIndex: Int, onSegmentSelected: (Int) -> Unit) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
 
@@ -1255,11 +1240,7 @@ private fun BodyCapsuleSilhouettes(
 }
 
 @Composable
-private fun CapsulePart(
-    width: Dp,
-    height: Dp,
-    color: Color,
-) {
+private fun CapsulePart(width: Dp, height: Dp, color: Color) {
     Box(
         modifier = Modifier
             .size(width = width, height = height)
@@ -1550,11 +1531,11 @@ private fun ForjaWorkoutScreen(
                 targetState = isResting,
                 transitionSpec = {
                     fadeIn(motion.effectFast()) togetherWith
-                            fadeOut(motion.effectFast()) using
-                            SizeTransform(
-                                clip = false,
-                                sizeAnimationSpec = { _, _ -> motion.spatial() },
-                            )
+                        fadeOut(motion.effectFast()) using
+                        SizeTransform(
+                            clip = false,
+                            sizeAnimationSpec = { _, _ -> motion.spatial() },
+                        )
                 },
                 label = "WorkoutBarMorph",
             ) { resting ->
@@ -1805,11 +1786,7 @@ private fun WorkoutSetRow(
 }
 
 @Composable
-private fun FoldedExerciseCard(
-    order: String,
-    name: String,
-    summary: String,
-) {
+private fun FoldedExerciseCard(order: String, name: String, summary: String) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
 

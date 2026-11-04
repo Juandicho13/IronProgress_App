@@ -1,7 +1,14 @@
 package com.olarte.ironprogress.ui.theme
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.archivo_bold
 import com.olarte.ironprogress.ui.resources.archivo_medium
@@ -10,13 +17,6 @@ import com.olarte.ironprogress.ui.resources.archivo_semibold
 import com.olarte.ironprogress.ui.resources.archivo_semiexpanded_bold
 import com.olarte.ironprogress.ui.resources.archivo_semiexpanded_semibold
 import org.jetbrains.compose.resources.Font
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 
 /**
  * Escala tipografica de Forja: grupo de texto y grupo de cifras con soporte tabular (tnum).

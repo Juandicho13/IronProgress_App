@@ -49,8 +49,7 @@ expect object IronProgressDatabaseConstructor : RoomDatabaseConstructor<IronProg
 fun RoomDatabase.Builder<IronProgressDatabase>.buildIronProgressDatabase(
     driver: SQLiteDriver = BundledSQLiteDriver(),
     queryDispatcher: CoroutineDispatcher = Dispatchers.IO,
-): IronProgressDatabase =
-    this
-        .setDriver(driver)
-        .setQueryCoroutineContext(queryDispatcher)
-        .build()
+): IronProgressDatabase = this
+    .setDriver(driver)
+    .setQueryCoroutineContext(queryDispatcher)
+    .build()

@@ -1,6 +1,5 @@
 package com.olarte.ironprogress.ui.catalog
 
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,17 +47,17 @@ import com.olarte.ironprogress.domain.catalog.Muscle
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.label
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.catalog_archive
 import com.olarte.ironprogress.ui.resources.catalog_clear_search
 import com.olarte.ironprogress.ui.resources.catalog_empty_body
 import com.olarte.ironprogress.ui.resources.catalog_empty_title
 import com.olarte.ironprogress.ui.resources.catalog_exercise_count
 import com.olarte.ironprogress.ui.resources.catalog_filter_all
+import com.olarte.ironprogress.ui.resources.catalog_filter_archived
+import com.olarte.ironprogress.ui.resources.catalog_restore
 import com.olarte.ironprogress.ui.resources.catalog_search_placeholder
 import com.olarte.ironprogress.ui.resources.catalog_secondary_prefix
 import com.olarte.ironprogress.ui.resources.catalog_title
-import com.olarte.ironprogress.ui.resources.catalog_archive
-import com.olarte.ironprogress.ui.resources.catalog_restore
-import com.olarte.ironprogress.ui.resources.catalog_filter_archived
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
@@ -256,11 +256,7 @@ fun CatalogScreen(
 }
 
 @Composable
-private fun ForjaFilterChip(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
+private fun ForjaFilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
     val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
@@ -304,11 +300,7 @@ private fun ForjaFilterChip(
 }
 
 @Composable
-private fun ForjaExerciseCard(
-    exercise: Exercise,
-    languageCode: String,
-    onArchiveToggle: () -> Unit,
-) {
+private fun ForjaExerciseCard(exercise: Exercise, languageCode: String, onArchiveToggle: () -> Unit) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val primaryLabels = exercise.primaryMuscles.map { it.label() }.joinToString(" · ")

@@ -117,31 +117,30 @@ data class ExerciseWithMusclesRelation(
 /**
  * Convierte la lectura de Room al modelo de dominio [Exercise].
  */
-internal fun ExerciseWithMusclesRelation.toDomain(): Exercise =
-    Exercise(
-        id = ExerciseId(exercise.id),
-        name = LocalizedText(
-            es = exercise.nameEs,
-            en = exercise.nameEn,
-        ),
-        trackingType = TrackingType.valueOf(exercise.trackingType),
-        equipment = Equipment.valueOf(exercise.equipment),
-        pattern = MovementPattern.valueOf(exercise.movementPattern),
-        muscles = muscles
-            .sortedBy { it.sortOrder }
-            .map { muscleEntity ->
-                ExerciseMuscle(
-                    muscle = requireNotNull(Muscle.fromId(muscleEntity.muscleId)) {
-                        "Músculo desconocido en la base: ${muscleEntity.muscleId}"
-                    },
-                    role = MuscleRole.valueOf(muscleEntity.role),
-                )
-            },
-        unilateral = exercise.isUnilateral,
-        preferredUnit = exercise.preferredUnit?.let { WeightUnit.valueOf(it) },
-        isCustom = exercise.isCustom,
-        isArchived = exercise.isArchived,
-    )
+internal fun ExerciseWithMusclesRelation.toDomain(): Exercise = Exercise(
+    id = ExerciseId(exercise.id),
+    name = LocalizedText(
+        es = exercise.nameEs,
+        en = exercise.nameEn,
+    ),
+    trackingType = TrackingType.valueOf(exercise.trackingType),
+    equipment = Equipment.valueOf(exercise.equipment),
+    pattern = MovementPattern.valueOf(exercise.movementPattern),
+    muscles = muscles
+        .sortedBy { it.sortOrder }
+        .map { muscleEntity ->
+            ExerciseMuscle(
+                muscle = requireNotNull(Muscle.fromId(muscleEntity.muscleId)) {
+                    "Músculo desconocido en la base: ${muscleEntity.muscleId}"
+                },
+                role = MuscleRole.valueOf(muscleEntity.role),
+            )
+        },
+    unilateral = exercise.isUnilateral,
+    preferredUnit = exercise.preferredUnit?.let { WeightUnit.valueOf(it) },
+    isCustom = exercise.isCustom,
+    isArchived = exercise.isArchived,
+)
 
 /**
  * Convierte un [Exercise] del dominio en su fila principal y sus filas de músculos.

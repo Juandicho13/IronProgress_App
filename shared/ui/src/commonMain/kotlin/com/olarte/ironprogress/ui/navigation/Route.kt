@@ -10,9 +10,13 @@ import kotlinx.serialization.modules.polymorphic
 @Serializable
 sealed interface Route : NavKey {
     @Serializable data object Today : Route
+
     @Serializable data object Plan : Route
+
     @Serializable data object Progress : Route
+
     @Serializable data object Catalog : Route
+
     @Serializable data object Workout : Route
 }
 

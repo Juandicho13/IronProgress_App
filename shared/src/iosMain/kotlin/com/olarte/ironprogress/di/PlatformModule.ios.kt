@@ -10,9 +10,8 @@ import org.koin.dsl.module
  * Módulo de Koin de iOS: abre la base en la carpeta Documents de la app.
  */
 @Composable
-actual fun rememberPlatformModule(): Module =
-    remember {
-        module {
-            single { createIronProgressDatabase() }
-        }
+actual fun rememberPlatformModule(): Module = remember {
+    module {
+        single { createIronProgressDatabase() }
     }
+}

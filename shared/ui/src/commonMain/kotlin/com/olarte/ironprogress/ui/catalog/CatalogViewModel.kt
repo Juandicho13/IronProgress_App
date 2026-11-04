@@ -14,11 +14,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** ViewModel MVI del catalogo de ejercicios. */
-class CatalogViewModel(
-    searchExercises: SearchExercises,
-    private val setExerciseArchived: SetExerciseArchived,
-    languageCode: String,
-) : ViewModel() {
+class CatalogViewModel(searchExercises: SearchExercises, private val setExerciseArchived: SetExerciseArchived, languageCode: String) :
+    ViewModel() {
 
     private val query = MutableStateFlow(ExerciseQuery())
 

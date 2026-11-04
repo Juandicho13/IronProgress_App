@@ -47,11 +47,7 @@ interface CatalogDao {
      * ejercicio base que la persona archivó sigue archivado aunque suba la version.
      */
     @Transaction
-    suspend fun replaceSeedCatalog(
-        exercises: List<ExerciseEntity>,
-        muscles: List<ExerciseMuscleEntity>,
-        version: Int,
-    ) {
+    suspend fun replaceSeedCatalog(exercises: List<ExerciseEntity>, muscles: List<ExerciseMuscleEntity>, version: Int) {
         if (exercises.isNotEmpty()) {
             val archivedIds = findArchivedIds(exercises.map { it.id }).toSet()
             upsertExercises(
