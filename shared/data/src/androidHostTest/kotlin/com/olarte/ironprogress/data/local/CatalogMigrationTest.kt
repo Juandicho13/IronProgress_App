@@ -4,7 +4,10 @@ import androidx.room3.Room
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
+import com.olarte.ironprogress.data.catalog.RoomExerciseRepository
+import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.catalog.Muscle
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -16,12 +19,13 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
  * Protege a quien ya tiene la app instalada: una base creada con un esquema exportado debe abrir
- * con el código actual sin perder datos. Hoy solo existe la versión 1. Cuando llegue la 2,
- * agrega MIGRATION_1_2 al builder y una prueba igual que parta del esquema 1.
+ * con el código actual sin perder datos. La 1 a 2 la genera Room (AutoMigration); cuando llegue
+ * la 3, agrega una prueba igual que parta del esquema 2.
  */
 class CatalogMigrationTest {
 
@@ -49,12 +53,27 @@ class CatalogMigrationTest {
                         "'WEIGHT_REPS', 'BARBELL', 'VERTICAL_PUSH', 1, 'LB', 1, 0)",
                 )
                 connection.execSQL(
+                    "INSERT INTO exercises (id, name_es, name_en, tracking_type, equipment, " +
+                        "movement_pattern, is_unilateral, preferred_unit, is_custom, is_archived) " +
+                        "VALUES ('barbell-bench-press', 'Press banca con barra', 'Barbell Bench Press', " +
+                        "'WEIGHT_REPS', 'BARBELL', 'HORIZONTAL_PUSH', 0, NULL, 0, 1)",
+                )
+                connection.execSQL(
+                    "INSERT INTO exercise_muscles (exercise_id, muscle_id, role, sort_order) " +
+                        "VALUES ('barbell-bench-press', 'chest', 'PRIMARY', 0)",
+                )
+                connection.execSQL(
                     "INSERT INTO exercise_muscles (exercise_id, muscle_id, role, sort_order) " +
                         "VALUES ('mi-press-landmine', 'shoulders', 'PRIMARY', 0)",
                 )
             }
 
-            // Room compara el identityHash guardado con el del código: si no cuadran, falla aquí.
+            val backup = backupBeforeMigration(file.absolutePath)
+            assertEquals(file.absolutePath + ".v1.bak", backup)
+            assertTrue(File(backup).length() > 0)
+
+            // Room migra a la versión actual y compara el esquema con el del código: si no
+            // cuadran, falla aquí.
             val database = Room.databaseBuilder<IronProgressDatabase>(
                 name = file.absolutePath,
                 factory = { IronProgressDatabaseConstructor.initialize() },
@@ -68,12 +87,32 @@ class CatalogMigrationTest {
                 assertEquals("Press landmine", exercise.name.es)
                 assertEquals(Muscle.SHOULDERS, exercise.muscles.single().muscle)
                 assertTrue(exercise.isCustom)
+                // Las columnas nuevas llegan con su valor por defecto.
+                assertEquals(Discipline.STRENGTH, exercise.discipline)
+                assertEquals(emptyList(), exercise.aliases)
+
+                // La base de Juan con ejercicios archivados sobrevive, también al re-sembrar.
+                val catalog = RoomExerciseRepository(database.catalogDao()).observeExercises().first()
+                assertTrue(catalog.single { it.id.value == "barbell-bench-press" }.isArchived)
+                assertTrue(catalog.any { it.id.value == "mi-press-landmine" })
+
+                // Las tablas nuevas existen y aceptan filas.
+                database.routineDao().upsertFolder(FolderEntity("f1", "Fuerza", 0, createdAt = 1, updatedAt = 1))
+                assertEquals(listOf("Fuerza"), database.routineDao().observeFolders().first().map { it.name })
             } finally {
                 database.close()
             }
+            // Ya en la versión actual no se vuelve a copiar.
+            assertNull(backupBeforeMigration(file.absolutePath))
         } finally {
-            listOf("", "-wal", "-shm", "-journal").forEach { File(file.path + it).delete() }
+            listOf("", "-wal", "-shm", "-journal", ".v1.bak").forEach { File(file.path + it).delete() }
         }
+    }
+
+    @Test
+    fun noBackupForANewInstall() {
+        val file = File.createTempFile("ironprogress-new", ".db").apply { delete() }
+        assertNull(backupBeforeMigration(file.absolutePath))
     }
 
     private fun readSchema(version: Int): JsonObject {

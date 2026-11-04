@@ -1,5 +1,6 @@
 package com.olarte.ironprogress.data.catalog
 
+import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.catalog.Equipment
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
@@ -746,5 +747,6 @@ internal object SeedCatalog {
         muscles = primary.map { ExerciseMuscle(it, MuscleRole.PRIMARY) } +
             secondary.map { ExerciseMuscle(it, MuscleRole.SECONDARY) },
         unilateral = unilateral,
+        discipline = if (pattern == MovementPattern.CARDIO) Discipline.CARDIO else Discipline.STRENGTH,
     )
 }

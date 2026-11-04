@@ -5,6 +5,8 @@ import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.routine.BlockFormat
 import com.olarte.ironprogress.domain.routine.RoutineId
 import com.olarte.ironprogress.domain.routine.SetType
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 import kotlin.time.Instant
 
@@ -55,16 +57,30 @@ data class SessionBlock(
     val result: BlockResult? = null,
 )
 
-/** Resultado de un bloque según su formato. */
+/**
+ * Resultado de un bloque según su formato. Se guarda como JSON en `workout_blocks.result`: los
+ * nombres de [SerialName] son estables y no se cambian.
+ */
+@Serializable
 sealed interface BlockResult {
+    @Serializable
+    @SerialName("time")
     data class Time(val seconds: Int) : BlockResult
 
+    @Serializable
+    @SerialName("rounds_reps")
     data class RoundsAndReps(val rounds: Int, val reps: Int) : BlockResult
 
+    @Serializable
+    @SerialName("rounds")
     data class Rounds(val rounds: Int) : BlockResult
 
+    @Serializable
+    @SerialName("reps_per_round")
     data class RepsPerRound(val reps: List<Int>) : BlockResult
 
+    @Serializable
+    @SerialName("completed")
     data class Completed(val feeling: Int? = null) : BlockResult
 }
 

@@ -37,6 +37,11 @@ data class Exercise(
     val preferredUnit: WeightUnit? = null,
     val isCustom: Boolean = false,
     val isArchived: Boolean = false,
+    val discipline: Discipline = Discipline.STRENGTH,
+    /** null mientras el catálogo no lo marque (F1-06). */
+    val level: ExerciseLevel? = null,
+    /** Otros nombres con los que se busca, como el sánscrito en yoga. */
+    val aliases: List<String> = emptyList(),
 ) {
     init {
         require(pattern == MovementPattern.CARDIO || muscles.any { it.role == MuscleRole.PRIMARY }) {
@@ -56,3 +61,6 @@ data class Exercise(
     /** Cuánto suma una serie de este ejercicio a [muscle]: 1, 0,5 o 0 si no lo trabaja. */
     fun setWeightFor(muscle: Muscle): Double = muscles.firstOrNull { it.muscle == muscle }?.role?.setWeight ?: 0.0
 }
+
+/** Nivel de un ejercicio en el catálogo. */
+enum class ExerciseLevel { BEGINNER, INTERMEDIATE, ADVANCED }

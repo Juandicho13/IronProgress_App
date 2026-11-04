@@ -7,9 +7,11 @@ import androidx.room3.ForeignKey
 import androidx.room3.Index
 import androidx.room3.PrimaryKey
 import androidx.room3.Relation
+import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.catalog.Equipment
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.catalog.ExerciseLevel
 import com.olarte.ironprogress.domain.catalog.ExerciseMuscle
 import com.olarte.ironprogress.domain.catalog.LocalizedText
 import com.olarte.ironprogress.domain.catalog.MovementPattern
@@ -51,6 +53,13 @@ data class ExerciseEntity(
     val isCustom: Boolean,
     @ColumnInfo(name = "is_archived")
     val isArchived: Boolean,
+    @ColumnInfo(name = "discipline", defaultValue = "STRENGTH")
+    val discipline: String = "STRENGTH",
+    @ColumnInfo(name = "level")
+    val level: String? = null,
+    /** Lista de textos en JSON. */
+    @ColumnInfo(name = "aliases", defaultValue = "[]")
+    val aliases: String = "[]",
 )
 
 /**
@@ -82,6 +91,9 @@ data class ExerciseMuscleEntity(
     val role: String,
     @ColumnInfo(name = "sort_order")
     val sortOrder: Int,
+    /** Porcentaje del trabajo de este músculo (los de un ejercicio suman 100); null hasta F1-06. */
+    @ColumnInfo(name = "work_share")
+    val workShare: Int? = null,
 )
 
 /**
@@ -140,6 +152,9 @@ internal fun ExerciseWithMusclesRelation.toDomain(): Exercise = Exercise(
     preferredUnit = exercise.preferredUnit?.let { WeightUnit.valueOf(it) },
     isCustom = exercise.isCustom,
     isArchived = exercise.isArchived,
+    discipline = Discipline.valueOf(exercise.discipline),
+    level = exercise.level?.let { ExerciseLevel.valueOf(it) },
+    aliases = RoomJson.decodeFromString(exercise.aliases),
 )
 
 /**
@@ -157,6 +172,9 @@ internal fun Exercise.toEntities(): Pair<ExerciseEntity, List<ExerciseMuscleEnti
         preferredUnit = preferredUnit?.name,
         isCustom = isCustom,
         isArchived = isArchived,
+        discipline = discipline.name,
+        level = level?.name,
+        aliases = RoomJson.encodeToString(aliases),
     )
     val muscleEntities = muscles.mapIndexed { index, item ->
         ExerciseMuscleEntity(

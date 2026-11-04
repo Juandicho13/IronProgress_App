@@ -7,11 +7,13 @@ import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
 
 /**
- * Abre la base de IronProgress en la carpeta Documents de la app.
+ * Abre la base de IronProgress en la carpeta Documents de la app, con una copia antes de
+ * migrar si la versión instalada es vieja.
  * Llámala una sola vez (con Koin será un single) y comparte la instancia.
  */
 fun createIronProgressDatabase(): IronProgressDatabase {
     val databasePath = documentsDirectory() + "/" + IronProgressDatabase.DATABASE_NAME
+    backupBeforeMigration(databasePath)
     return Room.databaseBuilder<IronProgressDatabase>(
         name = databasePath,
         factory = { IronProgressDatabaseConstructor.initialize() },

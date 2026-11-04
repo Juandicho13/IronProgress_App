@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 // mismo driver empaquetado en Android e iOS, y KSP genera el código de la base por plataforma.
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room3)
@@ -31,6 +32,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(libs.kotlinx.serialization.json)
             implementation(project(":shared:domain"))
             implementation(libs.kotlinx.coroutines.core)
             // api: IronProgressDatabase y CatalogDao son tipos de Room que también verán :shared y la app.
@@ -45,8 +47,6 @@ kotlin {
             // Las pruebas de host corren en la JVM del computador: necesitan el SQLite nativo
             // de Linux, macOS o Windows, no el de los teléfonos.
             runtimeOnly(libs.androidx.sqlite.bundled.jvm)
-            // Para leer los esquemas exportados en la prueba de migración.
-            implementation(libs.kotlinx.serialization.json)
         }
     }
 }
