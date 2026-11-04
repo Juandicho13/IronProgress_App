@@ -75,4 +75,13 @@ interface SessionDao {
 
     @Query("SELECT created_at FROM workout_sets WHERE id = :setId LIMIT 1")
     suspend fun setCreatedAt(setId: String): Long?
+
+    @Query("SELECT created_at FROM workout_blocks WHERE id = :blockId LIMIT 1")
+    suspend fun blockCreatedAt(blockId: String): Long?
+
+    @Query("SELECT created_at FROM session_exercises WHERE id = :exerciseId LIMIT 1")
+    suspend fun exerciseCreatedAt(exerciseId: String): Long?
+
+    @Query("SELECT created_at FROM workout_sessions WHERE id = :sessionId LIMIT 1")
+    suspend fun sessionCreatedAt(sessionId: String): Long?
 }
