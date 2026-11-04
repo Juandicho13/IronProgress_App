@@ -1,5 +1,14 @@
 package com.olarte.ironprogress.ui
 
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
+import com.olarte.ironprogress.ui.navigation.Route
+import com.olarte.ironprogress.ui.navigation.navConfiguration
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import androidx.compose.ui.text.intl.Locale
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.nav_plan
@@ -50,7 +59,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -72,10 +80,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.olarte.ironprogress.domain.catalog.ExerciseRepository
-import com.olarte.ironprogress.domain.catalog.SearchExercises
-import com.olarte.ironprogress.domain.catalog.SetExerciseArchived
 import com.olarte.ironprogress.ui.catalog.CatalogScreen
 import com.olarte.ironprogress.ui.catalog.CatalogViewModel
 import com.olarte.ironprogress.ui.components.ActiveSessionBannerState
@@ -89,46 +93,28 @@ import com.olarte.ironprogress.ui.theme.ForjaTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/**
- * Destinos tipados de la pila de navegacion principal de IronProgress.
- */
-enum class ForjaNavDestination {
-    TODAY,
-    PLAN,
-    PROGRESS,
-    SEARCH,
-    WORKOUT,
-}
-
 @Composable
-fun IronProgressApp(
-    exerciseRepository: ExerciseRepository,
-) {
+fun IronProgressApp() {
     // Idioma del sistema; LocalizedText.resolve da español a "es" y a "es-CO", e inglés a cualquier otro.
     val languageCode = Locale.current.language
 
-    val viewModel = viewModel(key = "catalog-$languageCode") {
-        CatalogViewModel(
-            searchExercises = SearchExercises(exerciseRepository),
-            setExerciseArchived = SetExerciseArchived(exerciseRepository),
-            languageCode = languageCode,
-        )
+    // Lo usan Buscar y Progreso, por eso vive a nivel de la app y no en una entrada de la pila.
+    val viewModel = koinViewModel<CatalogViewModel>(key = "catalog-$languageCode") {
+        parametersOf(languageCode)
     }
     val catalogState by viewModel.state.collectAsStateWithLifecycle()
 
-    // Pila de navegacion estilo Navigation 3 (mantiene la pestana base y superpone Search o Workout)
-    val backStack = remember { mutableStateListOf(ForjaNavDestination.TODAY) }
-    val currentDestination = backStack.lastOrNull() ?: ForjaNavDestination.TODAY
+    // Pila de Navigation 3: la raíz es una pestaña y encima pueden ir Catálogo o Entreno.
+    // Sobrevive a girar el teléfono y al cierre del sistema (se guarda con navConfiguration).
+    val backStack = rememberNavBackStack(navConfiguration, Route.Today)
+    val currentDestination = backStack.lastOrNull() ?: Route.Today
 
     val selectedTab = remember(backStack.toList()) {
-        backStack.lastOrNull {
-            it == ForjaNavDestination.TODAY ||
-                    it == ForjaNavDestination.PLAN ||
-                    it == ForjaNavDestination.PROGRESS
-        }?.toForjaTab() ?: ForjaTab.TODAY
+        (backStack.lastOrNull { it == Route.Today || it == Route.Plan || it == Route.Progress } as? Route)
+            ?.toForjaTab() ?: ForjaTab.TODAY
     }
-    val isSearchActive = currentDestination == ForjaNavDestination.SEARCH
-    val isWorkoutScreenOpen = currentDestination == ForjaNavDestination.WORKOUT
+    val isSearchActive = currentDestination == Route.Catalog
+    val isWorkoutScreenOpen = currentDestination == Route.Workout
 
     var isIslandMinimized by rememberSaveable { mutableStateOf(false) }
 
@@ -218,94 +204,102 @@ fun IronProgressApp(
                 .background(ForjaTheme.colors.background)
                 .nestedScroll(scrollConnection),
         ) {
-            when (currentDestination) {
-                ForjaNavDestination.WORKOUT -> {
-                    ForjaWorkoutScreen(
-                        currentSetNumber = currentSetNumber,
-                        recentlyCompletedSetNumber = recentlyCompletedSetNumber,
-                        isResting = isResting,
-                        restSecondsRemaining = restSecondsRemaining,
-                        showUndoNotice = showUndoNotice,
-                        onMinimizeToIsland = {
-                            backStack.removeAll { it == ForjaNavDestination.WORKOUT }
-                            if (backStack.isEmpty()) {
-                                backStack.add(ForjaNavDestination.TODAY)
-                            }
-                        },
-                        onCompleteSet = {
-                            if (currentSetNumber <= 4) {
-                                haptics.setCompleted()
-                                recentlyCompletedSetNumber = currentSetNumber
-                                currentSetNumber += 1
-                                isResting = true
-                                restSecondsRemaining = 85
-                                showUndoNotice = true
-                            }
-                        },
-                        onUndoSet = {
-                            if (currentSetNumber > 2) {
-                                currentSetNumber -= 1
-                            }
-                            recentlyCompletedSetNumber = -1
-                            isResting = false
-                            showUndoNotice = false
-                        },
-                        onAdjustRest = { delta ->
-                            haptics.segmentTick()
-                            restSecondsRemaining = (restSecondsRemaining + delta).coerceAtLeast(0)
-                            if (restSecondsRemaining == 0) {
-                                isResting = false
-                            }
-                        },
-                        onSkipRest = {
-                            isResting = false
-                            showUndoNotice = false
-                        },
-                    )
-                }
+            NavDisplay(
+                backStack = backStack,
+                onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
+                entryProvider = entryProvider {
+                        entry<Route.Workout> {
+                            ForjaWorkoutScreen(
+                                currentSetNumber = currentSetNumber,
+                                recentlyCompletedSetNumber = recentlyCompletedSetNumber,
+                                isResting = isResting,
+                                restSecondsRemaining = restSecondsRemaining,
+                                showUndoNotice = showUndoNotice,
+                                onMinimizeToIsland = {
+                                    backStack.removeAll { it == Route.Workout }
+                                    if (backStack.isEmpty()) {
+                                        backStack.add(Route.Today)
+                                    }
+                                },
+                                onCompleteSet = {
+                                    if (currentSetNumber <= 4) {
+                                        haptics.setCompleted()
+                                        recentlyCompletedSetNumber = currentSetNumber
+                                        currentSetNumber += 1
+                                        isResting = true
+                                        restSecondsRemaining = 85
+                                        showUndoNotice = true
+                                    }
+                                },
+                                onUndoSet = {
+                                    if (currentSetNumber > 2) {
+                                        currentSetNumber -= 1
+                                    }
+                                    recentlyCompletedSetNumber = -1
+                                    isResting = false
+                                    showUndoNotice = false
+                                },
+                                onAdjustRest = { delta ->
+                                    haptics.segmentTick()
+                                    restSecondsRemaining = (restSecondsRemaining + delta).coerceAtLeast(0)
+                                    if (restSecondsRemaining == 0) {
+                                        isResting = false
+                                    }
+                                },
+                                onSkipRest = {
+                                    isResting = false
+                                    showUndoNotice = false
+                                },
+                            )
+                        }
 
-                ForjaNavDestination.SEARCH -> {
-                    CatalogScreen(
-                        state = catalogState,
-                        languageCode = languageCode,
-                        onIntent = viewModel::onIntent,
-                        listState = catalogListState,
-                    )
-                }
+                        entry<Route.Catalog> {
+                            CatalogScreen(
+                                state = catalogState,
+                                languageCode = languageCode,
+                                onIntent = viewModel::onIntent,
+                                listState = catalogListState,
+                            )
+                        }
 
-                ForjaNavDestination.TODAY -> {
-                    ForjaTodayScreen(
-                        listState = todayListState,
-                        onStartWorkout = {
-                            isSessionStarted = true
-                            backStack.removeAll { it == ForjaNavDestination.WORKOUT }
-                            backStack.add(ForjaNavDestination.WORKOUT)
-                        },
-                    )
-                }
+                        entry<Route.Today> {
+                            ForjaTodayScreen(
+                                listState = todayListState,
+                                onStartWorkout = {
+                                    isSessionStarted = true
+                                    backStack.removeAll { it == Route.Workout }
+                                    backStack.add(Route.Workout)
+                                },
+                            )
+                        }
 
-                ForjaNavDestination.PLAN -> {
-                    ForjaPlanScreen(
-                        listState = planListState,
-                        isSessionStarted = isSessionStarted,
-                        onOpenWorkout = {
-                            isSessionStarted = true
-                            backStack.removeAll { it == ForjaNavDestination.WORKOUT }
-                            backStack.add(ForjaNavDestination.WORKOUT)
-                        },
-                    )
-                }
+                        entry<Route.Plan> {
+                            ForjaPlanScreen(
+                                listState = planListState,
+                                isSessionStarted = isSessionStarted,
+                                onOpenWorkout = {
+                                    isSessionStarted = true
+                                    backStack.removeAll { it == Route.Workout }
+                                    backStack.add(Route.Workout)
+                                },
+                            )
+                        }
 
-                ForjaNavDestination.PROGRESS -> {
-                    ForjaProgressScreen(
-                        listState = progressListState,
-                        catalogState = catalogState,
-                        languageCode = languageCode,
-                        onCatalogIntent = viewModel::onIntent,
-                        catalogListState = catalogListState,
-                    )
-                }
-            }
+                        entry<Route.Progress> {
+                            ForjaProgressScreen(
+                                listState = progressListState,
+                                catalogState = catalogState,
+                                languageCode = languageCode,
+                                onCatalogIntent = viewModel::onIntent,
+                                catalogListState = catalogListState,
+                            )
+                        }
+                },
+            )
 
             if (!isWorkoutScreenOpen) {
                 val activeBanner = if (isSessionStarted) {
@@ -336,8 +330,8 @@ fun IronProgressApp(
                     searchContentDescription = stringResource(Res.string.nav_search_exercises),
                     activeSession = activeBanner,
                     onOpenActiveSession = {
-                        backStack.removeAll { it == ForjaNavDestination.WORKOUT }
-                        backStack.add(ForjaNavDestination.WORKOUT)
+                        backStack.removeAll { it == Route.Workout }
+                        backStack.add(Route.Workout)
                     },
                     onSkipRest = { isResting = false },
                     onTabSelected = { tab ->
@@ -357,13 +351,13 @@ fun IronProgressApp(
                     onSearchClicked = {
                         isIslandMinimized = false
                         if (isSearchActive) {
-                            backStack.removeAll { it == ForjaNavDestination.SEARCH }
+                            backStack.removeAll { it == Route.Catalog }
                             if (backStack.isEmpty()) {
-                                backStack.add(ForjaNavDestination.TODAY)
+                                backStack.add(Route.Today)
                             }
                         } else {
-                            backStack.removeAll { it == ForjaNavDestination.SEARCH }
-                            backStack.add(ForjaNavDestination.SEARCH)
+                            backStack.removeAll { it == Route.Catalog }
+                            backStack.add(Route.Catalog)
                         }
                     },
                     modifier = Modifier.align(Alignment.BottomCenter),
@@ -373,17 +367,17 @@ fun IronProgressApp(
     }
 }
 
-private fun ForjaTab.toNavDestination(): ForjaNavDestination = when (this) {
-    ForjaTab.TODAY -> ForjaNavDestination.TODAY
-    ForjaTab.PLAN -> ForjaNavDestination.PLAN
-    ForjaTab.PROGRESS -> ForjaNavDestination.PROGRESS
+private fun ForjaTab.toNavDestination(): Route = when (this) {
+    ForjaTab.TODAY -> Route.Today
+    ForjaTab.PLAN -> Route.Plan
+    ForjaTab.PROGRESS -> Route.Progress
 }
 
-private fun ForjaNavDestination.toForjaTab(): ForjaTab = when (this) {
-    ForjaNavDestination.TODAY -> ForjaTab.TODAY
-    ForjaNavDestination.PLAN -> ForjaTab.PLAN
-    ForjaNavDestination.PROGRESS -> ForjaTab.PROGRESS
-    ForjaNavDestination.SEARCH, ForjaNavDestination.WORKOUT -> ForjaTab.TODAY
+private fun Route.toForjaTab(): ForjaTab = when (this) {
+    Route.Today -> ForjaTab.TODAY
+    Route.Plan -> ForjaTab.PLAN
+    Route.Progress -> ForjaTab.PROGRESS
+    Route.Catalog, Route.Workout -> ForjaTab.TODAY
 }
 
 /**
