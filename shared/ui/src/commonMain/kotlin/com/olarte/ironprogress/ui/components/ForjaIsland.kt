@@ -46,7 +46,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
-import com.olarte.ironprogress.ui.theme.ForjaMotion
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
 
@@ -85,6 +84,7 @@ fun ForjaIsland(
     onSearchClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
 
     Box(
@@ -121,8 +121,8 @@ fun ForjaIsland(
             // Accesorio de sesion: aparece 8 dp encima de la isla cuando hay un entreno en curso
             AnimatedVisibility(
                 visible = activeSession != null,
-                enter = fadeIn(ForjaMotion.effectFast()) + slideInVertically(ForjaMotion.spatial()) { it / 2 },
-                exit = fadeOut(ForjaMotion.effectFast()) + slideOutVertically(ForjaMotion.spatial()) { it / 2 },
+                enter = fadeIn(motion.effectFast()) + slideInVertically(motion.spatial()) { it / 2 },
+                exit = fadeOut(motion.effectFast()) + slideOutVertically(motion.spatial()) { it / 2 },
             ) {
                 if (activeSession != null) {
                     ForjaSessionAccessory(
@@ -142,11 +142,11 @@ fun ForjaIsland(
                 AnimatedContent(
                     targetState = isMinimized,
                     transitionSpec = {
-                        fadeIn(animationSpec = ForjaMotion.effectFast()) togetherWith
-                                fadeOut(animationSpec = ForjaMotion.effectFast()) using
+                        fadeIn(animationSpec = motion.effectFast()) togetherWith
+                                fadeOut(animationSpec = motion.effectFast()) using
                                 SizeTransform(
                                     clip = false,
-                                    sizeAnimationSpec = { _, _ -> ForjaMotion.spatial() },
+                                    sizeAnimationSpec = { _, _ -> motion.spatial() },
                                 )
                     },
                     modifier = Modifier.weight(1f, fill = !isMinimized),
@@ -208,7 +208,7 @@ fun ForjaIsland(
                 val searchPressed by searchInteraction.collectIsPressedAsState()
                 val searchScale by animateFloatAsState(
                     targetValue = if (searchPressed) 0.95f else 1f,
-                    animationSpec = ForjaMotion.spatialFast(),
+                    animationSpec = motion.spatialFast(),
                     label = "SearchButtonScale",
                 )
 
@@ -341,13 +341,14 @@ private fun IslandTabItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.97f else 1f,
-        animationSpec = ForjaMotion.spatialFast(),
+        animationSpec = motion.spatialFast(),
         label = "TabScale",
     )
 

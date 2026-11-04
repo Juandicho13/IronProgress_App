@@ -55,7 +55,6 @@ import com.olarte.ironprogress.ui.resources.catalog_search_placeholder
 import com.olarte.ironprogress.ui.resources.catalog_secondary_prefix
 import com.olarte.ironprogress.ui.resources.catalog_title
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
-import com.olarte.ironprogress.ui.theme.ForjaMotion
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
@@ -248,13 +247,14 @@ private fun ForjaFilterChip(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
+    val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = ForjaMotion.spatialFast(),
+        animationSpec = motion.spatialFast(),
         label = "ChipScale",
     )
 

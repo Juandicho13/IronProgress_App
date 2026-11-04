@@ -72,7 +72,6 @@ import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaIsland
 import com.olarte.ironprogress.ui.components.ForjaTab
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
-import com.olarte.ironprogress.ui.theme.ForjaMotion
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
@@ -163,7 +162,7 @@ fun IronProgressApp(
         }
     }
 
-    ForjaTheme(darkTheme = true) {
+    ForjaTheme {
         val haptics = ForjaTheme.haptics
 
         // Cuenta regresiva en vivo con hapticos en los ultimos 3 s y al terminar
@@ -382,6 +381,7 @@ private fun ForjaTodayScreen(
     listState: LazyListState,
     onStartWorkout: () -> Unit,
 ) {
+    val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
 
@@ -613,7 +613,7 @@ private fun ForjaTodayScreen(
                 val isButtonPressed by buttonInteraction.collectIsPressedAsState()
                 val buttonScale by animateFloatAsState(
                     targetValue = if (isButtonPressed) 0.97f else 1f,
-                    animationSpec = ForjaMotion.spatialFast(),
+                    animationSpec = motion.spatialFast(),
                     label = "PrimaryButtonScale",
                 )
 
@@ -1270,6 +1270,7 @@ private fun ForjaWorkoutScreen(
     onAdjustRest: (Int) -> Unit,
     onSkipRest: () -> Unit,
 ) {
+    val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
 
@@ -1532,11 +1533,11 @@ private fun ForjaWorkoutScreen(
             AnimatedContent(
                 targetState = isResting,
                 transitionSpec = {
-                    fadeIn(ForjaMotion.effectFast()) togetherWith
-                            fadeOut(ForjaMotion.effectFast()) using
+                    fadeIn(motion.effectFast()) togetherWith
+                            fadeOut(motion.effectFast()) using
                             SizeTransform(
                                 clip = false,
-                                sizeAnimationSpec = { _, _ -> ForjaMotion.spatial() },
+                                sizeAnimationSpec = { _, _ -> motion.spatial() },
                             )
                 },
                 label = "WorkoutBarMorph",

@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 
 /**
  * Esquema de resortes del sistema de diseno Forja con soporte para Reducir movimiento.
- * Convive con el objeto [ForjaMotion] definido en ForjaMetrics.kt.
+ * Se lee con ForjaTheme.motion; ForjaTheme lo crea con el ajuste de Reducir movimiento del sistema.
  */
 @Immutable
 data class ForjaMotionScheme(

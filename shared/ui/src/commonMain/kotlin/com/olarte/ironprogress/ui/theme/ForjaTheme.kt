@@ -1,5 +1,6 @@
 package com.olarte.ironprogress.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -38,12 +39,13 @@ object ForjaTheme {
 
 /**
  * Tema principal de IronProgress Forja.
- * Usa el tema oscuro por defecto ("Entrenar calienta. Descansar templa.")[cite: 1].
+ * "Entrenar calienta. Descansar templa." Sigue el tema claro u oscuro y el ajuste de
+ * Reducir movimiento del sistema, salvo que quien la llama pase otro valor.
  */
 @Composable
 fun ForjaTheme(
-    darkTheme: Boolean = true,
-    reduceMotion: Boolean = false,
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    reduceMotion: Boolean = rememberReduceMotionEnabled(),
     hapticsEnabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {

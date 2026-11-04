@@ -1,7 +1,5 @@
 package com.olarte.ironprogress.ui.theme
 
-import androidx.compose.animation.core.SpringSpec
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Immutable
@@ -53,15 +51,4 @@ object ForjaMeasures {
     val inlineIconSize: Dp = 20.dp
     val restRingSize: Dp = 40.dp
     val glassBlur: Dp = 24.dp
-}
-
-/** Resortes de Material 3 Expressive (dampingRatio / stiffness). */
-object ForjaMotion {
-    fun <T> spatialFast(): SpringSpec<T> = spring(dampingRatio = 0.6f, stiffness = 800f)
-    fun <T> spatial(): SpringSpec<T> = spring(dampingRatio = 0.8f, stiffness = 380f)
-    fun <T> spatialSlow(): SpringSpec<T> = spring(dampingRatio = 0.8f, stiffness = 200f)
-
-    fun <T> effectFast(): SpringSpec<T> = spring(dampingRatio = 1.0f, stiffness = 3800f)
-    fun <T> effect(): SpringSpec<T> = spring(dampingRatio = 1.0f, stiffness = 1600f)
-    fun <T> effectSlow(): SpringSpec<T> = spring(dampingRatio = 1.0f, stiffness = 800f)
 }
