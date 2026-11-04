@@ -373,6 +373,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-04 | F1-01 · rutinas, sesiones y bloques | `feat/f0-claude` | 14 pruebas nuevas; domain en 44. Valores de 10.2 tal como están propuestos, falta que Juan los confirme |
 | 2026-11-04 | F1-03 · Room versión 2 | `feat/f0-claude` | 15 tablas nuevas, migración 1 a 2 con AutoMigration, `2.json` y copia antes de migrar; la prueba desde `1.json` con un ejercicio archivado pasa; 66 pruebas |
 | 2026-11-04 | F1-04 · repositorios de rutinas y sesiones | `feat/f0-claude` | Conectados en Koin; 71 pruebas en verde (domain 44, data 27) |
+| 2026-11-04 | F1-05 · formato local | `feat/f0-claude` | `FormatsTest` 4 en verde en la JVM; 75 pruebas; falta verlo en los dos teléfonos y el framework iOS (CI de macOS) |
 
 ---
 

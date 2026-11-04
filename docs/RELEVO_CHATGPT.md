@@ -27,7 +27,7 @@ Lo dejó Claude al terminar su turno de trabajo. Si eres ChatGPT (o Codex), empi
 | Rama | Commit | Qué tiene |
 | --- | --- | --- |
 | `main` | `2533c86` | Lo de `d3c2101` más `ForjaShapes.kt` (F0-00) y los documentos del 25 de octubre. Fusionado desde el PR #1 |
-| `feat/f0-claude` | 23 commits sobre `main` (con este) | Los tickets de hoy (tabla de abajo) y los documentos al día. Está en el Mac de Juan; él la sube y abre el PR |
+| `feat/f0-claude` | 25 commits sobre `main` (con este) | Los tickets de hoy (tabla de abajo) y los documentos al día. Está en el Mac de Juan; él la sube y abre el PR |
 
 Commits de `feat/f0-claude`, en orden:
 
@@ -51,15 +51,17 @@ Commits de `feat/f0-claude`, en orden:
 | F1-01 | `feat(domain): rutinas, sesiones y bloques (F1-01)` | 14 pruebas nuevas (`RoutineModelsTest` 8 y `SessionUseCasesTest` 6). Paquetes `domain/routine`, `domain/session` y `domain/common` (`IdGenerator` con UUID v7). `Discipline` en `domain/catalog` |
 | F1-03 | `feat(data): Room versión 2 con rutinas, sesiones, bloques y tablas de la Etapa 1 (F1-03)` | 15 tablas nuevas, `2.json` exportado, migración 1 a 2 generada por Room y `backupBeforeMigration` (RNF-03). `WorkoutDatabaseTest` 6 y `CatalogMigrationTest` sube a 3 |
 | F1-04 | `feat(data): repositorios Room de rutinas y sesiones conectados en Koin (F1-04)` | `RoomRoutineRepository` y `RoomSessionRepository` en `shared/data/.../data/workout/`, con `RoomWorkoutRepositoryTest` 5 |
+| F1-05 | `feat(ui): formato local de pesos, volumen, duraciones, distancias y fechas (F1-05)` | `Formats` y `rememberFormats()` en `shared/ui/.../ui/format/`, con `FormatsTest` 4. `shared:ui` ahora tiene `withHostTest` y el CI corre sus pruebas |
 
 Claude compiló y probó todo en Linux con `./gradlew :androidApp:assembleDebug :wearApp:assembleDebug :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest`. **No pudo compilar iOS** (hace falta macOS). Lo primero que hay que mirar es el job `ios-framework` del CI cuando Juan suba la rama, por dos cambios:
 
 - `shared/ui/src/iosMain/.../theme/ReduceMotion.ios.kt` llama a `platform.UIKit.UIAccessibilityIsReduceMotionEnabled()`. Si el nombre no resuelve en Kotlin/Native, se busca con el autocompletado de Android Studio sobre `platform.UIKit` y se corrige ese archivo.
 - F0-09 y F0-10 agregan Navigation 3, kotlinx-serialization y Haze en `shared:ui`, que también se enlazan en iOS. Si el job de iOS falla en esas dependencias, pega el error completo antes de cambiar versiones.
+- F1-05 agrega `PlatformFormatter.ios.kt` (`NSNumberFormatter`, `NSDateFormatter` y `NSLocale(localeIdentifier = ...)`). Si `maximumFractionDigits = n.toULong()` no compila, el tipo en Kotlin/Native es otro: se corrige con el autocompletado.
 - F1-03 agrega `DatabaseFiles.ios.kt` (`NSFileManager.fileExistsAtPath`, `copyItemAtPath` y `removeItemAtPath`) y el plugin de kotlinx-serialization en `shared:domain` y `shared:data`. Si el job de iOS falla ahí, ese archivo es el primer sospechoso.
 - F0-05 cambió de versión a material3. El accessor `compose.material3` resolvía la 1.9.0 aunque el catálogo dice 1.12.0-alpha03; ahora entra la 1.12.0-alpha03. En Android compila. Si algo se ve distinto en el iPhone o el framework no enlaza, ese es el sospechoso.
 
-Pruebas: 71 (domain 44: `ExerciseTest` 6, `ExerciseSearchTest` 10, `TimerEngineTest` 14, `RoutineModelsTest` 8 y `SessionUseCasesTest` 6; data 27: `SeedCatalogTest` 5, `RoomExerciseRepositoryTest` 2, `CatalogDatabaseTest` 6, `CatalogMigrationTest` 3, `WorkoutDatabaseTest` 6 y `RoomWorkoutRepositoryTest` 5).
+Pruebas: 75 (ui 4: `FormatsTest`; domain 44: `ExerciseTest` 6, `ExerciseSearchTest` 10, `TimerEngineTest` 14, `RoutineModelsTest` 8 y `SessionUseCasesTest` 6; data 27: `SeedCatalogTest` 5, `RoomExerciseRepositoryTest` 2, `CatalogDatabaseTest` 6, `CatalogMigrationTest` 3, `WorkoutDatabaseTest` 6 y `RoomWorkoutRepositoryTest` 5).
 
 Lo que falta confirmar en los equipos de Juan (no lo ha visto nadie):
 
@@ -68,6 +70,7 @@ Lo que falta confirmar en los equipos de Juan (no lo ha visto nadie):
 - Con el teléfono en tema claro la app sale en claro, y con Reducir movimiento las animaciones son cortas (F0-06).
 - Archivar un ejercicio, cerrar la app del todo y abrirla: sigue archivado. El chip "Archivados" lo muestra y "Restaurar" lo devuelve (F0-12).
 - Con el teléfono en inglés la isla dice Today, Plan y Progress; en español, Hoy, Plan y Progreso (F0-04).
+- Los pesos salen como 62,5 kg en español y 62.5 kg en inglés en los dos teléfonos (F1-05). Todavía no hay pantalla que use `Formats`: se ve cuando llegue F1-10.
 - Navegar entre pestañas y Buscar, girar el teléfono y mandar la app a segundo plano no pierde la pestaña ni la búsqueda; el gesto de atrás cierra Buscar o el entreno y, en la raíz, sale de la app (F0-09).
 - El contenido se ve desenfocado detrás de la isla y el scroll sigue fluido en el iPhone a 120 Hz (F0-10).
 
@@ -93,11 +96,11 @@ F1 tiene 27 tickets (13.4 del manual). Ya están F1-01 a F1-04 (la base de datos
 - **`created_by` en `routines`:** `USER` o `PRO:<id del profesional>`.
 - **Columnas JSON:** `workout_blocks.result` ya tiene su modelo (`BlockResult`, `@Serializable`, con prueba de ida y vuelta). Las de `interval_templates`, `breathing_patterns`, `exercise_demands`, `screening_answers` y `guardian_consents` se guardan como texto y su modelo llega con el ticket que las usa (F1-06, F1-18, F1-20 y F1-26).
 - **Borrados lógicos:** todo lo del usuario se marca con `deleted_at` y las lecturas no lo traen.
+- **Miles en español de España:** las reglas de Unicode no ponen punto de miles en números de 4 cifras en es-ES (8420, no 8.420), y iOS las sigue. En es-CO sí sale 8.420. Si Juan quiere 8.420 siempre, se decide aparte.
 - **Migración 1 a 2:** la genera Room (`AutoMigration`) porque solo agrega tablas y columnas con valor por defecto. Antes de abrir, `backupBeforeMigration` copia la base a `ironprogress.db.v1.bak`.
 
 Siguen, en este orden:
 
-- **F1-05**, formato local de números, pesos, duraciones y fechas con `expect`/`actual` en `shared:ui`.
 - **F1-06**, exigencia, porcentajes, fuente y escaleras de los 77 ejercicios. Necesita que Juan revise los valores: no se inventan.
 - **F1-07**, ejercicios propios, y **F1-08**, el editor de rutinas. Ya tienen los casos de uso y repositorios que necesitan.
 - Las pantallas que usan el motor de tiempo (F1-11, F1-18, F1-19 y F1-20) leen `stateAt(ahora)` en cada cuadro y la voz sale de `eventsBetween`. Nunca un `delay(1000)` para contar.
