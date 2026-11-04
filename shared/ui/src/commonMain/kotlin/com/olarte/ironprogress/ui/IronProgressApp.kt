@@ -1,5 +1,15 @@
 package com.olarte.ironprogress.ui
 
+import androidx.compose.ui.text.intl.Locale
+import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.nav_plan
+import com.olarte.ironprogress.ui.resources.nav_progress
+import com.olarte.ironprogress.ui.resources.nav_search_exercises
+import com.olarte.ironprogress.ui.resources.nav_today
+import com.olarte.ironprogress.ui.resources.session_ready
+import com.olarte.ironprogress.ui.resources.session_rest
+import com.olarte.ironprogress.ui.resources.session_set_of
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
@@ -94,7 +104,8 @@ enum class ForjaNavDestination {
 fun IronProgressApp(
     exerciseRepository: ExerciseRepository,
 ) {
-    val languageCode = "es"
+    // Idioma del sistema; LocalizedText.resolve da español a "es" y a "es-CO", e inglés a cualquier otro.
+    val languageCode = Locale.current.language
 
     val viewModel = viewModel(key = "catalog-$languageCode") {
         CatalogViewModel(
@@ -302,11 +313,11 @@ fun IronProgressApp(
                     val seconds = (restSecondsRemaining % 60).toString().padStart(2, '0')
                     ActiveSessionBannerState(
                         exerciseName = "Press banca",
-                        setSummary = "Serie ${currentSetNumber.coerceAtMost(4)} de 4",
+                        setSummary = stringResource(Res.string.session_set_of, currentSetNumber.coerceAtMost(4), 4),
                         statusText = if (isResting) {
-                            "Descanso $minutes:$seconds · ♥ 128"
+                            stringResource(Res.string.session_rest, "$minutes:$seconds", 128)
                         } else {
-                            "Listo · 62,5 kg × 10"
+                            stringResource(Res.string.session_ready, "62,5 kg × 10")
                         },
                         progress = if (isResting) restSecondsRemaining / 90f else 1f,
                         isReady = !isResting,
@@ -319,10 +330,10 @@ fun IronProgressApp(
                     selectedTab = selectedTab,
                     isSearchActive = isSearchActive,
                     isMinimized = isIslandMinimized,
-                    todayLabel = "Hoy",
-                    planLabel = "Plan",
-                    progressLabel = "Progreso",
-                    searchContentDescription = "Buscar ejercicios",
+                    todayLabel = stringResource(Res.string.nav_today),
+                    planLabel = stringResource(Res.string.nav_plan),
+                    progressLabel = stringResource(Res.string.nav_progress),
+                    searchContentDescription = stringResource(Res.string.nav_search_exercises),
                     activeSession = activeBanner,
                     onOpenActiveSession = {
                         backStack.removeAll { it == ForjaNavDestination.WORKOUT }
