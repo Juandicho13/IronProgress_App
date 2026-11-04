@@ -2,6 +2,9 @@
     <string name="catalog_title">Exercises</string>
     <string name="catalog_search_placeholder">Search in Spanish or English</string>
     <string name="catalog_clear_search">Clear</string>
+    <string name="catalog_filter_archived">Archived</string>
+    <string name="catalog_archive">Archive</string>
+    <string name="catalog_restore">Restore</string>
     <string name="catalog_filter_all">All</string>
     <string name="catalog_empty_title">No matching exercises</string>
     <string name="catalog_empty_body">Try another word or clear the active filter.</string>

@@ -6,6 +6,7 @@ import com.olarte.ironprogress.domain.catalog.ExerciseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class SeedExerciseRepository(
     initialExercises: List<Exercise> = SeedCatalog.exercises,
@@ -17,4 +18,8 @@ class SeedExerciseRepository(
 
     override suspend fun findExercise(id: ExerciseId): Exercise? =
         exercises.value.firstOrNull { it.id == id }
+
+    override suspend fun setArchived(id: ExerciseId, archived: Boolean) {
+        exercises.update { list -> list.map { if (it.id == id) it.copy(isArchived = archived) else it } }
+    }
 }

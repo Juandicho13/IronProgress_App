@@ -1,5 +1,6 @@
 package com.olarte.ironprogress.ui.catalog
 
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,6 +55,9 @@ import com.olarte.ironprogress.ui.resources.catalog_filter_all
 import com.olarte.ironprogress.ui.resources.catalog_search_placeholder
 import com.olarte.ironprogress.ui.resources.catalog_secondary_prefix
 import com.olarte.ironprogress.ui.resources.catalog_title
+import com.olarte.ironprogress.ui.resources.catalog_archive
+import com.olarte.ironprogress.ui.resources.catalog_restore
+import com.olarte.ironprogress.ui.resources.catalog_filter_archived
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
@@ -171,6 +175,13 @@ fun CatalogScreen(
                     onClick = { onIntent(CatalogIntent.MuscleSelected(null)) },
                 )
             }
+            item(key = "archived") {
+                ForjaFilterChip(
+                    label = stringResource(Res.string.catalog_filter_archived),
+                    selected = state.showArchived,
+                    onClick = { onIntent(CatalogIntent.ArchivedFilterToggled) },
+                )
+            }
             items(
                 items = Muscle.entries,
                 key = { it.id },
@@ -234,6 +245,9 @@ fun CatalogScreen(
                     ForjaExerciseCard(
                         exercise = exercise,
                         languageCode = languageCode,
+                        onArchiveToggle = {
+                            onIntent(CatalogIntent.ArchiveToggled(exercise.id, !exercise.isArchived))
+                        },
                     )
                 }
             }
@@ -293,6 +307,7 @@ private fun ForjaFilterChip(
 private fun ForjaExerciseCard(
     exercise: Exercise,
     languageCode: String,
+    onArchiveToggle: () -> Unit,
 ) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
@@ -308,11 +323,27 @@ private fun ForjaExerciseCard(
             .padding(ForjaSpacing.esp4),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1),
     ) {
-        Text(
-            text = exercise.name.resolve(languageCode),
-            style = typography.title3,
-            color = colors.text1,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = exercise.name.resolve(languageCode),
+                style = typography.title3,
+                color = colors.text1,
+                modifier = Modifier.weight(1f),
+            )
+            // Archivar oculta el ejercicio de la búsqueda; Restaurar lo devuelve (F0-12).
+            Text(
+                text = stringResource(
+                    if (exercise.isArchived) Res.string.catalog_restore else Res.string.catalog_archive,
+                ),
+                style = typography.label,
+                color = if (exercise.isArchived) colors.emberInk else colors.text2,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable(onClick = onArchiveToggle)
+                    .defaultMinSize(minHeight = ForjaMeasures.minTouch)
+                    .padding(horizontal = ForjaSpacing.esp2, vertical = ForjaSpacing.esp3),
+            )
+        }
         Text(
             text = if (primaryLabels.isNotEmpty()) {
                 "$primaryLabels · $equipmentLabel"

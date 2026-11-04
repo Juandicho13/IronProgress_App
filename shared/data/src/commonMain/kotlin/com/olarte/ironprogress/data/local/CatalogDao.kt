@@ -29,6 +29,12 @@ interface CatalogDao {
     @Upsert
     suspend fun upsertExercise(exercise: ExerciseEntity)
 
+    @Query("UPDATE exercises SET is_archived = :archived WHERE id = :exerciseId")
+    suspend fun setArchived(exerciseId: String, archived: Boolean)
+
+    @Query("SELECT id FROM exercises WHERE is_archived = 1 AND id IN (:exerciseIds)")
+    suspend fun findArchivedIds(exerciseIds: List<String>): List<String>
+
     @Query("DELETE FROM exercise_muscles WHERE exercise_id IN (:exerciseIds)")
     suspend fun deleteMusclesForExercises(exerciseIds: List<String>)
 
@@ -37,7 +43,8 @@ interface CatalogDao {
 
     /**
      * Siembra o actualiza el catalogo base en una sola transaccion atomica sin tocar
-     * los ejercicios personalizados creados por el usuario.
+     * los ejercicios personalizados creados por el usuario. Conserva el archivado: un
+     * ejercicio base que la persona archivó sigue archivado aunque suba la version.
      */
     @Transaction
     suspend fun replaceSeedCatalog(
@@ -46,7 +53,10 @@ interface CatalogDao {
         version: Int,
     ) {
         if (exercises.isNotEmpty()) {
-            upsertExercises(exercises)
+            val archivedIds = findArchivedIds(exercises.map { it.id }).toSet()
+            upsertExercises(
+                exercises.map { if (it.id in archivedIds) it.copy(isArchived = true) else it },
+            )
             deleteMusclesForExercises(exercises.map { it.id })
             upsertExerciseMuscles(muscles)
         }

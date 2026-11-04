@@ -111,4 +111,34 @@ class CatalogDatabaseTest {
         assertEquals(SeedCatalog.exercises.size + 1, exercises.size)
         assertEquals(custom, repository.findExercise(custom.id))
     }
+
+    @Test
+    fun archivingPersistsInTheDatabase() = runTest {
+        val repository = RoomExerciseRepository(dao)
+        val bench = SeedCatalog.exercises.first()
+
+        repository.setArchived(bench.id, archived = true)
+
+        assertTrue(assertNotNull(RoomExerciseRepository(dao).findExercise(bench.id)).isArchived)
+    }
+
+    @Test
+    fun reseedingWithAHigherVersionKeepsWhatThePersonArchived() = runTest {
+        val repository = RoomExerciseRepository(dao)
+        val bench = SeedCatalog.exercises.first()
+        repository.setArchived(bench.id, archived = true)
+
+        val pairs = SeedCatalog.exercises.map { it.toEntities() }
+        dao.replaceSeedCatalog(
+            exercises = pairs.map { it.first },
+            muscles = pairs.flatMap { it.second },
+            version = SeedCatalog.VERSION + 1,
+        )
+
+        assertTrue(assertNotNull(dao.findExerciseWithMuscles(bench.id.value)).exercise.isArchived)
+        assertEquals(
+            SeedCatalog.VERSION + 1,
+            dao.getMetadataInt(CatalogMetadataEntity.KEY_SEED_CATALOG_VERSION),
+        )
+    }
 }

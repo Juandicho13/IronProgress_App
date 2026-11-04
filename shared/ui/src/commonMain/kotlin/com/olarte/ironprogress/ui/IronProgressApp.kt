@@ -65,6 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
 import com.olarte.ironprogress.domain.catalog.SearchExercises
+import com.olarte.ironprogress.domain.catalog.SetExerciseArchived
 import com.olarte.ironprogress.ui.catalog.CatalogScreen
 import com.olarte.ironprogress.ui.catalog.CatalogViewModel
 import com.olarte.ironprogress.ui.components.ActiveSessionBannerState
@@ -98,6 +99,7 @@ fun IronProgressApp(
     val viewModel = viewModel(key = "catalog-$languageCode") {
         CatalogViewModel(
             searchExercises = SearchExercises(exerciseRepository),
+            setExerciseArchived = SetExerciseArchived(exerciseRepository),
             languageCode = languageCode,
         )
     }

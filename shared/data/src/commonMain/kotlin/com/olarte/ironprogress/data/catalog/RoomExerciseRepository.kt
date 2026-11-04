@@ -36,6 +36,11 @@ class RoomExerciseRepository(
         return catalogDao.findExerciseWithMuscles(id.value)?.toDomain()
     }
 
+    override suspend fun setArchived(id: ExerciseId, archived: Boolean) {
+        ensureSeeded()
+        catalogDao.setArchived(id.value, archived)
+    }
+
     /**
      * Siembra o actualiza el catalogo semilla si la version almacenada es menor a [SeedCatalog.VERSION].
      */
