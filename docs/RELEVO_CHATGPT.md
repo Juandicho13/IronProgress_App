@@ -27,7 +27,7 @@ Lo dejó Claude al terminar su turno de trabajo. Si eres ChatGPT (o Codex), empi
 | Rama | Commit | Qué tiene |
 | --- | --- | --- |
 | `main` | `2533c86` | Lo de `d3c2101` más `ForjaShapes.kt` (F0-00) y los documentos del 25 de octubre. Fusionado desde el PR #1 |
-| `feat/f0-claude` | 19 commits sobre `main` (con este) | Los tickets de hoy (tabla de abajo) y los documentos al día. Está en el Mac de Juan; él la sube y abre el PR |
+| `feat/f0-claude` | 23 commits sobre `main` (con este) | Los tickets de hoy (tabla de abajo) y los documentos al día. Está en el Mac de Juan; él la sube y abre el PR |
 
 Commits de `feat/f0-claude`, en orden:
 
@@ -48,14 +48,18 @@ Commits de `feat/f0-claude`, en orden:
 | F0-13 | `style: formatear con ktlintFormat (F0-13)` y `ci: ktlint en todos los módulos y framework iOS de iPhone en el CI (F0-13)` | `ktlintCheck` en verde, 31 pruebas en verde. Estilo `intellij_idea` en `.editorconfig`. Kover se declaró en el catálogo pero se conecta en F2-11 |
 | F0-14 | `docs: README real, relevo y bitácora con el cierre de F0 (F0-14)` | README del proyecto, este archivo y la bitácora al día |
 | F1-02 | `feat(domain): motor de tiempo para descanso, intervalos, flujo y respiración (F1-02)` | 14 pruebas nuevas, exactas al milisegundo. Código en `shared/domain/.../domain/time/`: `TimerPlan.kt` (tipos), `TimerEngine.kt` (`stateAt`, `segmentEndsAtMs`, `eventsBetween`) y `TimerPlans.kt` (un constructor por formato) |
+| F1-01 | `feat(domain): rutinas, sesiones y bloques (F1-01)` | 14 pruebas nuevas (`RoutineModelsTest` 8 y `SessionUseCasesTest` 6). Paquetes `domain/routine`, `domain/session` y `domain/common` (`IdGenerator` con UUID v7). `Discipline` en `domain/catalog` |
+| F1-03 | `feat(data): Room versión 2 con rutinas, sesiones, bloques y tablas de la Etapa 1 (F1-03)` | 15 tablas nuevas, `2.json` exportado, migración 1 a 2 generada por Room y `backupBeforeMigration` (RNF-03). `WorkoutDatabaseTest` 6 y `CatalogMigrationTest` sube a 3 |
+| F1-04 | `feat(data): repositorios Room de rutinas y sesiones conectados en Koin (F1-04)` | `RoomRoutineRepository` y `RoomSessionRepository` en `shared/data/.../data/workout/`, con `RoomWorkoutRepositoryTest` 5 |
 
 Claude compiló y probó todo en Linux con `./gradlew :androidApp:assembleDebug :wearApp:assembleDebug :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest`. **No pudo compilar iOS** (hace falta macOS). Lo primero que hay que mirar es el job `ios-framework` del CI cuando Juan suba la rama, por dos cambios:
 
 - `shared/ui/src/iosMain/.../theme/ReduceMotion.ios.kt` llama a `platform.UIKit.UIAccessibilityIsReduceMotionEnabled()`. Si el nombre no resuelve en Kotlin/Native, se busca con el autocompletado de Android Studio sobre `platform.UIKit` y se corrige ese archivo.
 - F0-09 y F0-10 agregan Navigation 3, kotlinx-serialization y Haze en `shared:ui`, que también se enlazan en iOS. Si el job de iOS falla en esas dependencias, pega el error completo antes de cambiar versiones.
+- F1-03 agrega `DatabaseFiles.ios.kt` (`NSFileManager.fileExistsAtPath`, `copyItemAtPath` y `removeItemAtPath`) y el plugin de kotlinx-serialization en `shared:domain` y `shared:data`. Si el job de iOS falla ahí, ese archivo es el primer sospechoso.
 - F0-05 cambió de versión a material3. El accessor `compose.material3` resolvía la 1.9.0 aunque el catálogo dice 1.12.0-alpha03; ahora entra la 1.12.0-alpha03. En Android compila. Si algo se ve distinto en el iPhone o el framework no enlaza, ese es el sospechoso.
 
-Pruebas: 45 (domain: `ExerciseTest` 6, `ExerciseSearchTest` 10 y `TimerEngineTest` 14; data: `SeedCatalogTest` 5, `RoomExerciseRepositoryTest` 2, `CatalogDatabaseTest` 6 y `CatalogMigrationTest` 2).
+Pruebas: 71 (domain 44: `ExerciseTest` 6, `ExerciseSearchTest` 10, `TimerEngineTest` 14, `RoutineModelsTest` 8 y `SessionUseCasesTest` 6; data 27: `SeedCatalogTest` 5, `RoomExerciseRepositoryTest` 2, `CatalogDatabaseTest` 6, `CatalogMigrationTest` 3, `WorkoutDatabaseTest` 6 y `RoomWorkoutRepositoryTest` 5).
 
 Lo que falta confirmar en los equipos de Juan (no lo ha visto nadie):
 
@@ -81,11 +85,22 @@ git push -u origin feat/f0-claude
 3. Probar en los equipos la lista de la sección 3. Con eso se cierra F0-01 y F0 queda lista.
 4. Fusionar el PR en `main`.
 
-Después sigue F1 con 27 tickets (13.4 del manual):
+F1 tiene 27 tickets (13.4 del manual). Ya están F1-01 a F1-04 (la base de datos y el dominio de rutinas y sesiones). Lo que quedó decidido en el código y Juan tiene que mirar:
 
-- **F1-01**, modelos de dominio de rutinas, sesión y bloques. Antes de escribirlo hay que confirmar con Juan los valores propuestos de 10.2 (tipos de serie, estados de sesión, perfil de gimnasio por defecto) y los nombres de 10.5.
-- **F1-02**, el motor de tiempo, ya está hecho (sección 3). Las pantallas que lo usan (F1-11 descanso a pantalla completa, F1-18 intervalos, F1-19 funcional, F1-20 flujo y respiración) leen `stateAt(ahora)` en cada cuadro y la voz sale de `eventsBetween`. Nunca un `delay(1000)` para contar.
-- Después de F1-01 siguen F1-03 (Room versión 2 con la migración 1 a 2) y F1-04 (repositorios), en ese orden.
+- **Valores de 10.2:** se usaron tal como están propuestos (tipos de serie, estados de sesión y lado). Si Juan cambia alguno, es un cambio de enum antes de que haya datos reales: hoy no hay sesiones guardadas en ningún teléfono. El perfil de gimnasio por defecto (barra de 20 kg y discos) no entró todavía: lo usa la calculadora de discos.
+- **Rango por defecto al agregar un ejercicio:** 3 series de 8 a 12 con RIR 2 (`RoutineDetail.addExercise`). Es un valor de arranque, la persona lo cambia en el editor.
+- **`WorkoutSet` no tiene `block_id`:** el bloque sale de su `session_exercises.block_id`. Así no hay dos lugares que puedan contradecirse.
+- **`created_by` en `routines`:** `USER` o `PRO:<id del profesional>`.
+- **Columnas JSON:** `workout_blocks.result` ya tiene su modelo (`BlockResult`, `@Serializable`, con prueba de ida y vuelta). Las de `interval_templates`, `breathing_patterns`, `exercise_demands`, `screening_answers` y `guardian_consents` se guardan como texto y su modelo llega con el ticket que las usa (F1-06, F1-18, F1-20 y F1-26).
+- **Borrados lógicos:** todo lo del usuario se marca con `deleted_at` y las lecturas no lo traen.
+- **Migración 1 a 2:** la genera Room (`AutoMigration`) porque solo agrega tablas y columnas con valor por defecto. Antes de abrir, `backupBeforeMigration` copia la base a `ironprogress.db.v1.bak`.
+
+Siguen, en este orden:
+
+- **F1-05**, formato local de números, pesos, duraciones y fechas con `expect`/`actual` en `shared:ui`.
+- **F1-06**, exigencia, porcentajes, fuente y escaleras de los 77 ejercicios. Necesita que Juan revise los valores: no se inventan.
+- **F1-07**, ejercicios propios, y **F1-08**, el editor de rutinas. Ya tienen los casos de uso y repositorios que necesitan.
+- Las pantallas que usan el motor de tiempo (F1-11, F1-18, F1-19 y F1-20) leen `stateAt(ahora)` en cada cuadro y la voz sale de `eventsBetween`. Nunca un `delay(1000)` para contar.
 
 ## 5. Cómo se trabajó hoy, por si ayuda
 

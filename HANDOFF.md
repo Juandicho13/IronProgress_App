@@ -370,6 +370,9 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-04 | F0-13 · ktlint en el CI | `feat/f0-claude` | `ktlintCheck` y 31 pruebas en verde; Kover queda para F2-11 |
 | 2026-11-04 | F0-14 · README y cierre | `feat/f0-claude` | README real; F0 se cierra cuando Juan confirme F0-01 en los equipos |
 | 2026-11-04 | F1-02 · motor de tiempo | `feat/f0-claude` | 14 pruebas nuevas en verde; 45 en total |
+| 2026-11-04 | F1-01 · rutinas, sesiones y bloques | `feat/f0-claude` | 14 pruebas nuevas; domain en 44. Valores de 10.2 tal como están propuestos, falta que Juan los confirme |
+| 2026-11-04 | F1-03 · Room versión 2 | `feat/f0-claude` | 15 tablas nuevas, migración 1 a 2 con AutoMigration, `2.json` y copia antes de migrar; la prueba desde `1.json` con un ejercicio archivado pasa; 66 pruebas |
+| 2026-11-04 | F1-04 · repositorios de rutinas y sesiones | `feat/f0-claude` | Conectados en Koin; 71 pruebas en verde (domain 44, data 27) |
 
 ---
 
