@@ -126,7 +126,7 @@ fun CatalogScreen(
                 horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
             ) {
                 Icon(
-                    imageVector = ForjaIcons.Search,
+                    painter = ForjaIcons.Search,
                     contentDescription = null,
                     tint = if (isSearchFocused) colors.emberInk else colors.text2,
                     modifier = Modifier.size(ForjaMeasures.inlineIconSize),

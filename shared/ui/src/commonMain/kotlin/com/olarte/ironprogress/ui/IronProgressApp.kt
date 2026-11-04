@@ -533,7 +533,7 @@ private fun ForjaTodayScreen(
                         ) {
                             if (completed) {
                                 Icon(
-                                    imageVector = ForjaIcons.Check,
+                                    painter = ForjaIcons.Check,
                                     contentDescription = "Completado",
                                     tint = colors.onEmber,
                                     modifier = Modifier.size(18.dp),
@@ -609,7 +609,7 @@ private fun ForjaTodayScreen(
                             ) {
                                 if (isProgression) {
                                     Icon(
-                                        imageVector = ForjaIcons.NorthEast,
+                                        painter = ForjaIcons.NorthEast,
                                         contentDescription = "Progresión",
                                         tint = colors.emberInk,
                                         modifier = Modifier.size(16.dp),
@@ -655,7 +655,7 @@ private fun ForjaTodayScreen(
                         horizontalArrangement = Arrangement.Center,
                     ) {
                         Icon(
-                            imageVector = ForjaIcons.PlayFilled,
+                            painter = ForjaIcons.PlayFilled,
                             contentDescription = null,
                             tint = colors.onEmber,
                             modifier = Modifier.size(20.dp),
@@ -1394,7 +1394,7 @@ private fun ForjaWorkoutScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         Icon(
-                            imageVector = ForjaIcons.NorthEast,
+                            painter = ForjaIcons.NorthEast,
                             contentDescription = null,
                             tint = colors.emberInk,
                             modifier = Modifier.size(16.dp),
@@ -1667,7 +1667,7 @@ private fun ForjaWorkoutScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            imageVector = ForjaIcons.Check,
+                            painter = ForjaIcons.Check,
                             contentDescription = null,
                             tint = colors.onEmber,
                             modifier = Modifier.size(22.dp),
@@ -1795,7 +1795,7 @@ private fun WorkoutSetRow(
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = ForjaIcons.Check,
+                painter = ForjaIcons.Check,
                 contentDescription = "Completar serie",
                 tint = if (isCompleted) colors.onEmber else colors.text2,
                 modifier = Modifier.size(20.dp),

@@ -42,7 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
@@ -164,7 +164,7 @@ fun ForjaIsland(
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                imageVector = selectedTab.icon(filled = true),
+                                painter = selectedTab.icon(filled = true),
                                 contentDescription = null,
                                 tint = colors.emberInk,
                                 modifier = Modifier.size(ForjaMeasures.iconSize),
@@ -235,7 +235,7 @@ fun ForjaIsland(
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        imageVector = ForjaIcons.Search,
+                        painter = ForjaIcons.Search,
                         contentDescription = searchContentDescription,
                         tint = if (isSearchActive) colors.emberInk else colors.text1,
                         modifier = Modifier.size(ForjaMeasures.iconSize),
@@ -374,7 +374,7 @@ private fun IslandTabItem(
             verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp0_5),
         ) {
             Icon(
-                imageVector = tab.icon(filled = isSelected),
+                painter = tab.icon(filled = isSelected),
                 contentDescription = label,
                 tint = if (isSelected) colors.emberInk else colors.text2,
                 modifier = Modifier.size(ForjaMeasures.iconSize),
@@ -390,7 +390,8 @@ private fun IslandTabItem(
     }
 }
 
-private fun ForjaTab.icon(filled: Boolean): ImageVector = when (this) {
+@Composable
+private fun ForjaTab.icon(filled: Boolean): Painter = when (this) {
     ForjaTab.TODAY -> if (filled) ForjaIcons.FireFilled else ForjaIcons.FireOutline
     ForjaTab.PLAN -> if (filled) ForjaIcons.CalendarFilled else ForjaIcons.CalendarOutline
     ForjaTab.PROGRESS -> if (filled) ForjaIcons.MonitoringFilled else ForjaIcons.MonitoringOutline
