@@ -51,6 +51,26 @@ class WorkoutViewModel(
     private var undoJob: Job? = null
     private var highlightJob: Job? = null
     private var undoExpiresAt = 0L
+    private var lastRestFrameMs = 0L
+
+    fun refreshRest() {
+        val rest = state.value.rest ?: return
+        val now = clock.now().toEpochMilliseconds()
+        val events = rest.events(lastRestFrameMs, now)
+        lastRestFrameMs = now
+        val timer = rest.at(now)
+        if (timer.isFinished) {
+            mutableState.update { it.copy(rest = null, restExpanded = false, restNowMs = now) }
+            effectChannel.trySend(WorkoutEffect.RestFinished)
+        } else {
+            mutableState.update { it.copy(restNowMs = now) }
+            if (events.any { it is com.olarte.ironprogress.domain.time.TimerEvent.SecondsLeft && it.seconds in 1..3 } &&
+                now - rest.startedAtMs > 0
+            ) {
+                effectChannel.trySend(WorkoutEffect.RestTick)
+            }
+        }
+    }
 
     init {
         observe()
@@ -78,6 +98,8 @@ class WorkoutViewModel(
                             ?: detail?.exercises?.firstOrNull()?.id
                         it.copy(
                             loading = false,
+                            rest = it.rest.takeIf { sameSession },
+                            restExpanded = it.restExpanded && sameSession,
                             session = detail,
                             catalog = catalog,
                             previous = previous,
@@ -133,6 +155,19 @@ class WorkoutViewModel(
 
     fun onIntent(intent: WorkoutIntent) {
         when (intent) {
+            is WorkoutIntent.AdjustRest -> {
+                refreshRest()
+                val rest = state.value.rest ?: return
+                val now = clock.now().toEpochMilliseconds()
+                mutableState.update { it.copy(rest = rest.adjust(now, intent.seconds)) }
+                refreshRest()
+            }
+            WorkoutIntent.SkipRest -> mutableState.update { it.copy(rest = null, restExpanded = false) }
+            WorkoutIntent.ExpandRest -> {
+                refreshRest()
+                mutableState.update { it.copy(restExpanded = it.rest != null) }
+            }
+            WorkoutIntent.MinimizeRest -> mutableState.update { it.copy(restExpanded = false) }
             WorkoutIntent.StartFree -> {
                 if (state.value.pendingWrites > 0) return
                 enqueue {
@@ -187,6 +222,7 @@ class WorkoutViewModel(
                 undoJob?.cancel()
                 mutableState.update { it.copy(undoSetId = null) }
                 edit(id) { it.copy(completedAt = null) }
+                if (state.value.rest?.setId == id) mutableState.update { it.copy(rest = null, restExpanded = false) }
             }
             is WorkoutIntent.ChangeType -> edit(intent.id) { it.copy(setType = intent.type) }
             is WorkoutIntent.ChangeNote -> edit(intent.id) { it.copy(notes = intent.note) }
@@ -254,12 +290,24 @@ class WorkoutViewModel(
                 completing.remove(id)
                 return@enqueue
             }
-            completeSet(set)
+            val routine = detail.session.routineId?.let { routines.findRoutine(it) }
+            val planned = routine?.blocks?.sortedBy {
+                it.sortOrder
+            }?.flatMap { routine.exercisesOf(it.id) }?.getOrNull(detail.exercises.indexOf(exercise))
+            val restSeconds = planned?.takeIf { it.exerciseId == exercise.exerciseId }?.restSeconds
+                ?: routine?.routine?.restSeconds ?: com.olarte.ironprogress.domain.routine.Routine.DEFAULT_REST_SECONDS
+            val completed = completeSet(set)
             completing.remove(id)
             val next = detail.exercises.firstOrNull { item -> detail.setsOf(item.id).any { !it.isCompleted && it.id != id } }
+            val started = requireNotNull(completed.completedAt).toEpochMilliseconds()
+            lastRestFrameMs = started
+            val rest = if (restSeconds > 0) com.olarte.ironprogress.ui.rest.RestTimer(id, started, restSeconds) else null
             undoExpiresAt = clock.now().toEpochMilliseconds() + 5_000
             mutableState.update {
                 it.copy(
+                    rest = rest,
+                    restNowMs = started,
+                    restExpanded = rest != null,
                     keyboard = null,
                     invalidSetId = null,
                     undoSetId = id,

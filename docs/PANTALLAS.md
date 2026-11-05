@@ -212,6 +212,8 @@ Las mismas tres pantallas en claro, con los tokens de la columna clara de Forja:
 - **Fuera de la app:** al salir o apagar la pantalla, el mismo descanso sigue en la Live Activity (iPhone), la Live Update (Android) y los relojes, todos leyendo el mismo motor de tiempo (RF-VIV-08, RNF-17).
 - **Movimiento:** el anillo avanza con una transición de 400 ms; el cambio de hielo a brasa es un fundido de 300 ms; deslizar hacia abajo encoge la pantalla hasta la barra de descanso (1.4) siguiendo al dedo.
 
+**Alcance F1-11:** pantalla y barra usan el mismo motor por instantes y muestran únicamente datos disponibles. Sin sensor no se muestra pulso ni umbral; sin motor de progresión no se anuncian cambios de carga. El descanso en segundo plano se recalcula al volver; persistencia tras matar el proceso y avisos fuera de la app corresponden a F1-13 a F1-16. La aceptación visual y háptica en teléfonos sigue pendiente.
+
 ### 5.2 Intervalos a tu medida (`IntervalosCrear.dc.html`)
 
 - **Para qué:** armar intervalos con los tiempos que quieras, como "15 s a tope y 45 s de descanso".

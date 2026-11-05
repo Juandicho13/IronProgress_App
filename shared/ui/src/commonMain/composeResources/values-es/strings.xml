@@ -272,6 +272,15 @@
     <string name="workout_block_pending">El registro guiado de este bloque aún no está disponible.</string>
     <string name="workout_set_label">Serie %1$d · %2$s</string>
     <string name="workout_fields">Editar medidas</string>
+    <string name="rest_title">Descanso</string>
+    <string name="rest_skip">Saltar descanso</string>
+    <string name="rest_minimize">Volver a las series</string>
+    <string name="rest_expand">Ampliar descanso</string>
+    <string name="rest_less">-15 s</string>
+    <string name="rest_more">+15 s</string>
+    <string name="rest_total">de %1$s</string>
+    <string name="rest_next">Siguiente</string>
+    <string name="rest_swipe">Desliza hacia abajo para volver a tus series</string>
     <!-- Ficha de ejercicio (F1-06) -->
     <string name="detail_title">Ejercicio</string>
     <string name="detail_muscles">Músculos</string>

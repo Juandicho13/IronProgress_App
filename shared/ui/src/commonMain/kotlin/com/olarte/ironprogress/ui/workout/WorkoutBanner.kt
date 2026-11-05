@@ -5,6 +5,7 @@ import androidx.compose.ui.text.intl.Locale
 import com.olarte.ironprogress.ui.components.ActiveSessionBannerState
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.rest_title
 import com.olarte.ironprogress.ui.resources.session_set_of
 import com.olarte.ironprogress.ui.resources.workout_all_done
 import com.olarte.ironprogress.ui.resources.workout_empty
@@ -34,6 +35,8 @@ fun workoutBanner(state: WorkoutState): ActiveSessionBannerState? {
             ?: stringResource(Res.string.workout_free),
         setSummary = stringResource(Res.string.session_set_of, next?.sortOrder?.plus(1) ?: sets.size, sets.size),
         statusText = when {
+            state.rest != null -> stringResource(Res.string.rest_title) + " " +
+                com.olarte.ironprogress.ui.format.Formats.duration(state.rest.at(state.restNowMs).displaySecondsLeft ?: 0)
             state.failed -> stringResource(Res.string.workout_error)
             state.pendingWrites > 0 -> stringResource(Res.string.workout_saving)
             detail.exercises.isEmpty() -> stringResource(Res.string.workout_empty)
@@ -41,6 +44,6 @@ fun workoutBanner(state: WorkoutState): ActiveSessionBannerState? {
             else -> summary
         },
         progress = if (detail.sets.isEmpty()) 0f else detail.sets.count { it.isCompleted }.toFloat() / detail.sets.size,
-        isReady = true,
+        isReady = state.rest == null,
     )
 }

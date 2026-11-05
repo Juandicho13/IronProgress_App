@@ -32,6 +32,9 @@ data class WorkoutKeyboard(
 )
 
 data class WorkoutState(
+    val rest: com.olarte.ironprogress.ui.rest.RestTimer? = null,
+    val restNowMs: Long = 0,
+    val restExpanded: Boolean = false,
     val loading: Boolean = true,
     val session: SessionDetail? = null,
     val routineName: String? = null,
@@ -49,6 +52,10 @@ data class WorkoutState(
 )
 
 sealed interface WorkoutIntent {
+    data class AdjustRest(val seconds: Int) : WorkoutIntent
+    data object SkipRest : WorkoutIntent
+    data object ExpandRest : WorkoutIntent
+    data object MinimizeRest : WorkoutIntent
     data object StartFree : WorkoutIntent
     data object Retry : WorkoutIntent
     data class SelectExercise(val id: SessionExerciseId) : WorkoutIntent
@@ -71,6 +78,8 @@ sealed interface WorkoutIntent {
 }
 
 sealed interface WorkoutEffect {
+    data object RestTick : WorkoutEffect
+    data object RestFinished : WorkoutEffect
     data class OpenWorkout(val sessionId: String) : WorkoutEffect
     data object SetCompleted : WorkoutEffect
 }

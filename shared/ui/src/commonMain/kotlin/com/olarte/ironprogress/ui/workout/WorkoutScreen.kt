@@ -1,6 +1,11 @@
 package com.olarte.ironprogress.ui.workout
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -91,6 +96,8 @@ import com.olarte.ironprogress.ui.resources.workout_search
 import com.olarte.ironprogress.ui.resources.workout_set_label
 import com.olarte.ironprogress.ui.resources.workout_type
 import com.olarte.ironprogress.ui.resources.workout_undo
+import com.olarte.ironprogress.ui.rest.RestBar
+import com.olarte.ironprogress.ui.rest.RestScreen
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
@@ -240,7 +247,9 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
             if (block != null && block.format != BlockFormat.SETS) {
                 Text(stringResource(Res.string.workout_block_pending), color = colors.text2, style = typography.body2)
             }
-            if (detail?.sets?.isNotEmpty() == true && detail.sets.all { it.isCompleted }) {
+            if (state.rest != null) {
+                RestBar(state, onIntent)
+            } else if (detail?.sets?.isNotEmpty() == true && detail.sets.all { it.isCompleted }) {
                 Text(stringResource(Res.string.workout_all_done), color = colors.text1, style = typography.body)
             } else if (currentSet != null) {
                 WorkoutAction((block?.format ?: BlockFormat.SETS).actionLabel(), enabled && block?.format == BlockFormat.SETS) {
@@ -249,6 +258,11 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
             }
         }
     }
+    AnimatedVisibility(
+        visible = state.rest != null && state.restExpanded,
+        enter = slideInVertically(ForjaTheme.motion.spatial()) { it } + fadeIn(ForjaTheme.motion.effect()),
+        exit = slideOutVertically(ForjaTheme.motion.spatial()) { it } + fadeOut(ForjaTheme.motion.effect()),
+    ) { RestScreen(state, onIntent) }
     optionsId?.let { id ->
         detail?.sets?.firstOrNull { it.id == id }?.let { set ->
             SetOptions(set, onIntent) { optionsId = null }
