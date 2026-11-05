@@ -15,6 +15,12 @@ interface StageOneDao {
     @Upsert
     suspend fun upsertIntervalTemplate(template: IntervalTemplateEntity)
 
+    @Query("SELECT * FROM interval_templates WHERE id = :templateId AND deleted_at IS NULL LIMIT 1")
+    suspend fun findIntervalTemplate(templateId: String): IntervalTemplateEntity?
+
+    @Query("UPDATE interval_templates SET deleted_at = :now, updated_at = :now WHERE id = :templateId")
+    suspend fun markIntervalTemplateDeleted(templateId: String, now: Long)
+
     @Query("SELECT * FROM breathing_patterns WHERE deleted_at IS NULL ORDER BY name ASC")
     fun observeBreathingPatterns(): Flow<List<BreathingPatternEntity>>
 

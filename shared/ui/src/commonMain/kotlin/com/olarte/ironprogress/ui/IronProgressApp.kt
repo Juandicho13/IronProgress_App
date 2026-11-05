@@ -237,7 +237,34 @@ fun IronProgressApp() {
                     }
 
                     entry<Route.Plan> {
-                        com.olarte.ironprogress.ui.plan.PlanRoute { backStack.add(Route.RoutineEditor(it)) }
+                        com.olarte.ironprogress.ui.plan.PlanRoute(
+                            onEdit = { backStack.add(Route.RoutineEditor(it)) },
+                            intervals = {
+                                com.olarte.ironprogress.ui.interval.IntervalsSection(
+                                    onNew = { backStack.add(Route.IntervalEditor()) },
+                                    onEdit = { backStack.add(Route.IntervalEditor(it)) },
+                                    onRun = { backStack.add(Route.IntervalRun(it)) },
+                                )
+                            },
+                        )
+                    }
+                    entry<Route.IntervalEditor> { route ->
+                        com.olarte.ironprogress.ui.interval.IntervalEditorRoute(
+                            route.id,
+                            languageCode = languageCode,
+                            onClose = { backStack.removeLastOrNull() },
+                            onRun = { id ->
+                                backStack.removeLastOrNull()
+                                backStack.add(Route.IntervalRun(id))
+                            },
+                        )
+                    }
+                    entry<Route.IntervalRun> { route ->
+                        com.olarte.ironprogress.ui.interval.IntervalRunRoute(
+                            route.id,
+                            languageCode = languageCode,
+                            onClose = { backStack.removeLastOrNull() },
+                        )
                     }
                     entry<Route.RoutineEditor> { route ->
                         com.olarte.ironprogress.ui.plan.RoutineEditorRoute(
@@ -261,6 +288,8 @@ fun IronProgressApp() {
 
             val isFullScreen = currentDestination is Route.ExerciseEditor ||
                 currentDestination is Route.ExerciseDetail ||
+                currentDestination is Route.IntervalEditor ||
+                currentDestination is Route.IntervalRun ||
                 currentDestination is Route.RoutineEditor
             if (!isWorkoutScreenOpen && !isFullScreen) {
                 val activeBanner = workoutBanner(workoutState)
@@ -327,6 +356,8 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     is Route.RoutineEditor -> ForjaTab.PLAN
     is Route.ExerciseEditor -> ForjaTab.TODAY
     is Route.ExerciseDetail -> ForjaTab.TODAY
+    is Route.IntervalEditor -> ForjaTab.PLAN
+    is Route.IntervalRun -> ForjaTab.PLAN
     Route.Catalog -> ForjaTab.TODAY
     is Route.Workout -> ForjaTab.TODAY
 }

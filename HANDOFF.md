@@ -382,6 +382,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-05 | F1-13 · arranque sin pantalla | `feat/f1-claude`, sobre F1-09 | Koin y la base arrancan en `Application.onCreate` y en el `init` de la App de iOS; `IronProgressKoinTest` 2 en verde; 96 pruebas; falta abrir la app en los equipos y compilar iOS en el Mac |
 | 2026-11-05 | F1-06 · exigencia, porcentajes, escaleras y ficha | `feat/f1-claude` | Catálogo semilla versión 2 con los datos de los 77 y ficha de ejercicio (7.5); 114 pruebas. Valores en borrador: se cierra cuando Juan los revise |
 | 2026-11-05 | F1-17 · voz y audio | `feat/f1-voz` | Guion de la voz desde el motor (`voiceLinesBetween`, 6 pruebas), voz del sistema con la música atenuada en Android (TextToSpeech y foco de audio) e iPhone (AVSpeechSynthesizer con duckOthers); 124 pruebas. Falta compilar iOS en el Mac y oírla en los teléfonos |
+| 2026-11-05 | F1-18 · intervalos a tu medida | `feat/f1-voz` | Crear (5.2) y correr con voz (5.3), plantillas guardadas, reps por ronda en el descanso y resultado como sesión de HIIT; 132 pruebas. Falta probarlo en los teléfonos con música y pantalla bloqueada |
 
 ---
 

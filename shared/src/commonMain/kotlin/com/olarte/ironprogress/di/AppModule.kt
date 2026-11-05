@@ -46,6 +46,10 @@ val sharedAppModule: Module = module {
     single<RoutineRepository> { RoomRoutineRepository(get(), get()) }
     single<SessionRepository> { RoomSessionRepository(get(), get()) }
     single<HealthRepository> { UnavailableHealthRepository() }
+    single<com.olarte.ironprogress.domain.interval.IntervalTemplateRepository> {
+        com.olarte.ironprogress.data.workout.RoomIntervalTemplateRepository(get(), get())
+    }
+    factory { com.olarte.ironprogress.domain.interval.SaveIntervalResult(get(), get(), get()) }
 
     factory { SaveCustomExercise(get(), get()) }
     factory { SearchExercises(get()) }

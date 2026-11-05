@@ -6,8 +6,10 @@ import com.olarte.ironprogress.domain.time.TimerEvent
 import com.olarte.ironprogress.domain.time.TimerPlan
 import com.olarte.ironprogress.domain.time.eventsBetween
 import com.olarte.ironprogress.domain.time.stateAt
+import kotlinx.serialization.Serializable
 
-/** Lo que la persona eligió para la voz (PANTALLAS 5.2, sección Voz). */
+/** Lo que la persona eligió para la voz (PANTALLAS 5.2, sección Voz). Se guarda como JSON. */
+@Serializable
 data class VoiceSettings(
     val enabled: Boolean = true,
     /** "Cuenta atrás": los últimos 5 s de cada fase. */
