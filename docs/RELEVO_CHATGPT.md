@@ -192,3 +192,13 @@ Lo hizo Claude en paralelo con F1-10 (ChatGPT), en una rama aparte que sale del 
 - Ficha de ejercicio (PANTALLAS 7.5) en `ui/catalog/ExerciseDetailScreen.kt`, ruta `Route.ExerciseDetail`. Se abre tocando una tarjeta del catálogo. Quedan fuera por ahora la figura (llega con las figuras de F1-20), "Historial" (F1-23) y "Añadir a un entreno".
 - Verificado en Linux: 114 pruebas, los dos APK y ktlintCheck. Falta verla en los teléfonos.
 
+## 13. F1-17 en feat/f1-voz, 5 de noviembre de 2026
+
+Rama nueva que sale de `feat/f1-claude` (después del diseño de 5.8), para no cruzarse con F1-14, que Argon hace en `feat/f1-claude`.
+
+- `shared/domain/.../voice/VoiceScript.kt`: `VoiceSettings` (los tres interruptores de 5.2) y `TimerPlan.voiceLinesBetween`, que convierte los eventos del motor en las frases de PANTALLAS 5.3. En el descanso, a los 5 s dice lo que sigue y cuenta solo 3, 2, 1. Una consulta tardía (app dormida) solo dice la fase actual. 6 pruebas.
+- `shared/ui/.../voice/`: `VoiceSpeaker` con `rememberVoiceSpeaker()`; `AndroidVoiceSpeaker` (TextToSpeech, foco con `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK`, lo puede usar el servicio sin pantalla) y `AppleVoiceSpeaker` (AVSpeechSynthesizer, sesión Playback con `duckOthers` y desactivación con `NotifyOthersOnDeactivation`). `VoiceLine.text()` da la frase en el idioma del teléfono, la misma del subtítulo.
+- Todo con la voz del sistema: la voz grabada sigue pendiente (13.10).
+- **iOS no se compiló aquí.** Si `VoiceSpeaker.ios.kt` falla, lo primero son los imports de `platform.AVFAudio` (`setActive`) y `platform.Foundation` (`languageCode`): se corrigen con el autocompletado.
+- Todavía nadie la usa: la conecta F1-18 (intervalos).
+

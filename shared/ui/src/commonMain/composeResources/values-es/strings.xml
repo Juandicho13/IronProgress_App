@@ -306,4 +306,17 @@
     <string name="joint_wrist">Muñeca</string>
     <string name="joint_lower_back">Lumbar</string>
     <string name="detail_no_joints">Impacto bajo en todas las articulaciones</string>
+    <!-- Frases de la voz (F1-17, PANTALLAS 5.3) -->
+    <string name="voice_go">Ya. Todas las que puedas</string>
+    <string name="voice_halfway">Mitad. No pares</string>
+    <string name="voice_rest">Descansa</string>
+    <string name="voice_thirty">Quedan treinta segundos</string>
+    <string name="voice_next">Siguiente: %1$s</string>
+    <string name="voice_next_unknown">Prepárate</string>
+    <string name="voice_done">Terminaste. Buen trabajo</string>
+    <string name="voice_count_1">Uno</string>
+    <string name="voice_count_2">Dos</string>
+    <string name="voice_count_3">Tres</string>
+    <string name="voice_count_4">Cuatro</string>
+    <string name="voice_count_5">Cinco</string>
 </resources>

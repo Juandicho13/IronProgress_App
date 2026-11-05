@@ -306,4 +306,17 @@
     <string name="joint_wrist">Wrist</string>
     <string name="joint_lower_back">Lower back</string>
     <string name="detail_no_joints">Low impact on every joint</string>
+    <!-- Frases de la voz (F1-17, PANTALLAS 5.3) -->
+    <string name="voice_go">Go. As many as you can</string>
+    <string name="voice_halfway">Halfway. Keep going</string>
+    <string name="voice_rest">Rest</string>
+    <string name="voice_thirty">Thirty seconds left</string>
+    <string name="voice_next">Next: %1$s</string>
+    <string name="voice_next_unknown">Get ready</string>
+    <string name="voice_done">You are done. Good work</string>
+    <string name="voice_count_1">One</string>
+    <string name="voice_count_2">Two</string>
+    <string name="voice_count_3">Three</string>
+    <string name="voice_count_4">Four</string>
+    <string name="voice_count_5">Five</string>
 </resources>

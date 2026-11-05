@@ -381,6 +381,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-05 | F1-11 · descanso completo y barra | `feat/f1-argon`, commit de F1-11 | Motor por instantes, ajustes de 15 s, Saltar, minimizar/ampliar y eventos hápticos. 109 pruebas, estilo, APK y frameworks iOS en verde local. Prueba exacta de 20 descansos; falta aceptación visual/háptica en teléfonos. Avisos fuera de app y persistencia del descanso pendientes de sus tickets. Sin push |
 | 2026-11-05 | F1-13 · arranque sin pantalla | `feat/f1-claude`, sobre F1-09 | Koin y la base arrancan en `Application.onCreate` y en el `init` de la App de iOS; `IronProgressKoinTest` 2 en verde; 96 pruebas; falta abrir la app en los equipos y compilar iOS en el Mac |
 | 2026-11-05 | F1-06 · exigencia, porcentajes, escaleras y ficha | `feat/f1-claude` | Catálogo semilla versión 2 con los datos de los 77 y ficha de ejercicio (7.5); 114 pruebas. Valores en borrador: se cierra cuando Juan los revise |
+| 2026-11-05 | F1-17 · voz y audio | `feat/f1-voz` | Guion de la voz desde el motor (`voiceLinesBetween`, 6 pruebas), voz del sistema con la música atenuada en Android (TextToSpeech y foco de audio) e iPhone (AVSpeechSynthesizer con duckOthers); 124 pruebas. Falta compilar iOS en el Mac y oírla en los teléfonos |
 
 ---
 
