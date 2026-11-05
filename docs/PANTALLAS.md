@@ -149,6 +149,8 @@ Relojes:
   2. Tarjeta **Series por músculo**, "Últimos 7 días · 17 al 23 sep": una fila por músculo (columnas 86 / 1fr / 52) con la barra de series en `ember`, la banda del rango objetivo (10 a 20) en `surface3` detrás y el número a la derecha; si está por debajo, la palabra "bajo" en `text3`. Eje 0, 10 y 20. Pie: "Rango objetivo: 10 a 20 series".
 - **Reglas:** las series cuentan los últimos 7 días, no la semana de calendario; el primario suma 1 y el secundario 0,5.
 
+**Alcance implementado en F1-23:** el botón Historial de Progreso abre el historial, sin diseño propio en el lienzo y hecho con las piezas de Forja (tarjetas surface1, chips, botones de 48). Arriba, Calendario o Lista. El calendario muestra el mes de lunes a domingo, con los días entrenados en emberVeil y el día elegido en ember; debajo, las sesiones de ese día. La lista trae todas las sesiones terminadas, de la más nueva a la más vieja, con fecha, rutina, duración, volumen y series. Tocar una sesión abre su detalle: tocar una serie la corrige (peso y reps) o la borra, y cada bloque con tiempo se puede borrar. Las sesiones descartadas no salen.
+
 ### 2.2 Ejercicio, historial (`Ejercicio.dc.html`)
 
 - **Estructura:** barra superior con `arrow_back`, el nombre ("Press banca con barra") y opciones.

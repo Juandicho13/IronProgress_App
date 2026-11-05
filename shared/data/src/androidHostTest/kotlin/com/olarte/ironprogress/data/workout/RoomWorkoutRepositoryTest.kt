@@ -141,6 +141,27 @@ class RoomWorkoutRepositoryTest {
     }
 
     @Test
+    fun pastSetsAreEditedAndBlocksDeletedInTheHistory() = runTest {
+        val routine = CreateRoutine(routines, ids)("Torso").let {
+            it.addExercise(ids, it.blocks.single().id, ExerciseId("bench"), sets = 2)
+        }
+        val session = StartSession(sessions, ids, clock)(routine)
+        CompleteSet(sessions, clock)(session.sets[0].copy(weightKg = 60.0, reps = 10))
+        EndSession(sessions, clock)(session.session)
+        val id = session.session.id
+        val set = sessions.findSession(id)!!.sets.first { it.isCompleted }
+
+        com.olarte.ironprogress.domain.session.EditPastSet(sessions)(id, set.copy(weightKg = 62.5))
+        assertEquals(62.5, sessions.findSession(id)!!.sets.first { it.id == set.id }.weightKg)
+
+        com.olarte.ironprogress.domain.session.DeletePastEntry(sessions).block(id, session.blocks.single().id)
+        val after = sessions.findSession(id)!!
+        assertEquals(0, after.blocks.size)
+        assertEquals(0, after.exercises.size)
+        assertEquals(0, after.sets.size)
+    }
+
+    @Test
     fun duplicatesReordersAndDeletesWithoutChangingTheOriginal() = runTest {
         val edit = com.olarte.ironprogress.domain.routine.EditRoutines(routines, ids)
         edit.folder("Gimnasio")

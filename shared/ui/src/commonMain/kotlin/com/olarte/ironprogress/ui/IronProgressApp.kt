@@ -64,6 +64,7 @@ import com.olarte.ironprogress.ui.resources.nav_plan
 import com.olarte.ironprogress.ui.resources.nav_progress
 import com.olarte.ironprogress.ui.resources.nav_search_exercises
 import com.olarte.ironprogress.ui.resources.nav_today
+import com.olarte.ironprogress.ui.resources.progress_history
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
@@ -281,6 +282,19 @@ fun IronProgressApp() {
                             if (backStack.isEmpty()) backStack.add(Route.Today)
                         })
                     }
+                    entry<Route.History> {
+                        com.olarte.ironprogress.ui.history.HistoryRoute(
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpen = { backStack.add(Route.HistorySession(it)) },
+                        )
+                    }
+                    entry<Route.HistorySession> { route ->
+                        com.olarte.ironprogress.ui.history.HistorySessionRoute(
+                            route.sessionId,
+                            languageCode,
+                            onBack = { backStack.removeLastOrNull() },
+                        )
+                    }
                     entry<Route.Wod> {
                         com.olarte.ironprogress.ui.wod.WodRoute(languageCode = languageCode, onClose = { backStack.removeLastOrNull() })
                     }
@@ -306,6 +320,7 @@ fun IronProgressApp() {
                             languageCode = languageCode,
                             onCatalogIntent = viewModel::onIntent,
                             catalogListState = catalogListState,
+                            onHistory = { backStack.add(Route.History) },
                         )
                     }
                 },
@@ -317,6 +332,8 @@ fun IronProgressApp() {
                 currentDestination is Route.IntervalRun ||
                 currentDestination is Route.Wod ||
                 currentDestination is Route.Summary ||
+                currentDestination is Route.History ||
+                currentDestination is Route.HistorySession ||
                 currentDestination is Route.RoutineEditor
             if (!isWorkoutScreenOpen && !isFullScreen) {
                 val activeBanner = workoutBanner(workoutState)
@@ -387,6 +404,8 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     is Route.IntervalRun -> ForjaTab.PLAN
     is Route.Wod -> ForjaTab.PLAN
     is Route.Summary -> ForjaTab.TODAY
+    Route.History -> ForjaTab.PROGRESS
+    is Route.HistorySession -> ForjaTab.PROGRESS
     Route.Catalog -> ForjaTab.TODAY
     is Route.Workout -> ForjaTab.TODAY
 }
@@ -599,6 +618,7 @@ private fun ForjaProgressScreen(
     languageCode: String,
     onCatalogIntent: (com.olarte.ironprogress.ui.catalog.CatalogIntent) -> Unit,
     catalogListState: LazyListState,
+    onHistory: () -> Unit = {},
 ) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
@@ -617,11 +637,7 @@ private fun ForjaProgressScreen(
                 modifier = Modifier.padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp2),
                 verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
             ) {
-                Text(
-                    text = "Progreso",
-                    style = typography.title1,
-                    color = colors.text1,
-                )
+                ProgressTitle(onHistory)
                 ForjaSegmentedControl(
                     segments = segments,
                     selectedIndex = selectedSegment,
@@ -665,11 +681,7 @@ private fun ForjaProgressScreen(
         contentPadding = PaddingValues(top = ForjaSpacing.esp3, bottom = 156.dp),
     ) {
         item {
-            Text(
-                text = "Progreso",
-                style = typography.title1,
-                color = colors.text1,
-            )
+            ProgressTitle(onHistory)
         }
 
         item {
@@ -972,4 +984,21 @@ private fun CapsulePart(width: Dp, height: Dp, color: Color) {
             .clip(CircleShape)
             .background(color),
     )
+}
+
+/** Título de Progreso con el botón de historial (PANTALLAS 2.1, F1-23). */
+@Composable
+private fun ProgressTitle(onHistory: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = "Progreso",
+            modifier = Modifier.weight(1f),
+            style = ForjaTheme.typography.title1,
+            color = ForjaTheme.colors.text1,
+        )
+        com.olarte.ironprogress.ui.interval.TextAction(
+            stringResource(Res.string.progress_history),
+            onClick = onHistory,
+        )
+    }
 }

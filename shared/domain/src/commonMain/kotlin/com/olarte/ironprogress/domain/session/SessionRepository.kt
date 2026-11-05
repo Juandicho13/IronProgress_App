@@ -40,6 +40,14 @@ interface SessionRepository {
     suspend fun saveSet(set: WorkoutSet)
 
     suspend fun deleteSet(id: WorkoutSetId)
+
+    /**
+     * Borra un bloque con sus ejercicios y series (historial, F1-23). Room marca las tres tablas;
+     * esta versión por defecto, para repositorios en memoria, borra solo sus series.
+     */
+    suspend fun deleteBlock(detail: SessionDetail, id: SessionBlockId) {
+        detail.exercises.filter { it.blockId == id }.forEach { exercise -> detail.setsOf(exercise.id).forEach { deleteSet(it.id) } }
+    }
 }
 
 /** Sesión con todo lo que se hizo, en orden. */

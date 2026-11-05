@@ -3,6 +3,7 @@ package com.olarte.ironprogress.data.workout
 import com.olarte.ironprogress.data.local.SessionDao
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.session.SessionBlock
+import com.olarte.ironprogress.domain.session.SessionBlockId
 import com.olarte.ironprogress.domain.session.SessionDetail
 import com.olarte.ironprogress.domain.session.SessionExercise
 import com.olarte.ironprogress.domain.session.SessionId
@@ -102,5 +103,9 @@ class RoomSessionRepository(private val dao: SessionDao, private val clock: Cloc
 
     override suspend fun deleteSet(id: WorkoutSetId) {
         dao.markSetDeleted(id.value, now())
+    }
+
+    override suspend fun deleteBlock(detail: SessionDetail, id: SessionBlockId) {
+        dao.deleteBlock(id.value, now())
     }
 }

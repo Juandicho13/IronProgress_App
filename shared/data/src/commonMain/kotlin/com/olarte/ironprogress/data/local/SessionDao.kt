@@ -112,6 +112,26 @@ interface SessionDao {
     @Query("UPDATE workout_sets SET deleted_at = :now, updated_at = :now WHERE id = :setId")
     suspend fun markSetDeleted(setId: String, now: Long)
 
+    @Query(
+        "UPDATE workout_sets SET deleted_at = :now, updated_at = :now WHERE session_exercise_id IN " +
+            "(SELECT id FROM session_exercises WHERE block_id = :blockId)",
+    )
+    suspend fun markSetsOfBlockDeleted(blockId: String, now: Long)
+
+    @Query("UPDATE session_exercises SET deleted_at = :now, updated_at = :now WHERE block_id = :blockId")
+    suspend fun markExercisesOfBlockDeleted(blockId: String, now: Long)
+
+    @Query("UPDATE workout_blocks SET deleted_at = :now, updated_at = :now WHERE id = :blockId")
+    suspend fun markBlockDeleted(blockId: String, now: Long)
+
+    /** Un bloque del historial con todo lo que cuelga de él, en una sola transacción. */
+    @Transaction
+    suspend fun deleteBlock(blockId: String, now: Long) {
+        markSetsOfBlockDeleted(blockId, now)
+        markExercisesOfBlockDeleted(blockId, now)
+        markBlockDeleted(blockId, now)
+    }
+
     @Query("SELECT created_at FROM workout_sets WHERE id = :setId LIMIT 1")
     suspend fun setCreatedAt(setId: String): Long?
 

@@ -64,4 +64,6 @@ val sharedAppModule: Module = module {
     factory { AddSessionExercise(get(), get()) }
     factory { EndSession(get(), get()) }
     factory { com.olarte.ironprogress.domain.session.SummarizeSession(get()) }
+    factory { com.olarte.ironprogress.domain.session.EditPastSet(get()) }
+    factory { com.olarte.ironprogress.domain.session.DeletePastEntry(get()) }
 }

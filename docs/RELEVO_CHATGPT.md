@@ -264,3 +264,10 @@ Pasos en Xcode para Codex o Juan, en el Mac:
 - `domain/session/SessionSummary.kt`: `summarize(detail, history)` es puro y arma `SessionSummary` (duración, volumen y series de trabajo sin calentamiento, récords simples, ejercicios con sus series, bloques con resultado y la comparación con la sesión anterior de la misma rutina, o de la misma disciplina en un entreno libre). `SummarizeSession` lo carga desde el repositorio. 4 pruebas.
 - Entreno: `SlideToFinish` al final de la lista y `WorkoutIntent.Finish`, que termina la sesión con `EndSession`, limpia el descanso y emite `WorkoutEffect.Finished`. La app abre `Route.Summary`.
 - Resumen en `ui/summary/`. Listo vuelve a Hoy. El feedback por músculo y las molestias de 1.6 son de F2-06; compartir, de F5-07.
+
+## 21. F1-23 en feat/f1-claude, 5 de noviembre de 2026
+
+- `domain/session/History.kt`: `EditPastSet` (solo sesiones terminadas; conserva identidad, orden y hora; una serie sin hacer pasa a hecha con la hora de fin), `DeletePastEntry` (serie o bloque), `CivilDate` y `monthGrid` para el calendario sin kotlinx-datetime. 5 pruebas.
+- `SessionRepository.deleteBlock` tiene una versión por defecto que borra solo las series (para los repositorios en memoria de las pruebas). Room la reemplaza con `SessionDao.deleteBlock`, que marca el bloque, sus ejercicios y sus series en una transacción. 1 prueba de Room.
+- Pantallas en `ui/history/`: `Route.History` (Calendario y Lista) y `Route.HistorySession` (corregir o borrar). Se entra con el botón Historial del título de Progreso.
+- El historial por ejercicio con gráficas (2.2) es de F2-04.

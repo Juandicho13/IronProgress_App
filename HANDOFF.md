@@ -390,6 +390,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-05 | F1-12 · cambios en la sesión | `feat/f1-claude` | Subir, bajar, saltar por ahora, cambiar ejercicio, quitar serie, superseries y circuitos sin descanso hasta el último; 148 pruebas. Falta la sesión real con superserie, uno por tiempo y uno por calorías |
 | 2026-11-05 | F1-16 · Live Activity del iPhone | `feat/f1-claude` | Diseño 5.9, puente Kotlin (`WorkoutActivitySync`, se actualiza solo en cambios de fase) y Swift (ActivityKit, App Intents, `ForjaTokens.swift`); 150 pruebas de Kotlin. **El Swift no se compiló:** falta crear la extensión en Xcode y probar en el iPhone |
 | 2026-11-05 | F1-21 · terminar y resumen | `feat/f1-claude` | Deslizar para terminar (1.5) y Resumen (1.6): duración, volumen, series, récords simples, comparación con la sesión anterior y resultado de cada bloque; `summarize` con 4 pruebas y 1 de ViewModel. Falta probar en el teléfono que los números cuadren con una sesión real |
+| 2026-11-05 | F1-23 · historial | `feat/f1-claude` | Historial por calendario y lista desde Progreso; detalle de cada sesión para corregir o borrar series y borrar bloques (`EditPastSet`, `DeletePastEntry`, borrado suave en Room del bloque con sus ejercicios y series); 5 pruebas de dominio y 1 de Room. Falta probar en el teléfono editar una serie de ayer y verla corregida |
 
 ---
 
