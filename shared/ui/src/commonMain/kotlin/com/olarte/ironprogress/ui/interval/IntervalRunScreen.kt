@@ -67,9 +67,11 @@ import com.olarte.ironprogress.ui.resources.interval_skip_rest
 import com.olarte.ironprogress.ui.resources.interval_skip_work
 import com.olarte.ironprogress.ui.resources.interval_summary_line
 import com.olarte.ironprogress.ui.resources.interval_unmute
+import com.olarte.ironprogress.ui.settings.LocalAppSettings
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
+import com.olarte.ironprogress.ui.voice.mutedUnless
 import com.olarte.ironprogress.ui.voice.rememberVoiceSpeaker
 import com.olarte.ironprogress.ui.voice.text
 import kotlinx.coroutines.delay
@@ -81,7 +83,7 @@ import org.koin.core.parameter.parametersOf
 fun IntervalRunRoute(id: String, languageCode: String, onClose: () -> Unit) {
     val model = koinViewModel<IntervalRunViewModel>(key = "interval-run-$id") { parametersOf(id, languageCode) }
     val state by model.state.collectAsStateWithLifecycle()
-    val speaker = rememberVoiceSpeaker()
+    val speaker = rememberVoiceSpeaker().mutedUnless(LocalAppSettings.current.voice)
     var subtitle by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(model, speaker) {
         model.voiceLines.collect { lines ->

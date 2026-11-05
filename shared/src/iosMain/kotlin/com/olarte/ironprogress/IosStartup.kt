@@ -2,6 +2,7 @@ package com.olarte.ironprogress
 
 import androidx.compose.ui.text.intl.Locale
 import com.olarte.ironprogress.data.local.createIronProgressDatabase
+import com.olarte.ironprogress.data.settings.createSettingsRepository
 import com.olarte.ironprogress.di.IronProgressKoin
 import com.olarte.ironprogress.live.NoWorkoutActivity
 import com.olarte.ironprogress.live.WorkoutActivityBridge
@@ -17,6 +18,11 @@ import org.koin.dsl.module
 import kotlin.time.Clock
 
 private val scope = MainScope()
+
+private fun iosPlatformModule() = module {
+    single { createIronProgressDatabase() }
+    single<com.olarte.ironprogress.domain.settings.SettingsRepository> { createSettingsRepository() }
+}
 private var activitySync: WorkoutActivitySync? = null
 
 /**
@@ -30,9 +36,7 @@ fun startIronProgress() {
 /** Igual, con la Live Activity que Swift implementa con ActivityKit (F1-16). */
 fun startIronProgress(bridge: WorkoutActivityBridge) {
     val koin = IronProgressKoin.start(
-        module {
-            single { createIronProgressDatabase() }
-        },
+        iosPlatformModule(),
     )
     if (activitySync != null) return
     val actions = koin.get<RestBackgroundActions>()
@@ -46,7 +50,7 @@ fun startIronProgress(bridge: WorkoutActivityBridge) {
 
 /** SwiftUI avisa con scenePhase si la app está a la vista: la Live Activity solo sale fuera de ella. */
 fun setAppInForeground(active: Boolean) {
-    val koin = IronProgressKoin.start(module { single { createIronProgressDatabase() } })
+    val koin = IronProgressKoin.start(iosPlatformModule())
     koin.get<RestController>().setAppInForeground(active, Clock.System.now().toEpochMilliseconds())
 }
 
@@ -55,7 +59,7 @@ fun setAppInForeground(active: Boolean) {
  * Corre en el proceso de la app, aunque esté cerrada: por eso arranca Koin si hace falta.
  */
 fun runWorkoutAction(action: String, completion: () -> Unit) {
-    val koin = IronProgressKoin.start(module { single { createIronProgressDatabase() } })
+    val koin = IronProgressKoin.start(iosPlatformModule())
     val actions = koin.get<RestBackgroundActions>()
     scope.launch {
         try {

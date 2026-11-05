@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bienvenida y Ajustes (F1-25). -->
+<resources>
+    <string name="onb_title">Bienvenido a IronProgress</string>
+    <string name="onb_subtitle">Cinco preguntas para empezar. Puedes cambiarlas luego en Ajustes.</string>
+    <string name="onb_goal">Tu objetivo</string>
+    <string name="goal_strength">Fuerza</string>
+    <string name="goal_muscle">Músculo</string>
+    <string name="goal_endurance">Resistencia</string>
+    <string name="goal_health">Salud</string>
+    <string name="goal_weight">Peso</string>
+    <string name="onb_experience">Tu experiencia</string>
+    <string name="exp_beginner">Empiezo</string>
+    <string name="exp_intermediate">Intermedia</string>
+    <string name="exp_advanced">Avanzada</string>
+    <string name="onb_units">Unidades</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_lb">lb</string>
+    <string name="onb_days">Días por semana</string>
+    <string name="onb_days_value">%1$d días</string>
+    <string name="onb_disciplines">Qué haces</string>
+    <string name="onb_disciplines_hint">Elige una o más.</string>
+    <string name="onb_start">Empezar</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_open">Abrir ajustes</string>
+    <string name="settings_back">Volver</string>
+    <string name="settings_section_app">App</string>
+    <string name="settings_language">Idioma</string>
+    <string name="lang_system">Del teléfono</string>
+    <string name="lang_es">Español</string>
+    <string name="lang_en">English</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Del teléfono</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="theme_light">Claro</string>
+    <string name="settings_section_feedback">Sonido y vibración</string>
+    <string name="settings_sound">Sonido</string>
+    <string name="settings_vibration">Vibración</string>
+    <string name="settings_voice">Voz</string>
+    <string name="settings_voice_hint">La voz de los intervalos, los bloques y la respiración.</string>
+    <string name="settings_section_privacy">Privacidad</string>
+    <string name="settings_hide">Ocultar peso corporal y calorías</string>
+    <string name="settings_hide_hint">No se ve ningún peso corporal ni caloría en la app ni en los avisos.</string>
+    <string name="settings_on">Encendido</string>
+    <string name="settings_off">Apagado</string>
+    <string name="hidden_value">Oculto</string>
+</resources>

@@ -47,6 +47,10 @@ kotlin {
             implementation(libs.haze.core)
             implementation(libs.haze.blur)
         }
+        androidMain.dependencies {
+            // Selector de archivos del sistema (SAF) para la copia de seguridad (F1-24).
+            implementation(libs.androidx.activity.compose)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)

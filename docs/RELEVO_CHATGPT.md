@@ -277,3 +277,26 @@ Pasos en Xcode para Codex o Juan, en el Mac:
 - `domain/session/Plates.kt`: `WeightUnits` (conversión, barra y discos por unidad), `platesPerSide` (mayor primero, informa lo que sobra) y `warmupSets` (barra × 10, 50 % × 5, 70 % × 3, 85 % × 1, redondeado al salto). 4 pruebas.
 - `ExerciseRepository.setPreferredUnit` (por defecto no hace nada, para las pruebas). Room actualiza `exercises.preferred_unit` y `replaceSeedCatalog` la conserva como conserva el archivado.
 - Entreno: `WorkoutIntent.ToggleUnit` y `WorkoutIntent.AddWarmup`; `WorkoutState.unitOf`. El teclado muestra y recibe lb con un decimal y guarda kg (`storedText`). `PlatesDialog` en `ui/workout/`. El Resumen y el historial siguen mostrando kg: la unidad por ejercicio en esas pantallas puede llegar con Ajustes (F1-25).
+## 23. F1-25 en feat/f1-claude, 5 de noviembre de 2026
+
+- `domain/settings/AppSettings.kt`: `AppSettings` (idioma, tema, sonido, vibración, voz, ocultar peso corporal y calorías, bienvenida hecha y `TrainingProfile`), `SettingsRepository` y `CompleteOnboarding`.
+- `data/settings/DataStoreSettingsRepository.kt`: DataStore de preferencias 1.2.0 con un JSON en una sola clave; un JSON dañado vuelve a los valores por defecto. Archivo `ironprogress.preferences_pb` en `filesDir` (Android) y en Documents (iPhone), creado en el módulo de plataforma de Koin.
+- `ui/settings`: `SettingsGate` envuelve `App()`: aplica el idioma con `appLocaleProvider` (`expect`/`actual`; en Android cambia `Locale` y `LocalConfiguration`, en iPhone `AppleLanguages`) y `key(idioma)`, el tema y la vibración en `ForjaTheme`, y muestra la bienvenida hasta terminarla. `LocalAppSettings` lo leen las pantallas.
+- Ocultar: `WorkoutSet.forDisplay(hide)` quita las calorías de lo que se muestra; `RestBackgroundActions` recibe `SettingsRepository` (opcional) para la Live Update y la Live Activity. El peso corporal todavía no sale en ninguna pantalla; F2-09 tiene que pasar por aquí.
+- Voz: `VoiceSpeaker.mutedUnless(voz)` en Intervalos y Bloque funcional. El sonido queda guardado; todavía no hay sonidos propios que apagar (la alarma del descanso es la del sistema).
+- Íconos nuevos de Material Symbols en `ForjaMoreIcons` (Disciplinas, Respiración y Ajustes).
+- Para probar en el teléfono: cambiar idioma y tema sin cerrar la app (en iPhone revisar también los números con formato local), y con Ocultar encendido no ver ninguna caloría.
+
+## 24. F1-24 en feat/f1-claude, 5 de noviembre de 2026
+
+- `domain/backup/BackupRepository.kt` y `data/backup/RoomBackupRepository.kt`. La copia es un JSON propio (`format: ironprogress-backup`, `version`, `schemaVersion`, `tables`) con las filas de cada tabla del usuario leídas con sus columnas reales (`PRAGMA table_info`); del catálogo van solo los ejercicios propios con sus datos y el archivado de la semilla. Restaurar: siembra el catálogo, borra y vuelve a insertar en una sola transacción con `defer_foreign_keys`; un archivo dañado o de una versión más nueva no cambia nada. Una tabla nueva de usuario se agrega a `USER_TABLES`.
+- "Exportar a JSON" es la misma copia. El CSV tiene una fila por serie hecha con el nombre del ejercicio en el idioma de la app.
+- `ui/backup`: `BackupViewModel`, `BackupSection` (al final de Ajustes) y `rememberBackupFiles` (`expect`/`actual`): en Android `CreateDocument` y `OpenDocument` de SAF; en iPhone `UIDocumentPickerViewController`. **El de iPhone está escrito sin compilar:** compilarlo en el Mac y probar guardar en Archivos y abrir la copia.
+- Prueba en el teléfono: guardar en el S25 Ultra, pasar el archivo al iPhone, restaurarlo y ver rutinas, historial y ejercicios propios.
+
+## 25. F1-20 en feat/f1-claude, 5 de noviembre de 2026
+
+- `domain/discipline`: `GuidedFlow` y `FlowPose` con los tres flujos de ejemplo (`GuidedFlows`), `BreathingPattern` (Cuadrada, Relajante 4-7-8 y Coherente 5-5, con `BreathingRisk`; desde CAUTION se pregunta antes de empezar) y `SaveGuidedSession`, que guarda una sesión YOGA, PILATES, MOBILITY o BREATHING con un bloque FLOW o BREATHING y el tiempo hecho. Los planes salen de `TimerPlans.flow` y `TimerPlans.breathing` (F1-02).
+- `ui/discipline`: `DisciplinesScreen` (ruta `Disciplines`, desde Plan), `FlowRoute` (ruta `Flow(id)`) y `BreathingRoute` (ruta `Breathing`). `GuidedRunViewModel` lee `stateAt` en cada consulta y saca los cambios de tramo de `eventsBetween`; además mira el índice del tramo, porque Siguiente postura cambia de tramo sin que pase el tiempo y `eventsBetween` no lo ve.
+- Figuras: `PoseFigures.kt`, lienzo de 372 × 240, trazo de 16, cabeza de radio 14, perfil a la izquierda y suelo fijo. Para una postura nueva se agrega su dibujo con el mismo id que `FlowPose.figure`.
+- La voz y la vibración salen en cada cambio de tramo; con la voz apagada (en la pantalla o en Ajustes) solo vibra. La pantalla bloqueada todavía no mantiene el reloj vivo en segundo plano: el plan se recalcula al volver, pero la voz se calla mientras la app no está a la vista. Revisarlo en la prueba con la pantalla bloqueada y, si hace falta, llevarlo al servicio de F1-14.

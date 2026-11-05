@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copia de seguridad y exportación (F1-24). -->
+<resources>
+    <string name="backup_section">Copia de seguridad</string>
+    <string name="backup_hint">Guarda todo en un archivo para pasarlo a otro teléfono. Restaurar reemplaza lo que hay en este.</string>
+    <string name="backup_create">Guardar copia</string>
+    <string name="backup_restore">Restaurar copia</string>
+    <string name="backup_csv">Exportar series a CSV</string>
+    <string name="backup_confirm_title">Restaurar esta copia</string>
+    <string name="backup_confirm_body">Se reemplazan tus rutinas, sesiones, series y ejercicios propios por los de la copia. No se puede deshacer.</string>
+    <string name="backup_restore_confirm">Restaurar</string>
+    <string name="backup_cancel">Cancelar</string>
+    <string name="backup_msg_saved">Archivo guardado.</string>
+    <string name="backup_msg_save_failed">No se pudo guardar el archivo. Inténtalo otra vez.</string>
+    <string name="backup_msg_restored">Copia restaurada.</string>
+    <string name="backup_msg_not_backup">Ese archivo no es una copia de IronProgress o está dañado. No cambió nada.</string>
+    <string name="backup_msg_too_new">La copia es de una versión más nueva de la app. Actualízala y vuelve a intentarlo.</string>
+    <string name="backup_msg_read_failed">No se pudo leer el archivo.</string>
+</resources>

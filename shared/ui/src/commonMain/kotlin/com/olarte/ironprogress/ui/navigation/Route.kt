@@ -36,6 +36,14 @@ sealed interface Route : NavKey {
     @Serializable data object History : Route
 
     @Serializable data class HistorySession(val sessionId: String) : Route
+
+    @Serializable data object Settings : Route
+
+    @Serializable data object Disciplines : Route
+
+    @Serializable data class Flow(val id: String) : Route
+
+    @Serializable data object Breathing : Route
 }
 
 /**
@@ -59,6 +67,10 @@ val navConfiguration = SavedStateConfiguration {
             subclass(Route.Summary::class, Route.Summary.serializer())
             subclass(Route.History::class, Route.History.serializer())
             subclass(Route.HistorySession::class, Route.HistorySession.serializer())
+            subclass(Route.Settings::class, Route.Settings.serializer())
+            subclass(Route.Disciplines::class, Route.Disciplines.serializer())
+            subclass(Route.Flow::class, Route.Flow.serializer())
+            subclass(Route.Breathing::class, Route.Breathing.serializer())
         }
     }
 }

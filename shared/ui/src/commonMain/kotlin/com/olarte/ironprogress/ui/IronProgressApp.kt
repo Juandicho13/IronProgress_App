@@ -57,6 +57,10 @@ import com.olarte.ironprogress.ui.catalog.CatalogViewModel
 import com.olarte.ironprogress.ui.components.ForjaIsland
 import com.olarte.ironprogress.ui.components.ForjaTab
 import com.olarte.ironprogress.ui.components.LocalForjaHazeState
+import com.olarte.ironprogress.ui.discipline.BreathingRoute
+import com.olarte.ironprogress.ui.discipline.DisciplineTarget
+import com.olarte.ironprogress.ui.discipline.DisciplinesScreen
+import com.olarte.ironprogress.ui.discipline.FlowRoute
 import com.olarte.ironprogress.ui.navigation.Route
 import com.olarte.ironprogress.ui.navigation.navConfiguration
 import com.olarte.ironprogress.ui.resources.Res
@@ -65,6 +69,9 @@ import com.olarte.ironprogress.ui.resources.nav_progress
 import com.olarte.ironprogress.ui.resources.nav_search_exercises
 import com.olarte.ironprogress.ui.resources.nav_today
 import com.olarte.ironprogress.ui.resources.progress_history
+import com.olarte.ironprogress.ui.settings.LocalAppSettings
+import com.olarte.ironprogress.ui.settings.SettingsRoute
+import com.olarte.ironprogress.ui.settings.darkTheme
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
@@ -141,7 +148,8 @@ fun IronProgressApp() {
         }
     }
 
-    ForjaTheme {
+    val appSettings = LocalAppSettings.current
+    ForjaTheme(darkTheme = appSettings.darkTheme(), hapticsEnabled = appSettings.vibration) {
         val haptics = ForjaTheme.haptics
 
         com.olarte.ironprogress.ui.rest.RestNotificationBridge(
@@ -249,6 +257,9 @@ fun IronProgressApp() {
                             onCreateRoutine = {
                                 backStack.add(Route.RoutineEditor(null))
                             },
+                            onOpenSettings = {
+                                backStack.add(Route.Settings)
+                            },
                         )
                     }
 
@@ -261,6 +272,7 @@ fun IronProgressApp() {
                                     onEdit = { backStack.add(Route.IntervalEditor(it)) },
                                     onRun = { backStack.add(Route.IntervalRun(it)) },
                                     onWod = { backStack.add(Route.Wod) },
+                                    onDisciplines = { backStack.add(Route.Disciplines) },
                                 )
                             },
                         )
@@ -294,6 +306,29 @@ fun IronProgressApp() {
                             languageCode,
                             onBack = { backStack.removeLastOrNull() },
                         )
+                    }
+                    entry<Route.Disciplines> {
+                        DisciplinesScreen(onBack = { backStack.removeLastOrNull() }) { target ->
+                            when (target) {
+                                DisciplineTarget.Workout -> {
+                                    backStack.add(Route.Workout())
+                                    workoutViewModel.onIntent(WorkoutIntent.StartFree)
+                                }
+                                DisciplineTarget.Functional -> backStack.add(Route.Wod)
+                                DisciplineTarget.Intervals -> backStack.add(Route.IntervalEditor())
+                                DisciplineTarget.Breathing -> backStack.add(Route.Breathing)
+                                is DisciplineTarget.Flow -> backStack.add(Route.Flow(target.flowId))
+                            }
+                        }
+                    }
+                    entry<Route.Flow> { route ->
+                        FlowRoute(route.id, languageCode, onClose = { backStack.removeLastOrNull() })
+                    }
+                    entry<Route.Breathing> {
+                        BreathingRoute(onClose = { backStack.removeLastOrNull() })
+                    }
+                    entry<Route.Settings> {
+                        SettingsRoute(onBack = { backStack.removeLastOrNull() })
                     }
                     entry<Route.Wod> {
                         com.olarte.ironprogress.ui.wod.WodRoute(languageCode = languageCode, onClose = { backStack.removeLastOrNull() })
@@ -334,6 +369,10 @@ fun IronProgressApp() {
                 currentDestination is Route.Summary ||
                 currentDestination is Route.History ||
                 currentDestination is Route.HistorySession ||
+                currentDestination is Route.Settings ||
+                currentDestination is Route.Disciplines ||
+                currentDestination is Route.Flow ||
+                currentDestination is Route.Breathing ||
                 currentDestination is Route.RoutineEditor
             if (!isWorkoutScreenOpen && !isFullScreen) {
                 val activeBanner = workoutBanner(workoutState)
@@ -406,6 +445,10 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     is Route.Summary -> ForjaTab.TODAY
     Route.History -> ForjaTab.PROGRESS
     is Route.HistorySession -> ForjaTab.PROGRESS
+    Route.Settings -> ForjaTab.TODAY
+    Route.Disciplines -> ForjaTab.PLAN
+    is Route.Flow -> ForjaTab.PLAN
+    Route.Breathing -> ForjaTab.PLAN
     Route.Catalog -> ForjaTab.TODAY
     is Route.Workout -> ForjaTab.TODAY
 }

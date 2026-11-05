@@ -20,3 +20,14 @@ interface VoiceSpeaker {
 /** La voz del sistema, viva mientras la pantalla que la usa esté en composición. */
 @Composable
 expect fun rememberVoiceSpeaker(): VoiceSpeaker
+
+private object SilentSpeaker : VoiceSpeaker {
+    override fun speak(text: String, duckMusic: Boolean) = Unit
+
+    override fun stop() = Unit
+
+    override fun release() = Unit
+}
+
+/** Con la voz apagada en Ajustes (F1-25) no dice nada; el subtítulo sigue en pantalla. */
+fun VoiceSpeaker.mutedUnless(enabled: Boolean): VoiceSpeaker = if (enabled) this else SilentSpeaker

@@ -14,7 +14,9 @@ import com.olarte.ironprogress.domain.session.SessionStatus
 import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.domain.session.WorkoutSetId
 import com.olarte.ironprogress.domain.session.hasRequiredMeasurements
+import com.olarte.ironprogress.domain.settings.SettingsRepository
 import com.olarte.ironprogress.ui.format.Formats
+import com.olarte.ironprogress.ui.settings.forDisplay
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -258,6 +260,8 @@ class RestBackgroundActions(
     private val routines: RoutineRepository,
     private val completeSet: CompleteSet,
     private val clock: Clock,
+    /** Para "Ocultar peso corporal y calorías" (F1-25). Sin él, se muestra todo. */
+    private val settings: SettingsRepository? = null,
 ) {
     private val actionMutex = Mutex()
 
@@ -334,9 +338,10 @@ class RestBackgroundActions(
             return null
         }
         val catalog = exercises.observeExercises().first().associateBy { it.id }
+        val hide = settings?.settings?.first()?.hideBodyMetrics == true
         return buildRestNotificationContent(
             restState = restState,
-            sessionDetail = detail,
+            sessionDetail = detail.copy(sets = detail.sets.map { it.forDisplay(hide) }),
             catalog = catalog,
             nowMs = now,
             languageCode = languageCode,

@@ -38,6 +38,8 @@ kotlin {
             // api: IronProgressDatabase y CatalogDao son tipos de Room que también verán :shared y la app.
             api(libs.androidx.room3.runtime)
             implementation(libs.androidx.sqlite.bundled)
+            // Ajustes de la app (F1-25): DataStore de preferencias, el mismo en Android e iOS.
+            api(libs.androidx.datastore.preferences.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

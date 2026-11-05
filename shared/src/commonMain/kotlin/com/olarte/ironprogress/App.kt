@@ -2,6 +2,7 @@ package com.olarte.ironprogress
 
 import androidx.compose.runtime.Composable
 import com.olarte.ironprogress.ui.IronProgressApp
+import com.olarte.ironprogress.ui.settings.SettingsGate
 
 /**
  * Punto de entrada compartido de la interfaz. Koin ya arrancó antes (IronProgressKoin.start) y
@@ -9,5 +10,6 @@ import com.olarte.ironprogress.ui.IronProgressApp
  */
 @Composable
 fun App() {
-    IronProgressApp()
+    // Idioma, tema y bienvenida (F1-25) envuelven toda la app.
+    SettingsGate { IronProgressApp() }
 }

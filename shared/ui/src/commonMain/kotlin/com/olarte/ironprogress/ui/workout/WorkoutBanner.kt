@@ -12,6 +12,8 @@ import com.olarte.ironprogress.ui.resources.workout_empty
 import com.olarte.ironprogress.ui.resources.workout_error
 import com.olarte.ironprogress.ui.resources.workout_free
 import com.olarte.ironprogress.ui.resources.workout_saving
+import com.olarte.ironprogress.ui.settings.LocalAppSettings
+import com.olarte.ironprogress.ui.settings.forDisplay
 import org.jetbrains.compose.resources.stringResource
 
 /** El accesorio se reconstruye desde Room, también después de reiniciar la app. */
@@ -22,7 +24,8 @@ fun workoutBanner(state: WorkoutState): ActiveSessionBannerState? {
     val sets = exercise?.let { detail.setsOf(it.id) }.orEmpty()
     val next = sets.firstOrNull { !it.isCompleted }
     val formats = rememberFormats()
-    val summary = next?.let { set ->
+    val hide = LocalAppSettings.current.hideBodyMetrics
+    val summary = next?.forDisplay(hide)?.let { set ->
         WorkoutField.entries.filter {
             it.measure in state.catalog[exercise?.exerciseId]?.trackingType?.fields.orEmpty() &&
                 it.measure != null

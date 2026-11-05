@@ -14,7 +14,7 @@ import org.koin.dsl.module
 /** ViewModels de la interfaz y coordinador del descanso. Los casos de uso los provee sharedAppModule. */
 val uiModule = module {
     single { RestController() }
-    single { RestBackgroundActions(get(), get(), get(), get(), get(), get()) }
+    single { RestBackgroundActions(get(), get(), get(), get(), get(), get(), getOrNull()) }
     single { com.olarte.ironprogress.ui.rest.platformRestNotifications() }
     viewModel { WorkoutViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { TodayViewModel(get(), get(), get(), get(), get()) }
@@ -24,6 +24,12 @@ val uiModule = module {
     viewModel { (id: String) -> com.olarte.ironprogress.ui.catalog.ExerciseDetailViewModel(get(), id) }
     viewModel { (languageCode: String) -> CatalogViewModel(get(), get(), languageCode) }
     viewModel { com.olarte.ironprogress.ui.interval.IntervalListViewModel(get()) }
+    viewModel { com.olarte.ironprogress.ui.settings.SettingsViewModel(get(), get()) }
+    viewModel { com.olarte.ironprogress.ui.backup.BackupViewModel(get(), get()) }
+    viewModel { (flowId: String, languageCode: String) ->
+        com.olarte.ironprogress.ui.discipline.FlowViewModel(get(), get(), flowId, languageCode)
+    }
+    viewModel { (label: String) -> com.olarte.ironprogress.ui.discipline.BreathingViewModel(get(), get(), label) }
     viewModel { com.olarte.ironprogress.ui.wod.WodViewModel(get(), get(), get(), get()) }
     viewModel { (id: String) -> com.olarte.ironprogress.ui.summary.SummaryViewModel(get(), get(), get(), id) }
     viewModel { com.olarte.ironprogress.ui.history.HistoryViewModel(get(), get(), get()) }

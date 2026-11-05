@@ -42,7 +42,8 @@ val sharedAppModule: Module = module {
     single<SessionDao> { get<IronProgressDatabase>().sessionDao() }
     single<StageOneDao> { get<IronProgressDatabase>().stageOneDao() }
 
-    single<ExerciseRepository> { RoomExerciseRepository(get()) }
+    single { RoomExerciseRepository(get()) }
+    single<ExerciseRepository> { get<RoomExerciseRepository>() }
     single<RoutineRepository> { RoomRoutineRepository(get(), get()) }
     single<SessionRepository> { RoomSessionRepository(get(), get()) }
     single<HealthRepository> { UnavailableHealthRepository() }
@@ -66,4 +67,9 @@ val sharedAppModule: Module = module {
     factory { com.olarte.ironprogress.domain.session.SummarizeSession(get()) }
     factory { com.olarte.ironprogress.domain.session.EditPastSet(get()) }
     factory { com.olarte.ironprogress.domain.session.DeletePastEntry(get()) }
+    factory { com.olarte.ironprogress.domain.settings.CompleteOnboarding(get()) }
+    factory { com.olarte.ironprogress.domain.discipline.SaveGuidedSession(get(), get(), get()) }
+    single<com.olarte.ironprogress.domain.backup.BackupRepository> {
+        com.olarte.ironprogress.data.backup.RoomBackupRepository(get(), get(), get())
+    }
 }

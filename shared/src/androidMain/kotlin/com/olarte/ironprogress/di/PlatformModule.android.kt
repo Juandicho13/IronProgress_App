@@ -2,6 +2,8 @@ package com.olarte.ironprogress.di
 
 import android.content.Context
 import com.olarte.ironprogress.data.local.createIronProgressDatabase
+import com.olarte.ironprogress.data.settings.createSettingsRepository
+import com.olarte.ironprogress.domain.settings.SettingsRepository
 import com.olarte.ironprogress.ui.rest.RestBackgroundActions
 import com.olarte.ironprogress.ui.rest.RestController
 import org.koin.core.module.Module
@@ -13,6 +15,7 @@ fun androidPlatformModule(context: Context): Module {
     val appContext = context.applicationContext
     return module {
         single { createIronProgressDatabase(appContext) }
+        single<SettingsRepository> { createSettingsRepository(appContext) }
     }
 }
 

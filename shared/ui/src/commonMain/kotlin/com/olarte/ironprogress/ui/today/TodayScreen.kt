@@ -46,6 +46,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.routine.WeekProgress
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.ForjaIcons
+import com.olarte.ironprogress.ui.components.ForjaMoreIcons
+import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.catalog_exercise_count
@@ -54,6 +56,7 @@ import com.olarte.ironprogress.ui.resources.editor_loading
 import com.olarte.ironprogress.ui.resources.editor_retry
 import com.olarte.ironprogress.ui.resources.nav_today
 import com.olarte.ironprogress.ui.resources.plan_create
+import com.olarte.ironprogress.ui.resources.settings_open
 import com.olarte.ironprogress.ui.resources.today_continue
 import com.olarte.ironprogress.ui.resources.today_day_friday_name
 import com.olarte.ironprogress.ui.resources.today_day_friday_short
@@ -100,6 +103,7 @@ fun TodayRoute(
     onOpenWorkout: (String) -> Unit,
     onCreateRoutine: () -> Unit,
     onStartFree: () -> Unit,
+    onOpenSettings: () -> Unit = {},
 ) {
     val viewModel = koinViewModel<TodayViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -120,6 +124,7 @@ fun TodayRoute(
         onIntent = viewModel::onIntent,
         onCreateRoutine = onCreateRoutine,
         onStartFree = onStartFree,
+        onOpenSettings = onOpenSettings,
     )
 }
 
@@ -131,6 +136,7 @@ fun TodayScreen(
     onIntent: (TodayIntent) -> Unit,
     onCreateRoutine: () -> Unit,
     onStartFree: () -> Unit,
+    onOpenSettings: () -> Unit = {},
 ) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
@@ -151,22 +157,25 @@ fun TodayScreen(
         ),
     ) {
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
-                if (state.todayEpochMs > 0L) {
-                    Text(
-                        text = formats.date(state.todayEpochMs).uppercase(),
-                        style = typography.caption,
-                        color = colors.text2,
+            Row(verticalAlignment = Alignment.Bottom) {
+                TodayTitle(state, formats, Modifier.weight(1f))
+                // Botón redondo de 48 en surface3 a la derecha del título (PANTALLAS 0): abre Ajustes.
+                val settingsLabel = stringResource(Res.string.settings_open)
+                Box(
+                    Modifier.size(ForjaMeasures.minTouch).clip(CircleShape).background(colors.surface3)
+                        .semantics { contentDescription = settingsLabel }
+                        .clickable(role = Role.Button, onClick = onOpenSettings),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        ForjaMoreIcons.AccountCircle,
+                        contentDescription = null,
+                        tint = colors.text1,
+                        modifier = Modifier.size(ForjaMeasures.iconSize),
                     )
                 }
-                Text(
-                    text = stringResource(Res.string.nav_today),
-                    style = typography.title1,
-                    color = colors.text1,
-                )
             }
         }
-
         if (state.loading) {
             item {
                 Text(
@@ -555,5 +564,23 @@ private fun TodayPrimaryButton(text: String, enabled: Boolean, showPlayIcon: Boo
                 color = if (enabled) colors.onEmber else colors.text3,
             )
         }
+    }
+}
+
+@Composable
+private fun TodayTitle(state: TodayState, formats: Formats, modifier: Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
+        if (state.todayEpochMs > 0L) {
+            Text(
+                text = formats.date(state.todayEpochMs).uppercase(),
+                style = ForjaTheme.typography.caption,
+                color = ForjaTheme.colors.text2,
+            )
+        }
+        Text(
+            text = stringResource(Res.string.nav_today),
+            style = ForjaTheme.typography.title1,
+            color = ForjaTheme.colors.text1,
+        )
     }
 }

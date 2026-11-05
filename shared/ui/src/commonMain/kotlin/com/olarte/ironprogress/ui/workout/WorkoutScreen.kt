@@ -72,6 +72,7 @@ import com.olarte.ironprogress.ui.label
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.editor_loading
 import com.olarte.ironprogress.ui.resources.editor_retry
+import com.olarte.ironprogress.ui.resources.hidden_value
 import com.olarte.ironprogress.ui.resources.workout_add_exercise
 import com.olarte.ironprogress.ui.resources.workout_add_set
 import com.olarte.ironprogress.ui.resources.workout_all_done
@@ -117,6 +118,8 @@ import com.olarte.ironprogress.ui.resources.workout_use_kg
 import com.olarte.ironprogress.ui.resources.workout_use_lb
 import com.olarte.ironprogress.ui.rest.RestBar
 import com.olarte.ironprogress.ui.rest.RestScreen
+import com.olarte.ironprogress.ui.settings.LocalAppSettings
+import com.olarte.ironprogress.ui.settings.forDisplay
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
@@ -361,7 +364,7 @@ private fun WorkoutSetRow(
             Column(Modifier.weight(1f)) {
                 Text(stringResource(Res.string.workout_previous), color = colors.text3, style = typography.caption)
                 TextButton(onClick = { onIntent(WorkoutIntent.CopyPrevious(set.id)) }, enabled = enabled && previous != null) {
-                    val summary = previous?.let { item ->
+                    val summary = previous?.forDisplay(LocalAppSettings.current.hideBodyMetrics)?.let { item ->
                         fields.mapNotNull { f -> item.value(f)?.let { formats.shown(f, it, unit) } }.joinToString(" × ")
                     }
                     Text(
@@ -401,10 +404,13 @@ private fun WorkoutSetRow(
                         .heightIn(min = ForjaMeasures.minTouch).padding(ForjaSpacing.esp2),
                 ) {
                     Text(field.labelIn(unit), style = typography.caption, color = colors.text2)
+                    val hidden = field == WorkoutField.CALORIES && LocalAppSettings.current.hideBodyMetrics && set.calories != null
                     Text(
-                        set.value(field)?.let {
-                            formats.shown(field, it, unit)
-                        } ?: stringResource(Res.string.workout_blank),
+                        if (hidden) {
+                            stringResource(Res.string.hidden_value)
+                        } else {
+                            set.value(field)?.let { formats.shown(field, it, unit) } ?: stringResource(Res.string.workout_blank)
+                        },
                         style = typography.figure,
                         color = colors.text1,
                     )
@@ -582,7 +588,7 @@ private fun WorkoutKeyboardSheet(state: WorkoutState, onIntent: (WorkoutIntent) 
                 style = typography.largeFigure,
                 color = colors.text1,
             )
-            previous?.value(keyboard.field)?.let {
+            previous?.forDisplay(LocalAppSettings.current.hideBodyMetrics)?.value(keyboard.field)?.let {
                 Text(
                     stringResource(Res.string.workout_previous) + ": " + formats.shown(keyboard.field, it, unit),
                     color = colors.text2,

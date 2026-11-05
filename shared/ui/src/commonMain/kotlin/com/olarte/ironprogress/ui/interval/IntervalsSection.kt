@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.disc_bar
 import com.olarte.ironprogress.ui.resources.plan_interval_edit
 import com.olarte.ironprogress.ui.resources.plan_interval_line
 import com.olarte.ironprogress.ui.resources.plan_interval_start
@@ -29,7 +30,13 @@ import org.koin.compose.viewmodel.koinViewModel
 
 /** Sección de Plan con los intervalos guardados: empezar, editar o crear uno nuevo. */
 @Composable
-fun IntervalsSection(onNew: () -> Unit, onEdit: (String) -> Unit, onRun: (String) -> Unit, onWod: () -> Unit = {}) {
+fun IntervalsSection(
+    onNew: () -> Unit,
+    onEdit: (String) -> Unit,
+    onRun: (String) -> Unit,
+    onWod: () -> Unit = {},
+    onDisciplines: () -> Unit = {},
+) {
     val model = koinViewModel<IntervalListViewModel>()
     val templates by model.templates.collectAsStateWithLifecycle()
     val colors = ForjaTheme.colors
@@ -59,5 +66,7 @@ fun IntervalsSection(onNew: () -> Unit, onEdit: (String) -> Unit, onRun: (String
         }
         EditorAction(stringResource(Res.string.plan_new_interval), onClick = onNew)
         EditorAction(stringResource(Res.string.plan_wod), onClick = onWod)
+        // Disciplinas (F1-20): yoga, pilates, movilidad, respiración y el resto desde una sola pantalla.
+        EditorAction(stringResource(Res.string.disc_bar), onClick = onDisciplines)
     }
 }

@@ -25,6 +25,7 @@ haze = "2.0.1"
 ktlint-gradle = "14.2.0"
 kover = "0.9.9"
 wear-compose = "1.7.1"
+datastore = "1.2.0"
 wear-minSdk = "30"
 wear-targetSdk = "35"
 
@@ -62,6 +63,7 @@ androidx-lifecycle-viewmodelNavigation3 = { module = "org.jetbrains.androidx.lif
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 haze-core = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
+androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wear-compose" }
 wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
 

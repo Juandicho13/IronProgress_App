@@ -427,6 +427,8 @@ El borde de la pantalla sigue siendo el descanso (hielo, 0:48 en la cabecera, la
   7. Barra inferior: pausa, **Terminar** (al terminar, "Guardado en Salud") y `more_horiz`.
 - **Guardado:** HealthKit `mindfulSession`; Health Connect `MindfulnessSessionRecord` de tipo respiración (si el teléfono lo soporta). Patrones con retención larga o hiperventilación muestran el aviso antes de empezar.
 
+**Alcance implementado en F1-20 (7.1 a 7.3):** Disciplinas se abre desde Plan con "Nuevo entreno". Fuerza y Calistenia abren un entreno libre; Funcional, el bloque funcional; HIIT, Cardio y Combate, Intervalos a tu medida; Yoga, Pilates y Movilidad, un flujo de ejemplo cada una (Saludo al sol A de 5 rondas, Pilates de suelo y Movilidad para calentar), y Respiración, la respiración guiada. "Ver todas" no sale hasta el catálogo de F5. Las figuras son dibujos propios para 12 posturas en `ui/discipline/PoseFigures.kt` (coordenadas hechas por Claude a partir de las reglas, no las del lienzo: Juan las revisa en el teléfono). En Respiración no se muestra la caja de Pulso hasta que haya reloj (F4) y se guarda en el historial; Salud y Health Connect llegan en F4. Con la Relajante 4-7-8 el aviso de seguridad sale como pregunta antes de empezar. En el flujo, la voz nombra cada postura y el teléfono vibra al cambiar; en la respiración, dice cada fase.
+
 ### 7.4 Funcional · AMRAP (`WodAmrap.dc.html`)
 
 - **Estructura:**
@@ -509,5 +511,12 @@ Estos formularios sencillos siguen Forja y se pueden cambiar sin modificar los c
 - Estados: rutina nueva, cargando, contenido, campos inválidos, guardando, error con reintento, confirmación de descarte al salir con cambios. Guardar solo se habilita con nombre y rangos válidos; el borrador no altera lo persistido antes de guardar.
 - Toques: añadir ejercicio abre el selector en un toque y elegirlo requiere otro; Guardar toma un toque.
 - De dónde se abre y a dónde lleva: Plan, Crear rutina o tocar una existente; guardar vuelve a Plan. No inicia una sesión ni modifica sesiones pasadas.
+
+**Bienvenida y Ajustes (F1-25, hechos con estas reglas por Claude para que Juan los revise)**
+
+- Bienvenida: una sola página desplazable con título "Bienvenido a IronProgress", cinco tarjetas surface1 (objetivo, experiencia, unidades, días por semana con − y +, disciplinas que haces con varias opciones) y **Empezar** en ember. Sale solo la primera vez; las respuestas se cambian después en Ajustes cuando llegue esa sección.
+- Ajustes: se abre con el botón redondo `account_circle` a la derecha del título de Hoy. Barra superior con `chevron_left` y "Ajustes"; secciones App (idioma y tema con chips), Sonido y vibración (interruptores de sonido, vibración y voz) y Privacidad (Ocultar peso corporal y calorías). Todo se guarda al tocar, sin botón de guardar. Cambiar el idioma vuelve a dibujar la app en el idioma nuevo y la deja en Hoy.
+- Copia de seguridad (F1-24): sección al final de Ajustes con Guardar copia, Restaurar copia y Exportar series a CSV, en botones secundarios. Guardar abre el selector del sistema con el nombre `ironprogress-AAAA-MM-DD.json`. Restaurar pide confirmación ("No se puede deshacer", acción en `danger`) y avisa con un texto si el archivo no sirve; nada cambia en ese caso.
+- Con Ocultar encendido, las calorías de una serie salen como "Oculto" en Entreno, en la serie anterior, en el accesorio y en la Live Update; el dato se guarda igual.
 
 Siguen sin diseño en el lienzo (Etapa 1): el PAR-Q+ al crear la cuenta, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, el ajuste del ciclo menstrual con su explicación de privacidad y la tarjeta de movilidad al caminar. Hasta que estén, una hormiga que llegue a ellas pide el diseño al jefe y el jefe se lo pide a Juan; no se inventa una pantalla nueva.
