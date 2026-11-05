@@ -51,14 +51,14 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun PlanRoute(onEdit: (String?) -> Unit) {
+fun PlanRoute(onEdit: (String?) -> Unit, intervals: @Composable () -> Unit = {}) {
     val model = koinViewModel<PlanViewModel>()
     val state by model.state.collectAsStateWithLifecycle()
-    PlanScreen(state, model::onIntent, onEdit)
+    PlanScreen(state, model::onIntent, onEdit, intervals)
 }
 
 @Composable
-fun PlanScreen(state: PlanState, onIntent: (PlanIntent) -> Unit, onEdit: (String?) -> Unit) {
+fun PlanScreen(state: PlanState, onIntent: (PlanIntent) -> Unit, onEdit: (String?) -> Unit, intervals: @Composable () -> Unit = {}) {
     var folderDialog by remember { mutableStateOf(false) }
     var folder by remember { mutableStateOf<Folder?>(null) }
     var name by remember { mutableStateOf("") }
@@ -69,6 +69,7 @@ fun PlanScreen(state: PlanState, onIntent: (PlanIntent) -> Unit, onEdit: (String
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
     ) {
         Text(stringResource(Res.string.plan_title), style = ForjaTheme.typography.title1, color = ForjaTheme.colors.text1)
+        intervals()
         EditorAction(stringResource(Res.string.plan_create), !state.busy) { onEdit(null) }
         EditorAction(stringResource(Res.string.plan_create_folder), !state.busy) {
             folder = null

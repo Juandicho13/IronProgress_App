@@ -197,4 +197,19 @@ Lo hizo Claude en paralelo con F1-10 (ChatGPT), en una rama aparte que sale del 
 - Lo escribió Argon (Gemini) en `build/claude-wt`; no pudo correr Gradle en su entorno. Claude lo compiló, corrigió un smart cast en `RestNotificationHelper.kt` y el estilo, y verificó 119 pruebas, los dos APK y ktlintCheck.
 - Piezas: `androidApp/.../session/RestForegroundService.kt` (servicio `health`), `androidApp/.../notifications/RestNotificationHelper.kt` (estados 1 y 2 de PANTALLAS 5.8), `shared/ui/.../rest/RestController.kt` y `RestNotificationBridge` (primer o segundo plano y permiso), manifiesto con `FOREGROUND_SERVICE_HEALTH` y `HIGH_SAMPLING_RATE_SENSORS`.
 - Falta probar en el S25 Ultra: que la notificación salga en la Now Bar, los botones +15 s, Saltar y Completar serie con la app cerrada, y el sonido al terminar.
+## 13. F1-17 en feat/f1-voz, 5 de noviembre de 2026
+Rama nueva que sale de `feat/f1-claude` (después del diseño de 5.8), para no cruzarse con F1-14, que Argon hace en `feat/f1-claude`.
+- `shared/domain/.../voice/VoiceScript.kt`: `VoiceSettings` (los tres interruptores de 5.2) y `TimerPlan.voiceLinesBetween`, que convierte los eventos del motor en las frases de PANTALLAS 5.3. En el descanso, a los 5 s dice lo que sigue y cuenta solo 3, 2, 1. Una consulta tardía (app dormida) solo dice la fase actual. 6 pruebas.
+- `shared/ui/.../voice/`: `VoiceSpeaker` con `rememberVoiceSpeaker()`; `AndroidVoiceSpeaker` (TextToSpeech, foco con `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK`, lo puede usar el servicio sin pantalla) y `AppleVoiceSpeaker` (AVSpeechSynthesizer, sesión Playback con `duckOthers` y desactivación con `NotifyOthersOnDeactivation`). `VoiceLine.text()` da la frase en el idioma del teléfono, la misma del subtítulo.
+- Todo con la voz del sistema: la voz grabada sigue pendiente (13.10).
+- **iOS no se compiló aquí.** Si `VoiceSpeaker.ios.kt` falla, lo primero son los imports de `platform.AVFAudio` (`setActive`) y `platform.Foundation` (`languageCode`): se corrigen con el autocompletado.
+- Todavía nadie la usa: la conecta F1-18 (intervalos).
+## 14. F1-18 en feat/f1-voz, 5 de noviembre de 2026
+- Dominio en `domain/interval/`: `IntervalTemplate` (límites de los botones de 5.2, total sin el último descanso, ejercicios que se alternan, `toPlan()`), `IntervalPreset` (Tabata 20/10, 15/45, 30/30, 40/20), `IntervalTemplateRepository` y `SaveIntervalResult`, que guarda los intervalos terminados como sesión `HIIT` con un bloque `INTERVALS` (`BlockResult.RepsPerRound`) y una serie por ronda.
+- `RoomIntervalTemplateRepository` usa la tabla `interval_templates` de F1-03 (sin migración nueva). `VoiceSettings` ahora es `@Serializable` y se guarda en la columna `voice`.
+- Pantallas en `ui/interval/`: crear y editar (5.2), correr con voz (5.3) con anillo, segmentos de rondas, número grande en los últimos 5 s, subtítulo de la voz de 2,6 s, chips de reps en el descanso (la última vez ±2; si no eliges, guarda la ronda anterior del mismo ejercicio o la última vez) y pantalla de fin.
+- Se entra desde Plan, en la sección "Intervalos a tu medida", hasta que exista la pantalla de disciplinas (F1-20).
+- Quedan fuera por ahora: "Probar voz", la caja de pulso (F4) y los íconos de Material Symbols que faltan (pausa, saltar y volumen salen como texto).
+- La voz sigue mientras la app esté viva. Con la pantalla bloqueada mucho rato, Android puede pausar la app: eso lo cubre el servicio de F1-14. Hay que probarlo con música en los dos teléfonos.
+- Verificado en Linux: 132 pruebas (2 de ViewModel, 2 de Room y 4 de dominio nuevas), los dos APK y ktlintCheck. iOS sin compilar aquí.
 
