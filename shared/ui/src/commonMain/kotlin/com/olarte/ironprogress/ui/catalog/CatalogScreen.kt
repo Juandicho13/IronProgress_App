@@ -82,6 +82,7 @@ fun CatalogScreen(
     listState: LazyListState = rememberLazyListState(),
     modifier: Modifier = Modifier,
     onEdit: (String?) -> Unit = {},
+    onOpen: (String) -> Unit = {},
 ) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
@@ -271,6 +272,7 @@ fun CatalogScreen(
                         exercise = exercise,
                         languageCode = languageCode,
                         onEdit = { onEdit(exercise.id.value) },
+                        onOpen = { onOpen(exercise.id.value) },
                         onArchiveToggle = {
                             onIntent(CatalogIntent.ArchiveToggled(exercise.id, !exercise.isArchived))
                         },
@@ -326,7 +328,13 @@ private fun ForjaFilterChip(label: String, selected: Boolean, onClick: () -> Uni
 }
 
 @Composable
-private fun ForjaExerciseCard(exercise: Exercise, languageCode: String, onArchiveToggle: () -> Unit, onEdit: () -> Unit) {
+private fun ForjaExerciseCard(
+    exercise: Exercise,
+    languageCode: String,
+    onArchiveToggle: () -> Unit,
+    onEdit: () -> Unit,
+    onOpen: () -> Unit = {},
+) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val primaryLabels = exercise.primaryMuscles.map { it.label() }.joinToString(" · ")
@@ -338,6 +346,7 @@ private fun ForjaExerciseCard(exercise: Exercise, languageCode: String, onArchiv
             .fillMaxWidth()
             .clip(ForjaRadius.shapeL)
             .background(colors.surface1)
+            .clickable(onClick = onOpen)
             .padding(ForjaSpacing.esp4),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1),
     ) {

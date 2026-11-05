@@ -2,9 +2,11 @@ package com.olarte.ironprogress.data.catalog
 
 import com.olarte.ironprogress.data.local.CatalogDao
 import com.olarte.ironprogress.data.local.CatalogMetadataEntity
+import com.olarte.ironprogress.data.local.ExerciseSourceEntity
 import com.olarte.ironprogress.data.local.toDomain
 import com.olarte.ironprogress.data.local.toEntities
 import com.olarte.ironprogress.domain.catalog.Exercise
+import com.olarte.ironprogress.domain.catalog.ExerciseFacts
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +41,16 @@ class RoomExerciseRepository(private val catalogDao: CatalogDao) : ExerciseRepos
         catalogDao.saveCustomExercise(entity, muscles)
     }
 
+    override suspend fun findFacts(id: ExerciseId): ExerciseFacts? {
+        ensureSeeded()
+        if (catalogDao.findExerciseWithMuscles(id.value) == null) return null
+        return ExerciseFacts(
+            demand = catalogDao.findDemand(id.value)?.toDomain(),
+            progression = catalogDao.findProgression(id.value)?.toDomain(),
+            source = catalogDao.findSource(id.value)?.toDomain(),
+        )
+    }
+
     override suspend fun setArchived(id: ExerciseId, archived: Boolean) {
         ensureSeeded()
         catalogDao.setArchived(id.value, archived)
@@ -59,9 +71,14 @@ class RoomExerciseRepository(private val catalogDao: CatalogDao) : ExerciseRepos
                 val pairs = SeedCatalog.exercises.map { it.toEntities() }
                 val exerciseEntities = pairs.map { it.first }
                 val muscleEntities = pairs.flatMap { it.second }
-                catalogDao.replaceSeedCatalog(
+                catalogDao.replaceSeedCatalogWithFacts(
                     exercises = exerciseEntities,
                     muscles = muscleEntities,
+                    demands = SeedCatalogFacts.demands.map { (id, demand) -> demand.toEntity(id) },
+                    sources = exerciseEntities.map {
+                        ExerciseSourceEntity(it.id, SeedCatalogFacts.SOURCE, SeedCatalogFacts.LICENSE, author = null)
+                    },
+                    progressions = SeedCatalogFacts.progressions.map { (id, ladder) -> ladder.toEntity(id) },
                     version = SeedCatalog.VERSION,
                 )
             }

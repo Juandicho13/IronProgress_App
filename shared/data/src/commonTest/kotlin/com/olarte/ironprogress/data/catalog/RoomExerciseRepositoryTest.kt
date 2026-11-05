@@ -2,8 +2,11 @@ package com.olarte.ironprogress.data.catalog
 
 import com.olarte.ironprogress.data.local.CatalogDao
 import com.olarte.ironprogress.data.local.CatalogMetadataEntity
+import com.olarte.ironprogress.data.local.ExerciseDemandEntity
 import com.olarte.ironprogress.data.local.ExerciseEntity
 import com.olarte.ironprogress.data.local.ExerciseMuscleEntity
+import com.olarte.ironprogress.data.local.ExerciseProgressionEntity
+import com.olarte.ironprogress.data.local.ExerciseSourceEntity
 import com.olarte.ironprogress.data.local.ExerciseWithMusclesRelation
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.ExerciseQuery
@@ -116,6 +119,28 @@ private class FakeCatalogDao : CatalogDao {
         }
         emitCurrentRelations()
     }
+
+    private val demands = mutableMapOf<String, ExerciseDemandEntity>()
+    private val sources = mutableMapOf<String, ExerciseSourceEntity>()
+    private val progressions = mutableMapOf<String, ExerciseProgressionEntity>()
+
+    override suspend fun upsertDemands(demands: List<ExerciseDemandEntity>) {
+        demands.forEach { this.demands[it.exerciseId] = it }
+    }
+
+    override suspend fun upsertSources(sources: List<ExerciseSourceEntity>) {
+        sources.forEach { this.sources[it.exerciseId] = it }
+    }
+
+    override suspend fun upsertProgressions(progressions: List<ExerciseProgressionEntity>) {
+        progressions.forEach { this.progressions[it.exerciseId] = it }
+    }
+
+    override suspend fun findDemand(exerciseId: String) = demands[exerciseId]
+
+    override suspend fun findSource(exerciseId: String) = sources[exerciseId]
+
+    override suspend fun findProgression(exerciseId: String) = progressions[exerciseId]
 
     private fun emitCurrentRelations() {
         relationsFlow.value = exercisesById.values

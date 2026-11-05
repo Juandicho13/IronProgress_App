@@ -14,4 +14,10 @@ interface ExerciseRepository {
 
     /** Archiva o restaura un ejercicio. Archivar lo oculta de la búsqueda sin borrar su historial. */
     suspend fun setArchived(id: ExerciseId, archived: Boolean)
+
+    /**
+     * Exigencia, escalera y fuente; null si el ejercicio no existe o no los tiene. Trae un valor
+     * por defecto para que los repositorios de prueba no tengan que implementarlo.
+     */
+    suspend fun findFacts(id: ExerciseId): ExerciseFacts? = null
 }

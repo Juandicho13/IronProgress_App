@@ -199,6 +199,15 @@ fun IronProgressApp() {
                             onIntent = viewModel::onIntent,
                             listState = catalogListState,
                             onEdit = { backStack.add(Route.ExerciseEditor(it)) },
+                            onOpen = { backStack.add(Route.ExerciseDetail(it)) },
+                        )
+                    }
+                    entry<Route.ExerciseDetail> { route ->
+                        com.olarte.ironprogress.ui.catalog.ExerciseDetailRoute(
+                            route.id,
+                            languageCode = languageCode,
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpen = { backStack.add(Route.ExerciseDetail(it)) },
                         )
                     }
 
@@ -242,7 +251,10 @@ fun IronProgressApp() {
                 },
             )
 
-            if (!isWorkoutScreenOpen && currentDestination !is Route.ExerciseEditor && currentDestination !is Route.RoutineEditor) {
+            val isFullScreen = currentDestination is Route.ExerciseEditor ||
+                currentDestination is Route.ExerciseDetail ||
+                currentDestination is Route.RoutineEditor
+            if (!isWorkoutScreenOpen && !isFullScreen) {
                 val activeBanner = workoutBanner(workoutState)
 
                 CompositionLocalProvider(LocalForjaHazeState provides hazeState) {
@@ -306,6 +318,7 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     Route.Progress -> ForjaTab.PROGRESS
     is Route.RoutineEditor -> ForjaTab.PLAN
     is Route.ExerciseEditor -> ForjaTab.TODAY
+    is Route.ExerciseDetail -> ForjaTab.TODAY
     Route.Catalog -> ForjaTab.TODAY
     is Route.Workout -> ForjaTab.TODAY
 }

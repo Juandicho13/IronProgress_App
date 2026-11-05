@@ -272,4 +272,29 @@
     <string name="workout_block_pending">Guided logging for this block is not available yet.</string>
     <string name="workout_set_label">Set %1$d · %2$s</string>
     <string name="workout_fields">Edit measurements</string>
+    <!-- Ficha de ejercicio (F1-06) -->
+    <string name="detail_title">Exercise</string>
+    <string name="detail_muscles">Muscles</string>
+    <string name="detail_muscles_hint">share of the work</string>
+    <string name="detail_demand">Demand</string>
+    <string name="detail_overall">Overall</string>
+    <string name="detail_technique">Technique</string>
+    <string name="detail_spine">Spinal load</string>
+    <string name="detail_joints">Joint impact</string>
+    <string name="detail_alternatives">If today you need something else</string>
+    <string name="detail_easier">Less demanding</string>
+    <string name="detail_harder">More demanding</string>
+    <string name="detail_out_of">%1$d of %2$d</string>
+    <string name="detail_source">Source: %1$s, %2$s.</string>
+    <string name="detail_not_found">We couldn\'t find this exercise.</string>
+    <string name="impact_low">low</string>
+    <string name="impact_medium">medium</string>
+    <string name="impact_high">high</string>
+    <string name="joint_knee">Knee</string>
+    <string name="joint_hip">Hip</string>
+    <string name="joint_shoulder">Shoulder</string>
+    <string name="joint_elbow">Elbow</string>
+    <string name="joint_wrist">Wrist</string>
+    <string name="joint_lower_back">Lower back</string>
+    <string name="detail_no_joints">Low impact on every joint</string>
 </resources>

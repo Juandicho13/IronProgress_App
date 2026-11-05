@@ -22,7 +22,15 @@ enum class MuscleRole(val setWeight: Double) {
     SECONDARY(0.5),
 }
 
-data class ExerciseMuscle(val muscle: Muscle, val role: MuscleRole)
+/**
+ * Un músculo de un ejercicio. [workShare] es el porcentaje del trabajo (los de un ejercicio suman
+ * 100); null en los ejercicios propios que no lo tienen, que siguen con la regla de [role].
+ */
+data class ExerciseMuscle(val muscle: Muscle, val role: MuscleRole, val workShare: Int? = null) {
+    init {
+        require(workShare == null || workShare in 1..100) { "El porcentaje va de 1 a 100" }
+    }
+}
 
 data class Exercise(
     val id: ExerciseId,

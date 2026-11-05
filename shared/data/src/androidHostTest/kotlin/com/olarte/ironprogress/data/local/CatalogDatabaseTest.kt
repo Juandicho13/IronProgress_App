@@ -7,6 +7,8 @@ import com.olarte.ironprogress.domain.catalog.Equipment
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.ExerciseMuscle
+import com.olarte.ironprogress.domain.catalog.Joint
+import com.olarte.ironprogress.domain.catalog.JointImpact
 import com.olarte.ironprogress.domain.catalog.LocalizedText
 import com.olarte.ironprogress.domain.catalog.MovementPattern
 import com.olarte.ironprogress.domain.catalog.Muscle
@@ -173,5 +175,21 @@ class CatalogDatabaseTest {
             SeedCatalog.VERSION + 1,
             dao.getMetadataInt(CatalogMetadataEntity.KEY_SEED_CATALOG_VERSION),
         )
+    }
+
+    @Test
+    fun seedingVersion2StoresDemandLadderSourceAndShares() = runTest {
+        val repository = RoomExerciseRepository(dao)
+
+        val facts = repository.findFacts(ExerciseId("pull-up"))
+        val pullUp = repository.findExercise(ExerciseId("pull-up"))
+
+        assertNotNull(facts)
+        assertEquals(4, facts.demand?.overall)
+        assertEquals(JointImpact.HIGH, facts.demand?.impactOn(Joint.SHOULDER))
+        assertEquals(ExerciseId("assisted-pull-up"), facts.progression?.easier)
+        assertEquals("IronProgress", facts.source?.source)
+        assertEquals(100, pullUp?.muscles?.sumOf { it.workShare ?: 0 })
+        assertEquals(null, repository.findFacts(ExerciseId("no-existe")))
     }
 }

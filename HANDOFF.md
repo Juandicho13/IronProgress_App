@@ -379,6 +379,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-04 | F1-09 · rotación y Hoy real | `feat/f1-argon`, `ff74a06` | Rotación por carpeta, semana local, estado vacío e inicio/reanudación por id. 94 pruebas sin fallos, ktlintCheck, ambos APK y frameworks iOS: BUILD SUCCESSFUL local. Entreno y accesorio siguen como prototipo pendiente de F1-10; falta revisión en teléfonos. Sin push |
 | 2026-11-05 | F1-10 · sesión activa y Entreno real | `feat/f1-argon`, commit de F1-10 | Teclado, serie anterior, tipo/nota, RIR/RPE, escritura inmediata y Deshacer. Room v3 con migración probada. 105 pruebas, estilo, ambos APK y frameworks iOS en verde local. Recuperación comprobada en emulador; falta aceptación y latencia en teléfonos. Sin push |
 | 2026-11-05 | F1-13 · arranque sin pantalla | `feat/f1-claude`, sobre F1-09 | Koin y la base arrancan en `Application.onCreate` y en el `init` de la App de iOS; `IronProgressKoinTest` 2 en verde; 96 pruebas; falta abrir la app en los equipos y compilar iOS en el Mac |
+| 2026-11-05 | F1-06 · exigencia, porcentajes, escaleras y ficha | `feat/f1-claude` | Catálogo semilla versión 2 con los datos de los 77 y ficha de ejercicio (7.5); 114 pruebas. Valores en borrador: se cierra cuando Juan los revise |
 
 ---
 

@@ -272,4 +272,29 @@
     <string name="workout_block_pending">El registro guiado de este bloque aún no está disponible.</string>
     <string name="workout_set_label">Serie %1$d · %2$s</string>
     <string name="workout_fields">Editar medidas</string>
+    <!-- Ficha de ejercicio (F1-06) -->
+    <string name="detail_title">Ejercicio</string>
+    <string name="detail_muscles">Músculos</string>
+    <string name="detail_muscles_hint">parte del trabajo</string>
+    <string name="detail_demand">Exigencia</string>
+    <string name="detail_overall">General</string>
+    <string name="detail_technique">Técnica</string>
+    <string name="detail_spine">Carga en la columna</string>
+    <string name="detail_joints">Impacto por articulación</string>
+    <string name="detail_alternatives">Si hoy necesitas otra cosa</string>
+    <string name="detail_easier">Menos exigente</string>
+    <string name="detail_harder">Más exigente</string>
+    <string name="detail_out_of">%1$d de %2$d</string>
+    <string name="detail_source">Fuente: %1$s, %2$s.</string>
+    <string name="detail_not_found">No encontramos este ejercicio.</string>
+    <string name="impact_low">bajo</string>
+    <string name="impact_medium">medio</string>
+    <string name="impact_high">alto</string>
+    <string name="joint_knee">Rodilla</string>
+    <string name="joint_hip">Cadera</string>
+    <string name="joint_shoulder">Hombro</string>
+    <string name="joint_elbow">Codo</string>
+    <string name="joint_wrist">Muñeca</string>
+    <string name="joint_lower_back">Lumbar</string>
+    <string name="detail_no_joints">Impacto bajo en todas las articulaciones</string>
 </resources>

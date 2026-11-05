@@ -56,6 +56,40 @@ interface CatalogDao {
      * los ejercicios personalizados creados por el usuario. Conserva el archivado: un
      * ejercicio base que la persona archivó sigue archivado aunque suba la version.
      */
+    @Upsert
+    suspend fun upsertDemands(demands: List<ExerciseDemandEntity>)
+
+    @Upsert
+    suspend fun upsertSources(sources: List<ExerciseSourceEntity>)
+
+    @Upsert
+    suspend fun upsertProgressions(progressions: List<ExerciseProgressionEntity>)
+
+    @Query("SELECT * FROM exercise_demands WHERE exercise_id = :exerciseId LIMIT 1")
+    suspend fun findDemand(exerciseId: String): ExerciseDemandEntity?
+
+    @Query("SELECT * FROM exercise_sources WHERE exercise_id = :exerciseId LIMIT 1")
+    suspend fun findSource(exerciseId: String): ExerciseSourceEntity?
+
+    @Query("SELECT * FROM exercise_progressions WHERE exercise_id = :exerciseId LIMIT 1")
+    suspend fun findProgression(exerciseId: String): ExerciseProgressionEntity?
+
+    /** Siembra el catálogo y sus datos de la Etapa 1 en una sola transacción. */
+    @Transaction
+    suspend fun replaceSeedCatalogWithFacts(
+        exercises: List<ExerciseEntity>,
+        muscles: List<ExerciseMuscleEntity>,
+        demands: List<ExerciseDemandEntity>,
+        sources: List<ExerciseSourceEntity>,
+        progressions: List<ExerciseProgressionEntity>,
+        version: Int,
+    ) {
+        replaceSeedCatalog(exercises, muscles, version)
+        upsertDemands(demands)
+        upsertSources(sources)
+        upsertProgressions(progressions)
+    }
+
     @Transaction
     suspend fun replaceSeedCatalog(exercises: List<ExerciseEntity>, muscles: List<ExerciseMuscleEntity>, version: Int) {
         if (exercises.isNotEmpty()) {

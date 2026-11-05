@@ -173,3 +173,12 @@ Lo hizo Claude en paralelo con F1-10 (ChatGPT), en una rama aparte que sale del 
 - `shared` tiene `withHostTest` e `IronProgressKoinTest` (2): arranca Koin sin Compose, lee los 77 ejercicios y crea una rutina. El CI corre `:shared:testAndroidHostTest`.
 - Verificado en Linux: 96 pruebas, los dos APK y ktlintCheck. Falta compilar iOS en el Mac (el cambio de Swift es una línea) y abrir la app en los equipos.
 
+## 11. F1-06 en feat/f1-claude, 5 de noviembre de 2026
+
+- Los 77 ejercicios tienen exigencia (`ExerciseDemand`: general, técnica, columna, impacto por articulación y MET), porcentaje por músculo (`ExerciseMuscle.workShare`, suman 100), escalera (`ExerciseProgression`) y fuente (`ExerciseSource`: "IronProgress", "Propio").
+- Los valores están en `shared/data/.../catalog/SeedCatalogFacts.kt`. Son un **borrador** que Juan revisa en la página "Revisión F1-06"; cambiar un valor es editar ese archivo. El ticket se cierra cuando él lo apruebe.
+- MET solo con código claro del Compendio 2024 (02054, 02022, 02024, 02058, 02071). Cinta, bicicleta y paseo del granjero quedan sin MET.
+- `SeedCatalog.VERSION = 2`: al abrir, la app vuelve a sembrar los 77 con sus datos y conserva lo archivado. `ExerciseRepository.findFacts` trae todo (con valor por defecto `null` para no romper los repositorios de prueba).
+- Ficha de ejercicio (PANTALLAS 7.5) en `ui/catalog/ExerciseDetailScreen.kt`, ruta `Route.ExerciseDetail`. Se abre tocando una tarjeta del catálogo. Quedan fuera por ahora la figura (llega con las figuras de F1-20), "Historial" (F1-23) y "Añadir a un entreno".
+- Verificado en Linux: 114 pruebas, los dos APK y ktlintCheck. Falta verla en los teléfonos.
+

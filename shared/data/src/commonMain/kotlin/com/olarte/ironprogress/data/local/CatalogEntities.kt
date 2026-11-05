@@ -146,6 +146,7 @@ internal fun ExerciseWithMusclesRelation.toDomain(): Exercise = Exercise(
                     "Músculo desconocido en la base: ${muscleEntity.muscleId}"
                 },
                 role = MuscleRole.valueOf(muscleEntity.role),
+                workShare = muscleEntity.workShare,
             )
         },
     unilateral = exercise.isUnilateral,
@@ -182,6 +183,7 @@ internal fun Exercise.toEntities(): Pair<ExerciseEntity, List<ExerciseMuscleEnti
             muscleId = item.muscle.id,
             role = item.role.name,
             sortOrder = index,
+            workShare = item.workShare,
         )
     }
     return exerciseEntity to muscleEntities
