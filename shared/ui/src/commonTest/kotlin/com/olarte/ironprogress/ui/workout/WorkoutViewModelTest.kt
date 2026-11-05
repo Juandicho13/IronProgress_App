@@ -238,6 +238,53 @@ class WorkoutViewModelTest {
     }
 
     @Test
+    fun restStartsAfterSavingAndMinimizingDoesNotResetItsDeadline() = runTest {
+        fixture { _, clock, create ->
+            val model = create()
+            val id = start(model)
+            type(model, id, WorkoutField.WEIGHT, "40")
+            type(model, id, WorkoutField.REPS, "8")
+            model.onIntent(WorkoutIntent.Complete(id))
+            runCurrent()
+            assertTrue(model.state.value.restExpanded)
+            val rest = assertNotNull(model.state.value.rest)
+            model.onIntent(WorkoutIntent.MinimizeRest)
+            clock.now += 1.minutes
+            model.refreshRest()
+            assertEquals(60L, model.state.value.rest!!.at(model.state.value.restNowMs).displaySecondsLeft)
+            model.onIntent(WorkoutIntent.AdjustRest(15))
+            assertEquals(75L, model.state.value.rest!!.at(model.state.value.restNowMs).displaySecondsLeft)
+            model.onIntent(WorkoutIntent.ExpandRest)
+            assertEquals(rest.startedAtMs, model.state.value.rest!!.startedAtMs)
+            clock.now += 2.minutes
+            model.refreshRest()
+            assertNull(model.state.value.rest)
+            assertFalse(model.state.value.restExpanded)
+        }
+    }
+
+    @Test
+    fun skippingOrUndoingCancelsRest() = runTest {
+        fixture { _, _, create ->
+            val model = create()
+            val id = start(model)
+            type(model, id, WorkoutField.WEIGHT, "40")
+            type(model, id, WorkoutField.REPS, "8")
+            model.onIntent(WorkoutIntent.Complete(id))
+            runCurrent()
+            model.onIntent(WorkoutIntent.Undo)
+            runCurrent()
+            assertNull(model.state.value.rest)
+            model.onIntent(WorkoutIntent.Complete(id))
+            runCurrent()
+            assertNotNull(model.state.value.rest)
+            model.onIntent(WorkoutIntent.SkipRest)
+            assertNull(model.state.value.rest)
+            assertTrue(model.state.value.session!!.sets.single().isCompleted)
+        }
+    }
+
+    @Test
     fun failedWritesKeepTheirOrderAndRetryTheLatestInput() = runTest {
         fixture { sessions, _, create ->
             val model = create()

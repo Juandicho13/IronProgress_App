@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -142,6 +143,9 @@ fun IronProgressApp() {
     ForjaTheme {
         val haptics = ForjaTheme.haptics
 
+        LaunchedEffect(workoutViewModel, workoutState.rest != null) {
+            if (workoutState.rest != null) while (true) withFrameNanos { workoutViewModel.refreshRest() }
+        }
         LaunchedEffect(workoutViewModel) {
             workoutViewModel.effects.collect { effect ->
                 when (effect) {
@@ -149,6 +153,8 @@ fun IronProgressApp() {
                         backStack.removeAll { it is Route.Workout }
                         backStack.add(Route.Workout(effect.sessionId))
                     }
+                    WorkoutEffect.RestTick -> haptics.restCountdownTick()
+                    WorkoutEffect.RestFinished -> haptics.restFinished()
                     WorkoutEffect.SetCompleted -> haptics.setCompleted()
                 }
             }
@@ -165,7 +171,9 @@ fun IronProgressApp() {
                 // El contenido que pasa por detrás de la isla se desenfoca en el vidrio (F0-10).
                 modifier = Modifier.hazeSource(hazeState),
                 onBack = {
-                    if (editorBack != null) {
+                    if (workoutState.restExpanded && isWorkoutScreenOpen) {
+                        workoutViewModel.onIntent(WorkoutIntent.MinimizeRest)
+                    } else if (editorBack != null) {
                         editorBack?.invoke()
                     } else if (backStack.size > 1) {
                         backStack.removeLastOrNull()
@@ -259,7 +267,7 @@ fun IronProgressApp() {
                             backStack.removeAll { it is Route.Workout }
                             backStack.add(Route.Workout(workoutState.session?.session?.id?.value))
                         },
-                        onSkipRest = {},
+                        onSkipRest = { workoutViewModel.onIntent(WorkoutIntent.SkipRest) },
                         onTabSelected = { tab ->
                             if (isIslandMinimized) {
                                 isIslandMinimized = false

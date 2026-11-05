@@ -272,4 +272,13 @@
     <string name="workout_block_pending">Guided logging for this block is not available yet.</string>
     <string name="workout_set_label">Set %1$d · %2$s</string>
     <string name="workout_fields">Edit measurements</string>
+    <string name="rest_title">Rest</string>
+    <string name="rest_skip">Skip rest</string>
+    <string name="rest_minimize">Back to sets</string>
+    <string name="rest_expand">Expand rest</string>
+    <string name="rest_less">-15 s</string>
+    <string name="rest_more">+15 s</string>
+    <string name="rest_total">of %1$s</string>
+    <string name="rest_next">Next</string>
+    <string name="rest_swipe">Swipe down to return to your sets</string>
 </resources>
