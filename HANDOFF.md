@@ -377,6 +377,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-04 | F1-07 · ejercicios propios | `feat/f0-claude`, `feab7e6` | UUID v7, guardado transaccional, editor MVI, filtros y pruebas. Comando completo de estilo, tres suites y dos APK: BUILD SUCCESSFUL local. Pendiente revisión en teléfonos. CI de base: Android success, iOS cancelado |
 | 2026-11-04 | F1-08 · carpetas y editor de rutinas | `feat/f0-claude`, `24933f7` | Plan con Room, borrador MVI, bloques de series, orden, duplicado y borrado. 81 pruebas sin fallos, ktlintCheck, ambos APK y frameworks iOS: BUILD SUCCESSFUL local. Falta aceptación visual en teléfonos; sin push |
 | 2026-11-04 | F1-09 · rotación y Hoy real | `feat/f1-argon`, commit de F1-09 | Rotación por carpeta, semana local, estado vacío e inicio/reanudación por id. 94 pruebas sin fallos, ktlintCheck, ambos APK y frameworks iOS: BUILD SUCCESSFUL local. Entreno y accesorio siguen como prototipo pendiente de F1-10; falta revisión en teléfonos. Sin push |
+| 2026-11-05 | F1-13 · arranque sin pantalla | `feat/f1-claude`, sobre F1-09 | Koin y la base arrancan en `Application.onCreate` y en el `init` de la App de iOS; `IronProgressKoinTest` 2 en verde; 96 pruebas; falta abrir la app en los equipos y compilar iOS en el Mac |
 
 ---
 

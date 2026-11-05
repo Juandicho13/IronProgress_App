@@ -1,24 +1,13 @@
 package com.olarte.ironprogress
 
 import androidx.compose.runtime.Composable
-import com.olarte.ironprogress.di.rememberPlatformModule
-import com.olarte.ironprogress.di.sharedAppModule
 import com.olarte.ironprogress.ui.IronProgressApp
-import com.olarte.ironprogress.ui.di.uiModule
-import org.koin.compose.KoinApplication
 
 /**
- * Punto de entrada compartido de la interfaz.
- * Inicializa Koin con Room 3, los casos de uso y los ViewModels (uiModule).
+ * Punto de entrada compartido de la interfaz. Koin ya arrancó antes (IronProgressKoin.start) y
+ * Compose lo usa sin envolverlo en KoinApplication ni KoinContext: en Koin 4.1 eso sobra.
  */
 @Composable
 fun App() {
-    val platformModule = rememberPlatformModule()
-    KoinApplication(
-        application = {
-            modules(platformModule, sharedAppModule, uiModule)
-        },
-    ) {
-        IronProgressApp()
-    }
+    IronProgressApp()
 }

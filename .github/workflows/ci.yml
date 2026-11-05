@@ -38,7 +38,7 @@ jobs:
         run: ./gradlew ktlintCheck
 
       - name: Correr pruebas unitarias de dominio y datos
-        run: ./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest :shared:ui:testAndroidHostTest
+        run: ./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest :shared:ui:testAndroidHostTest :shared:testAndroidHostTest
 
       - name: Compilar APK debug de telefono y reloj
         run: ./gradlew :androidApp:assembleDebug :wearApp:assembleDebug

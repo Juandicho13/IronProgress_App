@@ -1,22 +1,22 @@
 package com.olarte.ironprogress.di
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import android.content.Context
 import com.olarte.ironprogress.data.local.createIronProgressDatabase
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
-/**
- * Módulo de Koin de Android: abre la base con el contexto de la aplicación,
- * que se toma de Compose para no depender de koin-android.
- */
-@Composable
-actual fun rememberPlatformModule(): Module {
-    val appContext = LocalContext.current.applicationContext
-    return remember(appContext) {
-        module {
-            single { createIronProgressDatabase(appContext) }
-        }
+/** Módulo de Koin de Android: la base con el contexto de la aplicación, sin koin-android. */
+fun androidPlatformModule(context: Context): Module {
+    val appContext = context.applicationContext
+    return module {
+        single { createIronProgressDatabase(appContext) }
     }
+}
+
+/**
+ * Lo llama Application.onCreate, antes de cualquier Activity o servicio. No devuelve Koin para
+ * que androidApp no necesite koin-core en su classpath.
+ */
+fun startIronProgress(context: Context) {
+    IronProgressKoin.start(androidPlatformModule(context))
 }

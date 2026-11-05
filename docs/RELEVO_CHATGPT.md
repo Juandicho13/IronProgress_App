@@ -148,3 +148,16 @@ Juan autorizó continuar el borrador de F1-09 en `feat/f1-argon`. La rama parte 
 - Verificación local observada: `ktlintCheck`, `:shared:domain:testAndroidHostTest`, `:shared:data:testAndroidHostTest`, `:shared:ui:testAndroidHostTest`, `:androidApp:assembleDebug`, `:wearApp:assembleDebug`, `:shared:linkDebugFrameworkIosSimulatorArm64` y `:shared:linkDebugFrameworkIosArm64`: BUILD SUCCESSFUL. 94 pruebas, sin fallos ni errores (domain 53, data 30, ui 11). Incluye una prueba de rotación contra Room real.
 - CI: no verifica este commit local mientras Juan no haga push. No se cambiaron versiones, enums, ids del catálogo ni esquemas de Room.
 - Pendiente en S25 Ultra e iPhone: Hoy vacío, crear una rutina desde Hoy, reflejar edición y orden desde Plan, nombres en ES/EN, fecha y semana locales al volver desde segundo plano, textos grandes, lectores de pantalla y temas claro/oscuro. Revisar que Empezar no duplique la sesión y que Continuar vuelva a aparecer tras cerrar la app. Registrar/completar/terminar series y comprobar la rotación de extremo a extremo espera la interfaz real de sesión.
+
+## 9. F1-13 en feat/f1-claude, 5 de noviembre de 2026
+
+Lo hizo Claude en paralelo con F1-10 (ChatGPT), en una rama aparte que sale del commit de F1-09.
+
+- Koin arranca antes de la interfaz: `IronProgressKoin.start(platformModule)` en `shared/.../di/IronProgressKoin.kt`, que no arranca un segundo Koin si ya hay uno.
+- Android: `IronProgressApplication` (registrada en el manifiesto) llama a `startIronProgress(context)`. El `Context` pasa a mano, sin koin-android.
+- iOS: `iOSApp.swift` llama a `IosStartupKt.startIronProgress()` en su `init`, y `MainViewController` lo vuelve a llamar por si acaso (no hace nada la segunda vez).
+- `App()` ya no crea Koin: solo dibuja `IronProgressApp()`. En Koin 4.1.0 `KoinContext` está deprecado porque Compose usa el Koin de `startKoin` (verificado en el jar).
+- `rememberPlatformModule` desapareció. Si F1-10 lo usa en alguna parte, se cambia por lo de arriba.
+- `shared` tiene `withHostTest` e `IronProgressKoinTest` (2): arranca Koin sin Compose, lee los 77 ejercicios y crea una rutina. El CI corre `:shared:testAndroidHostTest`.
+- Verificado en Linux: 96 pruebas, los dos APK y ktlintCheck. Falta compilar iOS en el Mac (el cambio de Swift es una línea) y abrir la app en los equipos.
+
