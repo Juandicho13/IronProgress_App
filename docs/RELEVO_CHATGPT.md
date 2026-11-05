@@ -340,3 +340,15 @@ Marca cada línea en el S25 Ultra y en el iPhone; el Watch4 solo donde se dice.
 - [ ] F1-27: beta interna de 2 semanas.
 - F1-26 sigue bloqueado por diseño (PAR-Q+, modo joven y permiso de los padres).
 
+## 27. Pulido de F1 en feat/f1-claude, 5 de noviembre de 2026
+
+Juan probó la app en el iPhone y pidió arreglar el movimiento, el contraste en oscuro, la pila de botones en brasa y el orden de las pantallas.
+
+- **Piezas nuevas** en `ui/components/ForjaControls.kt`: `ForjaButton` con estilos PRIMARY (uno por pantalla), SECONDARY, TONAL, TEXT y DESTRUCTIVE; `ForjaIconButton`; `ForjaTopBar` con título centrado; `ForjaLargeTitle`; `ForjaCard`; `ForjaListGroup`, `ForjaListRow`, `ForjaSwitchRow` y `ForjaRadioRow`; `ForjaTextField`; `ForjaDialog` con los botones en fila; `ForjaSheet`; `ForjaEmptyState` y `ForjaNote`. `EditorAction` ahora es secundario por defecto y `EditorChoice` es una fila (o un chip con `compact`) que abre una hoja.
+- **Tema:** `ForjaTheme` llena todas las superficies "container" de Material con las de Forja y pone `LocalContentColor` en text1, así los diálogos y hojas no salen lavanda y ningún texto queda oscuro en el tema oscuro.
+- **Transiciones:** `NavDisplay` usa un fundido de 200 ms (100 con Reducir movimiento) con la pantalla de abajo quieta; cada entrada pinta su fondo con un decorador, así no se ve una pantalla a través de otra.
+- **Pantallas:** Plan (rutinas por carpeta en filas, botón + y hoja de acciones; Entrenar e Intervalos en filas), editor de rutina (barra con cerrar y Guardar, tabla Mín, Máx y RIR, subir y bajar con íconos), Ajustes (idioma y tema en hojas, Copia de seguridad en `Route.Backup`), Entreno libre (estado vacío con Añadir ejercicio principal; opciones de serie y de ejercicio y el selector de ejercicios en hojas), discos en una hoja, catálogo con + y filtros en chips.
+- **Progreso** sale de `IronProgressApp.kt` a `ui/progress`: `ProgressViewModel` cuenta las series reales de los últimos 7 días con `MuscleSets` (dominio, primario 1 y secundario 0,5). Sin entrenos muestra "Aún no hay entrenos". El mapa de recuperación inventado se quitó; llega con F2-08. También se quitó la pantalla de Plan de muestra que no se usaba.
+- **Idioma:** `LocalAppLanguageTag` (`ui/format/AppLanguage.kt`) da el idioma elegido en Ajustes o el preferido del teléfono. En iPhone `Locale.current` seguía al idioma del paquete y la fecha de Hoy salía en inglés.
+- **Capturas:** `ScreenShotsTest` (Robolectric, gráficos nativos) guarda Plan, editor de rutina, Ajustes, Progreso y Entreno libre en claro y oscuro con `-PshotsDir=/ruta`; sin esa propiedad se salta.
+

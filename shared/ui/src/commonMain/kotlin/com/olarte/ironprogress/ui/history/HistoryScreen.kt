@@ -20,9 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,6 +37,10 @@ import com.olarte.ironprogress.domain.session.CivilDate
 import com.olarte.ironprogress.domain.session.monthGrid
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorField
+import com.olarte.ironprogress.ui.components.ForjaButton
+import com.olarte.ironprogress.ui.components.ForjaButtonStyle
+import com.olarte.ironprogress.ui.components.ForjaDialog
+import com.olarte.ironprogress.ui.components.ForjaTopBar
 import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.interval.TextAction
@@ -244,15 +246,7 @@ private fun DayCell(day: CivilDate, trained: Boolean, selected: Boolean, trained
 
 @Composable
 internal fun TopBar(title: String, onBack: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        TextAction(stringResource(Res.string.history_back), ForjaTheme.colors.text2, onClick = onBack)
-        Text(
-            title,
-            Modifier.weight(1f).semantics { heading() },
-            style = ForjaTheme.typography.title3,
-            color = ForjaTheme.colors.text1,
-        )
-    }
+    ForjaTopBar(title, onBack, stringResource(Res.string.history_back))
 }
 
 @Composable
@@ -263,7 +257,7 @@ private fun Chip(text: String, selected: Boolean, onClick: () -> Unit) {
             .clickable(onClick = onClick).semantics { this.selected = selected }.padding(horizontal = ForjaSpacing.esp4),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, style = ForjaTheme.typography.label, color = if (selected) colors.ember else colors.text1)
+        Text(text, style = ForjaTheme.typography.label, color = if (selected) colors.emberInk else colors.text1)
     }
 }
 
@@ -345,29 +339,23 @@ fun HistorySessionScreen(state: HistorySessionState, languageCode: String, onInt
         Spacer(Modifier.height(ForjaSpacing.esp8))
     }
     state.draft?.let { draft ->
-        AlertDialog(
-            onDismissRequest = { onIntent(HistorySessionIntent.Cancel) },
-            title = { Text(stringResource(Res.string.history_edit_set), style = typography.title3) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
-                    EditorField(stringResource(Res.string.history_weight), draft.weight) { onIntent(HistorySessionIntent.Weight(it)) }
-                    EditorField(stringResource(Res.string.history_reps), draft.reps) { onIntent(HistorySessionIntent.Reps(it)) }
-                    if (draft.invalid) Text(stringResource(Res.string.history_invalid), color = colors.danger, style = typography.caption)
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { onIntent(HistorySessionIntent.Save) }, enabled = !state.saving) {
-                    Text(stringResource(Res.string.history_save))
-                }
-            },
-            dismissButton = {
-                Row {
-                    TextButton(onClick = { onIntent(HistorySessionIntent.DeleteSet) }, enabled = !state.saving) {
-                        Text(stringResource(Res.string.history_delete_set), color = colors.danger)
-                    }
-                    TextButton(onClick = { onIntent(HistorySessionIntent.Cancel) }) { Text(stringResource(Res.string.history_cancel)) }
-                }
-            },
-        )
+        ForjaDialog(
+            title = stringResource(Res.string.history_edit_set),
+            onDismiss = { onIntent(HistorySessionIntent.Cancel) },
+            confirmText = stringResource(Res.string.history_save),
+            confirmEnabled = !state.saving,
+            onConfirm = { onIntent(HistorySessionIntent.Save) },
+            dismissText = stringResource(Res.string.history_cancel),
+        ) {
+            EditorField(stringResource(Res.string.history_weight), draft.weight) { onIntent(HistorySessionIntent.Weight(it)) }
+            EditorField(stringResource(Res.string.history_reps), draft.reps) { onIntent(HistorySessionIntent.Reps(it)) }
+            if (draft.invalid) Text(stringResource(Res.string.history_invalid), color = colors.danger, style = typography.caption)
+            ForjaButton(
+                stringResource(Res.string.history_delete_set),
+                Modifier.fillMaxWidth(),
+                ForjaButtonStyle.TEXT,
+                enabled = !state.saving,
+            ) { onIntent(HistorySessionIntent.DeleteSet) }
+        }
     }
 }

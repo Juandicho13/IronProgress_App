@@ -2,7 +2,6 @@ package com.olarte.ironprogress.ui.format
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.text.intl.Locale
 import com.olarte.ironprogress.domain.catalog.WeightUnit
 import kotlin.math.abs
 import kotlin.math.roundToLong
@@ -60,9 +59,9 @@ class Formats(private val platform: PlatformFormatter) {
     }
 }
 
-/** Formatos del idioma y la región del teléfono, recordados mientras no cambien. */
+/** Formatos del idioma de la app y la región del teléfono, recordados mientras no cambien. */
 @Composable
 fun rememberFormats(): Formats {
-    val tag = Locale.current.toLanguageTag()
+    val tag = appLanguageTag()
     return remember(tag) { Formats(platformFormatter(tag)) }
 }

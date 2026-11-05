@@ -1,8 +1,8 @@
 package com.olarte.ironprogress.ui.workout
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.intl.Locale
 import com.olarte.ironprogress.ui.components.ActiveSessionBannerState
+import com.olarte.ironprogress.ui.format.appLanguage
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.rest_title
@@ -34,7 +34,7 @@ fun workoutBanner(state: WorkoutState): ActiveSessionBannerState? {
     }.orEmpty()
     return ActiveSessionBannerState(
         exerciseName =
-        state.catalog[exercise?.exerciseId]?.name?.resolve(Locale.current.language) ?: state.routineName
+        state.catalog[exercise?.exerciseId]?.name?.resolve(appLanguage()) ?: state.routineName
             ?: stringResource(Res.string.workout_free),
         setSummary = stringResource(Res.string.session_set_of, next?.sortOrder?.plus(1) ?: sets.size, sets.size),
         statusText = when {

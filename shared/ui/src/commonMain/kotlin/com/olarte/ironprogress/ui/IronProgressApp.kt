@@ -1,33 +1,22 @@
 package com.olarte.ironprogress.ui
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,23 +25,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavEntryDecorator
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import com.olarte.ironprogress.ui.catalog.CatalogScreen
 import com.olarte.ironprogress.ui.catalog.CatalogViewModel
@@ -63,6 +49,7 @@ import com.olarte.ironprogress.ui.discipline.BreathingRoute
 import com.olarte.ironprogress.ui.discipline.DisciplineTarget
 import com.olarte.ironprogress.ui.discipline.DisciplinesScreen
 import com.olarte.ironprogress.ui.discipline.FlowRoute
+import com.olarte.ironprogress.ui.format.appLanguage
 import com.olarte.ironprogress.ui.navigation.Route
 import com.olarte.ironprogress.ui.navigation.navConfiguration
 import com.olarte.ironprogress.ui.resources.Res
@@ -70,13 +57,9 @@ import com.olarte.ironprogress.ui.resources.nav_plan
 import com.olarte.ironprogress.ui.resources.nav_progress
 import com.olarte.ironprogress.ui.resources.nav_search_exercises
 import com.olarte.ironprogress.ui.resources.nav_today
-import com.olarte.ironprogress.ui.resources.progress_history
 import com.olarte.ironprogress.ui.settings.LocalAppSettings
 import com.olarte.ironprogress.ui.settings.SettingsRoute
 import com.olarte.ironprogress.ui.settings.darkTheme
-import com.olarte.ironprogress.ui.theme.ForjaMeasures
-import com.olarte.ironprogress.ui.theme.ForjaRadius
-import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
 import com.olarte.ironprogress.ui.workout.WorkoutEffect
 import com.olarte.ironprogress.ui.workout.WorkoutIntent
@@ -93,7 +76,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun IronProgressApp() {
     // Idioma del sistema; LocalizedText.resolve da español a "es" y a "es-CO", e inglés a cualquier otro.
-    val languageCode = Locale.current.language
+    val languageCode = appLanguage()
 
     // Lo usan Buscar y Progreso, por eso vive a nivel de la app y no en una entrada de la pila.
     val viewModel = koinViewModel<CatalogViewModel>(key = "catalog-$languageCode") {
@@ -186,6 +169,14 @@ fun IronProgressApp() {
             }
         }
 
+        val reduceMotion = ForjaTheme.motion.reduceMotion
+        val screenBackground = ForjaTheme.colors.background
+        // Cada pantalla pinta su fondo: en las transiciones nunca se ve la de abajo a través.
+        val opaqueEntryDecorator = remember(screenBackground) {
+            NavEntryDecorator<NavKey>(decorate = { entry ->
+                Box(Modifier.fillMaxSize().background(screenBackground)) { entry.Content() }
+            })
+        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -208,7 +199,11 @@ fun IronProgressApp() {
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
                     rememberViewModelStoreNavEntryDecorator(),
+                    opaqueEntryDecorator,
                 ),
+                transitionSpec = { forjaPushTransition(reduceMotion) },
+                popTransitionSpec = { forjaPopTransition(reduceMotion) },
+                predictivePopTransitionSpec = { forjaPopTransition(reduceMotion) },
                 entryProvider = entryProvider {
                     entry<Route.Workout> {
                         CompositionLocalProvider(LocalForjaHazeState provides hazeState) {
@@ -329,8 +324,11 @@ fun IronProgressApp() {
                     entry<Route.Breathing> {
                         BreathingRoute(onClose = { backStack.removeLastOrNull() })
                     }
+                    entry<Route.Backup> {
+                        com.olarte.ironprogress.ui.backup.BackupScreen(onBack = { backStack.removeLastOrNull() })
+                    }
                     entry<Route.Settings> {
-                        SettingsRoute(onBack = { backStack.removeLastOrNull() })
+                        SettingsRoute(onBack = { backStack.removeLastOrNull() }, onOpenBackup = { backStack.add(Route.Backup) })
                     }
                     entry<Route.Wod> {
                         com.olarte.ironprogress.ui.wod.WodRoute(languageCode = languageCode, onClose = { backStack.removeLastOrNull() })
@@ -351,7 +349,7 @@ fun IronProgressApp() {
                     }
 
                     entry<Route.Progress> {
-                        ForjaProgressScreen(
+                        com.olarte.ironprogress.ui.progress.ProgressRoute(
                             listState = progressListState,
                             catalogState = catalogState,
                             languageCode = languageCode,
@@ -372,6 +370,7 @@ fun IronProgressApp() {
                 currentDestination is Route.History ||
                 currentDestination is Route.HistorySession ||
                 currentDestination is Route.Settings ||
+                currentDestination is Route.Backup ||
                 currentDestination is Route.Disciplines ||
                 currentDestination is Route.Flow ||
                 currentDestination is Route.Breathing ||
@@ -428,6 +427,22 @@ fun IronProgressApp() {
     }
 }
 
+private const val TRANSITION_MS = 200
+
+/**
+ * Entrar a una pantalla o cambiar de pestaña: la nueva aparece encima con un fundido corto
+ * mientras la de abajo se queda quieta. Sin deslizar de lado, así no se ven dos pantallas
+ * corriéndose una sobre otra. Con Reducir movimiento el fundido es aún más corto.
+ */
+private fun AnimatedContentTransitionScope<Scene<NavKey>>.forjaPushTransition(reduceMotion: Boolean): ContentTransform =
+    (fadeIn(tween(if (reduceMotion) TRANSITION_MS / 2 else TRANSITION_MS)) togetherWith ExitTransition.KeepUntilTransitionsFinished)
+        .apply { targetContentZIndex = 1f }
+
+/** Volver: la pantalla de arriba se apaga encima de la de abajo, que ya está en su sitio. */
+private fun AnimatedContentTransitionScope<Scene<NavKey>>.forjaPopTransition(reduceMotion: Boolean): ContentTransform =
+    (EnterTransition.None togetherWith fadeOut(tween(if (reduceMotion) TRANSITION_MS / 2 else TRANSITION_MS)))
+        .apply { targetContentZIndex = -1f }
+
 private fun ForjaTab.toNavDestination(): Route = when (this) {
     ForjaTab.TODAY -> Route.Today
     ForjaTab.PLAN -> Route.Plan
@@ -448,603 +463,10 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     Route.History -> ForjaTab.PROGRESS
     is Route.HistorySession -> ForjaTab.PROGRESS
     Route.Settings -> ForjaTab.TODAY
+    Route.Backup -> ForjaTab.TODAY
     Route.Disciplines -> ForjaTab.PLAN
     is Route.Flow -> ForjaTab.PLAN
     Route.Breathing -> ForjaTab.PLAN
     Route.Catalog -> ForjaTab.TODAY
     is Route.Workout -> ForjaTab.TODAY
-}
-
-/**
- * Pantalla "Plan" del sistema Forja (pagina 40 del diseno):
- * Programa Hipertrofia 6 semanas y lista de rutinas de la carpeta Gimnasio.
- */
-@Composable
-private fun ForjaPlanScreen(listState: LazyListState, isSessionStarted: Boolean, onOpenWorkout: () -> Unit) {
-    val colors = ForjaTheme.colors
-    val typography = ForjaTheme.typography
-
-    val routines = listOf(
-        Triple("Pierna A", "6 ejercicios · 60 min", "Lunes"),
-        Triple("Tirón A", "5 ejercicios · 50 min", "Martes"),
-        Triple("Empuje A", "5 ejercicios · 55 min", if (isSessionStarted) "En curso" else "Hoy"),
-        Triple("Pierna B", "5 ejercicios · 55 min", "Viernes"),
-        Triple("Tirón B", "5 ejercicios · 50 min", "Sábado"),
-    )
-
-    LazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-            .statusBarsPadding()
-            .padding(horizontal = ForjaSpacing.esp5),
-        verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-        contentPadding = PaddingValues(top = ForjaSpacing.esp3, bottom = 156.dp),
-    ) {
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Plan",
-                    modifier = Modifier.semantics { heading() },
-                    style = typography.title1,
-                    color = colors.text1,
-                )
-                Box(
-                    modifier = Modifier
-                        .size(ForjaMeasures.secondaryButtonHeight)
-                        .clip(CircleShape)
-                        .background(colors.surface2),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "+",
-                        style = typography.title2,
-                        color = colors.text1,
-                    )
-                }
-            }
-        }
-
-        // Tarjeta del programa activo por semanas
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(ForjaRadius.shapeL)
-                    .background(colors.surface1)
-                    .padding(ForjaSpacing.esp4),
-                verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
-                    Text(
-                        text = "PROGRAMA",
-                        style = typography.caption,
-                        color = colors.text2,
-                    )
-                    Text(
-                        text = "Hipertrofia 6 semanas",
-                        style = typography.title2,
-                        color = colors.text1,
-                    )
-                    Text(
-                        text = "Semana 3 de 6 · descarga en la semana 6",
-                        style = typography.body2,
-                        color = colors.text2,
-                    )
-                }
-
-                // Barra de 6 semanas (3 en brasa, 2 pendientes, semana 6 de descarga en hielo)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    for (week in 1..6) {
-                        val barColor = when {
-                            week <= 3 -> colors.ember
-                            week == 6 -> colors.ice
-                            else -> colors.surface3
-                        }
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(6.dp)
-                                .clip(CircleShape)
-                                .background(barColor),
-                        )
-                    }
-                }
-            }
-        }
-
-        // Tarjeta de Rutinas en carpeta Gimnasio
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(ForjaRadius.shapeL)
-                    .background(colors.surface1)
-                    .padding(ForjaSpacing.esp4),
-                verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = ForjaSpacing.esp1),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "Rutinas",
-                        style = typography.title3,
-                        color = colors.text1,
-                    )
-                    Text(
-                        text = "Gimnasio",
-                        style = typography.body2,
-                        color = colors.text2,
-                    )
-                }
-
-                routines.forEachIndexed { index, (name, details, status) ->
-                    if (index > 0) {
-                        HorizontalDivider(thickness = 1.dp, color = colors.line)
-                    }
-                    val isCurrent = name == "Empuje A"
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onOpenWorkout)
-                            .padding(vertical = 10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(
-                                text = name,
-                                style = typography.title3,
-                                color = colors.text1,
-                            )
-                            Text(
-                                text = details,
-                                style = typography.body2,
-                                color = colors.text2,
-                            )
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            if (isCurrent) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .background(colors.emberVeil)
-                                        .padding(horizontal = 10.dp, vertical = 4.dp),
-                                ) {
-                                    Text(
-                                        text = status,
-                                        style = typography.label,
-                                        color = colors.emberInk,
-                                    )
-                                }
-                            } else {
-                                Text(
-                                    text = if (index < 2) "✓ $status" else status,
-                                    style = typography.body2,
-                                    color = if (index < 2) colors.emberInk else colors.text2,
-                                )
-                            }
-                            Text(
-                                text = "›",
-                                style = typography.title2,
-                                color = colors.text2,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Pantalla "Progreso" del sistema Forja (pagina 39 del diseno):
- * Control segmentado (Ejercicios, Musculos, Cuerpo), Mapa de recuperacion y Series por musculo.
- */
-@Composable
-private fun ForjaProgressScreen(
-    listState: LazyListState,
-    catalogState: com.olarte.ironprogress.ui.catalog.CatalogState,
-    languageCode: String,
-    onCatalogIntent: (com.olarte.ironprogress.ui.catalog.CatalogIntent) -> Unit,
-    catalogListState: LazyListState,
-    onHistory: () -> Unit = {},
-) {
-    val colors = ForjaTheme.colors
-    val typography = ForjaTheme.typography
-    val haptics = ForjaTheme.haptics
-    var selectedSegment by rememberSaveable { mutableIntStateOf(1) }
-    val segments = listOf("Ejercicios", "Músculos", "Cuerpo")
-
-    if (selectedSegment == 0) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(colors.background)
-                .statusBarsPadding(),
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp2),
-                verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-            ) {
-                ProgressTitle(onHistory)
-                ForjaSegmentedControl(
-                    segments = segments,
-                    selectedIndex = selectedSegment,
-                    onSegmentSelected = { index ->
-                        if (selectedSegment != index) {
-                            haptics.segmentTick()
-                            selectedSegment = index
-                        }
-                    },
-                )
-            }
-            CatalogScreen(
-                state = catalogState,
-                languageCode = languageCode,
-                onIntent = onCatalogIntent,
-                listState = catalogListState,
-            )
-        }
-        return
-    }
-
-    val volumeRows = listOf(
-        Triple("Pecho", 12, null),
-        Triple("Espalda", 14, null),
-        Triple("Hombros", 9, "bajo"),
-        Triple("Bíceps", 8, "bajo"),
-        Triple("Tríceps", 11, null),
-        Triple("Cuádriceps", 16, null),
-        Triple("Isquios", 10, null),
-        Triple("Glúteos", 12, null),
-    )
-
-    LazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-            .statusBarsPadding()
-            .padding(horizontal = ForjaSpacing.esp5),
-        verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-        contentPadding = PaddingValues(top = ForjaSpacing.esp3, bottom = 156.dp),
-    ) {
-        item {
-            ProgressTitle(onHistory)
-        }
-
-        item {
-            ForjaSegmentedControl(
-                segments = segments,
-                selectedIndex = selectedSegment,
-                onSegmentSelected = { index ->
-                    if (selectedSegment != index) {
-                        haptics.segmentTick()
-                        selectedSegment = index
-                    }
-                },
-            )
-        }
-
-        // Tarjeta del Mapa corporal de recuperacion con escala calor-0 a calor-4
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(ForjaRadius.shapeL)
-                    .background(colors.surface1)
-                    .padding(ForjaSpacing.esp4),
-                verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
-                    Text(
-                        text = "Recuperación muscular",
-                        style = typography.title3,
-                        color = colors.text1,
-                    )
-                    Text(
-                        text = "Pecho y tríceps siguen cargados desde ayer",
-                        style = typography.body2,
-                        color = colors.text2,
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = ForjaSpacing.esp2),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    BodyCapsuleSilhouettes(
-                        label = "Frente",
-                        shoulderColor = colors.heat3,
-                        torsoColor = colors.heat4,
-                        coreColor = colors.heat2,
-                        armColor = colors.heat1,
-                        legColor = colors.heat2,
-                        calfColor = colors.heat0,
-                    )
-                    BodyCapsuleSilhouettes(
-                        label = "Espalda",
-                        shoulderColor = colors.heat3,
-                        torsoColor = colors.heat1,
-                        coreColor = colors.heat2,
-                        armColor = colors.heat4,
-                        legColor = colors.heat2,
-                        calfColor = colors.heat0,
-                    )
-                }
-
-                // Leyenda de la escala de calor
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "Fresco",
-                        style = typography.label,
-                        color = colors.text2,
-                    )
-                    Spacer(modifier = Modifier.width(ForjaSpacing.esp2))
-                    val heatSteps = listOf(
-                        colors.heat0,
-                        colors.heat1,
-                        colors.heat2,
-                        colors.heat3,
-                        colors.heat4,
-                    )
-                    heatSteps.forEach { stepColor ->
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 2.dp)
-                                .size(width = 22.dp, height = 10.dp)
-                                .clip(CircleShape)
-                                .background(stepColor),
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(ForjaSpacing.esp2))
-                    Text(
-                        text = "Cargado",
-                        style = typography.label,
-                        color = colors.text2,
-                    )
-                }
-            }
-        }
-
-        // Tarjeta de Series por musculo (ultimos 7 dias) sobre banda de rango objetivo
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(ForjaRadius.shapeL)
-                    .background(colors.surface1)
-                    .padding(ForjaSpacing.esp4),
-                verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
-                    Text(
-                        text = "Series por músculo",
-                        style = typography.title3,
-                        color = colors.text1,
-                    )
-                    Text(
-                        text = "Últimos 7 días · 17 al 23 oct",
-                        style = typography.body2,
-                        color = colors.text2,
-                    )
-                }
-
-                volumeRows.forEach { (muscleName, sets, tag) ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
-                    ) {
-                        Text(
-                            text = muscleName,
-                            style = typography.body2,
-                            color = colors.text1,
-                            modifier = Modifier.width(86.dp),
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(20.dp),
-                            contentAlignment = Alignment.CenterStart,
-                        ) {
-                            // Banda del rango objetivo (10 a 20 series = 50% a 100% del ancho)
-                            Row(modifier = Modifier.fillMaxSize()) {
-                                Spacer(modifier = Modifier.weight(1f))
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(colors.surface3),
-                                )
-                            }
-
-                            // Barra en brasa de 12 dp de grosor
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth(fraction = (sets / 20f).coerceIn(0.05f, 1f))
-                                    .height(12.dp)
-                                    .clip(RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))
-                                    .background(colors.ember),
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier.width(56.dp),
-                            horizontalArrangement = Arrangement.End,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = sets.toString(),
-                                style = typography.smallFigure,
-                                color = colors.text1,
-                            )
-                            if (tag != null) {
-                                Text(
-                                    text = " $tag",
-                                    style = typography.label,
-                                    color = colors.text3,
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Text(
-                    text = "Rango objetivo: 10 a 20 series",
-                    style = typography.label,
-                    color = colors.text2,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ForjaSegmentedControl(segments: List<String>, selectedIndex: Int, onSegmentSelected: (Int) -> Unit) {
-    val colors = ForjaTheme.colors
-    val typography = ForjaTheme.typography
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(44.dp)
-            .clip(CircleShape)
-            .background(colors.surface3)
-            .padding(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        segments.forEachIndexed { index, title ->
-            val selected = index == selectedIndex
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(CircleShape)
-                    .background(if (selected) colors.activeControl else Color.Transparent)
-                    .clickable { onSegmentSelected(index) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = title,
-                    style = typography.label,
-                    color = if (selected) colors.text1 else colors.text2,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun BodyCapsuleSilhouettes(
-    label: String,
-    shoulderColor: Color,
-    torsoColor: Color,
-    coreColor: Color,
-    armColor: Color,
-    legColor: Color,
-    calfColor: Color,
-) {
-    val colors = ForjaTheme.colors
-    val typography = ForjaTheme.typography
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        // Cabeza neutra en superficie-3
-        Box(
-            modifier = Modifier
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(colors.surface3),
-        )
-        // Hombros y pecho/espalda
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(3.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            CapsulePart(width = 14.dp, height = 18.dp, color = shoulderColor)
-            CapsulePart(width = 18.dp, height = 22.dp, color = torsoColor)
-            CapsulePart(width = 18.dp, height = 22.dp, color = torsoColor)
-            CapsulePart(width = 14.dp, height = 18.dp, color = shoulderColor)
-        }
-        // Brazos y zona media
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            CapsulePart(width = 12.dp, height = 34.dp, color = armColor)
-            CapsulePart(width = 34.dp, height = 34.dp, color = coreColor)
-            CapsulePart(width = 12.dp, height = 34.dp, color = armColor)
-        }
-        // Cuadriceps / isquios
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            CapsulePart(width = 16.dp, height = 42.dp, color = legColor)
-            CapsulePart(width = 16.dp, height = 42.dp, color = legColor)
-        }
-        // Gemelos
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            CapsulePart(width = 12.dp, height = 32.dp, color = calfColor)
-            CapsulePart(width = 12.dp, height = 32.dp, color = calfColor)
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = label,
-            style = typography.label,
-            color = colors.text2,
-        )
-    }
-}
-
-@Composable
-private fun CapsulePart(width: Dp, height: Dp, color: Color) {
-    Box(
-        modifier = Modifier
-            .size(width = width, height = height)
-            .clip(CircleShape)
-            .background(color),
-    )
-}
-
-/** Título de Progreso con el botón de historial (PANTALLAS 2.1, F1-23). */
-@Composable
-private fun ProgressTitle(onHistory: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = stringResource(Res.string.nav_progress),
-            modifier = Modifier.weight(1f).semantics { heading() },
-            style = ForjaTheme.typography.title1,
-            color = ForjaTheme.colors.text1,
-        )
-        com.olarte.ironprogress.ui.interval.TextAction(
-            stringResource(Res.string.progress_history),
-            onClick = onHistory,
-        )
-    }
 }

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pulido de las pantallas de F1 (Plan, editor, Progreso, Ajustes). -->
+<resources>
+    <string name="ui_close">Close</string>
+    <string name="ui_cancel">Cancel</string>
+    <string name="ui_more">More actions</string>
+    <string name="plan_add_menu">Create</string>
+    <string name="plan_routines">Routines</string>
+    <string name="plan_train">Train</string>
+    <string name="plan_empty_body">Build it once and Today will suggest the next one in the rotation.</string>
+    <string name="plan_rename">Rename</string>
+    <string name="plan_delete_body">This cannot be undone.</string>
+    <string name="plan_disciplines">Disciplines</string>
+    <string name="plan_disciplines_hint">Yoga, pilates, mobility and breathing</string>
+    <string name="plan_wod_title">Functional block</string>
+    <string name="plan_wod_hint">AMRAP, EMOM, for time and rounds</string>
+    <string name="plan_intervals_hint">Work and rest with voice</string>
+    <string name="plan_routine_actions">Routine</string>
+    <string name="plan_folder_actions">Folder</string>
+    <string name="routine_new">New routine</string>
+    <string name="routine_details">Details</string>
+    <string name="routine_remove_block">Remove block</string>
+    <string name="routine_remove_exercise">Remove exercise</string>
+    <string name="routine_remove_set">Remove set %1$d</string>
+    <string name="routine_col_set">Set</string>
+    <string name="routine_col_min">Min</string>
+    <string name="routine_col_max">Max</string>
+    <string name="routine_col_rir">RIR</string>
+    <string name="routine_rest_short">Rest (s)</string>
+    <string name="routine_no_results">No exercise matches</string>
+    <string name="progress_seg_exercises">Exercises</string>
+    <string name="progress_seg_muscles">Muscles</string>
+    <string name="progress_seg_body">Body</string>
+    <string name="progress_empty_title">No workouts yet</string>
+    <string name="progress_empty_body">Finish a session and you will see your sets per muscle here.</string>
+    <string name="progress_sets_title">Sets per muscle</string>
+    <string name="progress_last7">Last 7 days · %1$s to %2$s</string>
+    <string name="progress_target">Target range: 10 to 20 sets</string>
+    <string name="progress_low">low</string>
+    <string name="progress_body_title">Body</string>
+    <string name="progress_body_body">Body weight, measurements and photos arrive with body tracking.</string>
+    <string name="settings_backup_row">Backup and export</string>
+    <string name="settings_backup_hint">Save, restore or export to CSV</string>
+</resources>

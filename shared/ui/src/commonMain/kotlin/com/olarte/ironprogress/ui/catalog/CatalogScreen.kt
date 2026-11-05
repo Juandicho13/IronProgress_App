@@ -41,8 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.catalog.Equipment
@@ -50,7 +48,10 @@ import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.Muscle
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorChoice
+import com.olarte.ironprogress.ui.components.ForjaButtonStyle
+import com.olarte.ironprogress.ui.components.ForjaIconButton
 import com.olarte.ironprogress.ui.components.ForjaIcons
+import com.olarte.ironprogress.ui.components.ForjaLargeTitle
 import com.olarte.ironprogress.ui.label
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.catalog_archive
@@ -109,27 +110,24 @@ fun CatalogScreen(
     ) {
         Spacer(modifier = Modifier.height(ForjaSpacing.esp2))
 
-        // Un solo titulo grande por pantalla (titulo-1)
-        Text(
-            text = stringResource(Res.string.catalog_title),
-            modifier = Modifier.semantics { heading() },
-            style = typography.title1,
-            color = colors.text1,
-        )
-
-        EditorAction(stringResource(Res.string.editor_create)) { onEdit(null) }
-        Row {
+        // Un solo titulo grande por pantalla (titulo-1), con + para crear un ejercicio propio.
+        ForjaLargeTitle(stringResource(Res.string.catalog_title)) {
+            ForjaIconButton(ForjaIcons.Add, stringResource(Res.string.editor_create)) { onEdit(null) }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
             EditorChoice(
                 stringResource(Res.string.editor_equipment),
                 state.equipment,
                 listOf(null) + Equipment.entries,
                 { it?.label() ?: stringResource(Res.string.editor_all) },
+                compact = true,
             ) { onIntent(CatalogIntent.EquipmentSelected(it)) }
             EditorChoice(
                 stringResource(Res.string.editor_discipline),
                 state.discipline,
                 listOf(null) + Discipline.entries,
                 { it?.editorLabel() ?: stringResource(Res.string.editor_all) },
+                compact = true,
             ) { onIntent(CatalogIntent.DisciplineSelected(it)) }
         }
         // Campo de busqueda Forja en superficie-3 con radio-m y foco en brasa
@@ -383,7 +381,7 @@ private fun ForjaExerciseCard(
             style = typography.body2,
             color = colors.text2,
         )
-        if (exercise.isCustom) EditorAction(stringResource(Res.string.editor_edit), onClick = onEdit)
+        if (exercise.isCustom) EditorAction(stringResource(Res.string.editor_edit), style = ForjaButtonStyle.TEXT, onClick = onEdit)
         if (secondaryLabels.isNotEmpty()) {
             Text(
                 text = stringResource(Res.string.catalog_secondary_prefix, secondaryLabels),

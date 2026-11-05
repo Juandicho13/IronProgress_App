@@ -6,23 +6,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.catalog.Equipment
@@ -34,6 +31,10 @@ import com.olarte.ironprogress.domain.catalog.TrackingType
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorChoice
 import com.olarte.ironprogress.ui.components.EditorField
+import com.olarte.ironprogress.ui.components.ForjaButtonStyle
+import com.olarte.ironprogress.ui.components.ForjaDialog
+import com.olarte.ironprogress.ui.components.ForjaIcons
+import com.olarte.ironprogress.ui.components.ForjaTopBar
 import com.olarte.ironprogress.ui.label
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.editor_back
@@ -83,13 +84,12 @@ fun ExerciseEditorScreen(state: ExerciseEditorState, onIntent: (ExerciseEditorIn
             .verticalScroll(rememberScrollState()).padding(ForjaSpacing.esp5),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
     ) {
-        Text(
+        ForjaTopBar(
             stringResource(if (editing) Res.string.editor_edit else Res.string.editor_create),
-            modifier = Modifier.semantics { heading() },
-            style = ForjaTheme.typography.title1,
-            color = ForjaTheme.colors.text1,
+            onBack = { if (!state.saving) onIntent(ExerciseEditorIntent.Back) },
+            backDescription = stringResource(Res.string.editor_back),
+            backIcon = ForjaIcons.Close,
         )
-        EditorAction(stringResource(Res.string.editor_back), !state.saving) { onIntent(ExerciseEditorIntent.Back) }
         if (state.loading) Text(stringResource(Res.string.editor_loading))
         if (state.failed) {
             Text(stringResource(Res.string.editor_error), color = ForjaTheme.colors.danger)
@@ -143,20 +143,25 @@ fun ExerciseEditorScreen(state: ExerciseEditorState, onIntent: (ExerciseEditorIn
                 Text(stringResource(Res.string.editor_unilateral), modifier = Modifier.padding(ForjaSpacing.esp3))
             }
             if (!draft.valid) Text(stringResource(Res.string.editor_validation), style = ForjaTheme.typography.body2)
-            EditorAction(stringResource(Res.string.editor_save), draft.valid && !state.saving) { onIntent(ExerciseEditorIntent.Save) }
+            EditorAction(
+                stringResource(Res.string.editor_save),
+                draft.valid && !state.saving,
+                Modifier.fillMaxWidth(),
+                ForjaButtonStyle.PRIMARY,
+            ) {
+                onIntent(ExerciseEditorIntent.Save)
+            }
         }
         Spacer(Modifier.height(ForjaMeasures.islandHeight + ForjaMeasures.accessoryHeight))
     }
     if (state.confirmDiscard) {
-        AlertDialog(
-            onDismissRequest = { onIntent(ExerciseEditorIntent.KeepEditing) },
-            title = { Text(stringResource(Res.string.editor_discard)) },
-            confirmButton = {
-                TextButton(onClick = { onIntent(ExerciseEditorIntent.Discard) }) { Text(stringResource(Res.string.editor_discard)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { onIntent(ExerciseEditorIntent.KeepEditing) }) { Text(stringResource(Res.string.editor_keep)) }
-            },
+        ForjaDialog(
+            title = stringResource(Res.string.editor_discard),
+            onDismiss = { onIntent(ExerciseEditorIntent.KeepEditing) },
+            confirmText = stringResource(Res.string.editor_discard),
+            destructive = true,
+            onConfirm = { onIntent(ExerciseEditorIntent.Discard) },
+            dismissText = stringResource(Res.string.editor_keep),
         )
     }
 }

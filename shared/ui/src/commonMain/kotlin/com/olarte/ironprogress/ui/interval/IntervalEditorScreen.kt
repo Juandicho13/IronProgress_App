@@ -39,6 +39,7 @@ import com.olarte.ironprogress.domain.interval.IntervalTemplate
 import com.olarte.ironprogress.domain.voice.VoiceSettings
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorField
+import com.olarte.ironprogress.ui.components.ForjaButtonStyle
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.interval_alternate
 import com.olarte.ironprogress.ui.resources.interval_cancel
@@ -171,7 +172,12 @@ fun IntervalEditorScreen(
         VoiceSection(template.voice) { onIntent(IntervalEditorIntent.Voice(it)) }
 
         if (state.failed) Text(stringResource(Res.string.interval_error), style = type.body2, color = colors.danger)
-        EditorAction(stringResource(Res.string.interval_start, clock(template.totalSeconds)), !state.saving && !state.loading) {
+        EditorAction(
+            stringResource(Res.string.interval_start, clock(template.totalSeconds)),
+            !state.saving && !state.loading,
+            Modifier.fillMaxWidth(),
+            ForjaButtonStyle.PRIMARY,
+        ) {
             onIntent(IntervalEditorIntent.Start)
         }
         Spacer(Modifier.height(ForjaSpacing.esp8))

@@ -9,14 +9,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -26,11 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.olarte.ironprogress.ui.components.ForjaTopBar
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
@@ -62,7 +58,7 @@ internal fun <T> ChoiceChips(options: List<T>, isSelected: (T) -> Boolean, label
                     .padding(horizontal = ForjaSpacing.esp4),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(label(option), style = ForjaTheme.typography.label, color = if (selected) colors.ember else colors.text1)
+                Text(label(option), style = ForjaTheme.typography.label, color = if (selected) colors.emberInk else colors.text1)
             }
         }
     }
@@ -84,7 +80,14 @@ internal fun ToggleRow(title: String, hint: String?, checked: Boolean, onChange:
         Switch(
             checked = checked,
             onCheckedChange = null,
-            colors = SwitchDefaults.colors(checkedTrackColor = colors.ember, checkedThumbColor = colors.onEmber),
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = colors.ember,
+                checkedThumbColor = colors.onEmber,
+                checkedBorderColor = colors.ember,
+                uncheckedTrackColor = colors.surface3,
+                uncheckedThumbColor = colors.controlLine,
+                uncheckedBorderColor = colors.controlLine,
+            ),
         )
     }
 }
@@ -101,21 +104,7 @@ internal fun SettingsCard(content: @Composable () -> Unit) {
 /** Barra superior: botón redondo de 48 a la izquierda y título centrado (17/22). */
 @Composable
 internal fun TopBar(title: String, icon: Painter, iconDescription: String, onIcon: () -> Unit, subtitle: String? = null) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            Modifier.size(ForjaMeasures.minTouch).clip(CircleShape).background(ForjaTheme.colors.surface3)
-                .semantics { contentDescription = iconDescription }
-                .clickable(role = Role.Button, onClick = onIcon),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(icon, contentDescription = null, tint = ForjaTheme.colors.text1, modifier = Modifier.size(ForjaMeasures.iconSize))
-        }
-        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, Modifier.semantics { heading() }, style = ForjaTheme.typography.title3, color = ForjaTheme.colors.text1)
-            subtitle?.let { Text(it, style = ForjaTheme.typography.caption, color = ForjaTheme.colors.text2) }
-        }
-        Spacer(Modifier.size(ForjaMeasures.minTouch))
-    }
+    ForjaTopBar(title, onIcon, iconDescription, backIcon = icon, subtitle = subtitle)
 }
 
 /** Botón principal de PANTALLAS 0: alto 56, radio completo, ember. Uno por pantalla. */

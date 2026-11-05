@@ -16,10 +16,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,6 +39,7 @@ import com.olarte.ironprogress.domain.discipline.BreathingPattern
 import com.olarte.ironprogress.domain.time.SegmentKind
 import com.olarte.ironprogress.domain.time.TimerState
 import com.olarte.ironprogress.ui.a11y.timerPhase
+import com.olarte.ironprogress.ui.components.ForjaDialog
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaMoreIcons
 import com.olarte.ironprogress.ui.interval.StepButton
@@ -205,17 +204,16 @@ fun BreathingScreen(
     }
 
     if (confirming) {
-        AlertDialog(
-            onDismissRequest = { confirming = false },
-            title = { Text(stringResource(Res.string.breath_confirm_title), style = ForjaTheme.typography.title3) },
-            text = { Text(stringResource(Res.string.breath_warning), style = ForjaTheme.typography.body) },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirming = false
-                    onIntent(GuidedIntent.Start)
-                }) { Text(stringResource(Res.string.breath_confirm_ok)) }
+        ForjaDialog(
+            title = stringResource(Res.string.breath_confirm_title),
+            text = stringResource(Res.string.breath_warning),
+            onDismiss = { confirming = false },
+            confirmText = stringResource(Res.string.breath_confirm_ok),
+            onConfirm = {
+                confirming = false
+                onIntent(GuidedIntent.Start)
             },
-            dismissButton = { TextButton(onClick = { confirming = false }) { Text(stringResource(Res.string.breath_confirm_cancel)) } },
+            dismissText = stringResource(Res.string.breath_confirm_cancel),
         )
     }
 }

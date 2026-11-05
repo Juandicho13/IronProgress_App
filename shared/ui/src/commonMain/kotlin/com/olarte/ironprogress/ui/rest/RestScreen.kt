@@ -31,10 +31,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.olarte.ironprogress.ui.a11y.timerPhase
 import com.olarte.ironprogress.ui.format.Formats
+import com.olarte.ironprogress.ui.format.appLanguage
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.rest_expand
@@ -83,7 +83,7 @@ fun RestScreen(state: WorkoutState, onIntent: (WorkoutIntent) -> Unit) {
     val detail = state.session
     val next = detail?.sets?.firstOrNull { !it.isCompleted && it.id != rest.setId }
     val exercise = detail?.exercises?.firstOrNull { it.id == next?.sessionExerciseId }
-    val name = state.catalog[exercise?.exerciseId]?.name?.resolve(Locale.current.language)
+    val name = state.catalog[exercise?.exerciseId]?.name?.resolve(appLanguage())
     val formats = rememberFormats()
     var dragOffset by remember(rest.setId) { mutableFloatStateOf(0f) }
     val dismiss = remember(onIntent) { { onIntent(WorkoutIntent.MinimizeRest) } }

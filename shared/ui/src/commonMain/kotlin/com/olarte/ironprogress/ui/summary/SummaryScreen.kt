@@ -31,6 +31,7 @@ import com.olarte.ironprogress.domain.session.BlockResult
 import com.olarte.ironprogress.domain.session.SessionSummary
 import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.ui.components.EditorAction
+import com.olarte.ironprogress.ui.components.ForjaButtonStyle
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.rememberFormats
@@ -94,7 +95,12 @@ fun SummaryScreen(state: SummaryState, languageCode: String, onRetry: () -> Unit
             summary == null -> {
                 Text(stringResource(Res.string.summary_failed), color = colors.text1, style = typography.body)
                 EditorAction(stringResource(Res.string.summary_retry), onClick = onRetry)
-                EditorAction(stringResource(Res.string.summary_done), onClick = onDone)
+                EditorAction(
+                    stringResource(Res.string.summary_done),
+                    modifier = Modifier.fillMaxWidth(),
+                    style = ForjaButtonStyle.PRIMARY,
+                    onClick = onDone,
+                )
             }
             else -> {
                 Spacer(Modifier.height(ForjaSpacing.esp8))
@@ -162,7 +168,12 @@ fun SummaryScreen(state: SummaryState, languageCode: String, onRetry: () -> Unit
                         }
                     }
                 }
-                EditorAction(stringResource(Res.string.summary_done), onClick = onDone)
+                EditorAction(
+                    stringResource(Res.string.summary_done),
+                    modifier = Modifier.fillMaxWidth(),
+                    style = ForjaButtonStyle.PRIMARY,
+                    onClick = onDone,
+                )
                 Spacer(Modifier.height(ForjaSpacing.esp8))
             }
         }

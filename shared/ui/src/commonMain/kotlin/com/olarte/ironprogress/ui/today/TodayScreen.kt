@@ -38,7 +38,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -49,6 +48,7 @@ import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaMoreIcons
 import com.olarte.ironprogress.ui.format.Formats
+import com.olarte.ironprogress.ui.format.appLanguage
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.catalog_exercise_count
@@ -142,7 +142,7 @@ fun TodayScreen(
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val formats = rememberFormats()
-    val languageCode = Locale.current.language
+    val languageCode = appLanguage()
 
     LazyColumn(
         state = listState,
@@ -220,7 +220,14 @@ fun TodayScreen(
 
         if (!state.loading) {
             if (state.activeSessionId == null) {
-                item { EditorAction(stringResource(Res.string.workout_start_free), !state.starting, onStartFree) }
+                item {
+                    EditorAction(
+                        stringResource(Res.string.workout_start_free),
+                        !state.starting,
+                        Modifier.fillMaxWidth(),
+                        onClick = onStartFree,
+                    )
+                }
             }
             if (state.activeSessionId != null && state.nextRoutine?.isActiveSession != true) {
                 item {

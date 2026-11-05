@@ -3,28 +3,40 @@ package com.olarte.ironprogress.ui.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.olarte.ironprogress.domain.settings.AppLanguage
 import com.olarte.ironprogress.domain.settings.AppSettings
 import com.olarte.ironprogress.domain.settings.ThemeMode
-import com.olarte.ironprogress.ui.backup.BackupSection
-import com.olarte.ironprogress.ui.components.ForjaMoreIcons
+import com.olarte.ironprogress.ui.components.ForjaDivider
+import com.olarte.ironprogress.ui.components.ForjaListGroup
+import com.olarte.ironprogress.ui.components.ForjaListRow
+import com.olarte.ironprogress.ui.components.ForjaRadioRow
+import com.olarte.ironprogress.ui.components.ForjaSectionLabel
+import com.olarte.ironprogress.ui.components.ForjaSheet
+import com.olarte.ironprogress.ui.components.ForjaSwitchRow
+import com.olarte.ironprogress.ui.components.ForjaTopBar
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.backup_section
 import com.olarte.ironprogress.ui.resources.lang_en
 import com.olarte.ironprogress.ui.resources.lang_es
 import com.olarte.ironprogress.ui.resources.lang_system
 import com.olarte.ironprogress.ui.resources.settings_back
+import com.olarte.ironprogress.ui.resources.settings_backup_hint
+import com.olarte.ironprogress.ui.resources.settings_backup_row
 import com.olarte.ironprogress.ui.resources.settings_hide
 import com.olarte.ironprogress.ui.resources.settings_hide_hint
 import com.olarte.ironprogress.ui.resources.settings_language
@@ -44,52 +56,102 @@ import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
 import org.jetbrains.compose.resources.stringResource
 
-/** Ajustes conectados a los vigentes de [SettingsGate]. [extra] agrega secciones de otros tickets. */
+/** Ajustes conectados a los vigentes de [SettingsGate]. */
 @Composable
-fun SettingsRoute(onBack: () -> Unit, extra: @Composable ColumnScope.() -> Unit = { BackupSection() }) {
-    SettingsScreen(LocalAppSettings.current, LocalSettingsIntents.current, onBack, extra)
+fun SettingsRoute(onBack: () -> Unit, onOpenBackup: () -> Unit = {}) {
+    SettingsScreen(LocalAppSettings.current, LocalSettingsIntents.current, onBack, onOpenBackup)
 }
 
-/** Ajustes (CFG-02 y CFG-03): idioma, tema, sonido, vibración, voz y ocultar peso corporal y calorías. */
+private enum class SettingsSheet { LANGUAGE, THEME }
+
+/**
+ * Ajustes (CFG-02 y CFG-03) en filas agrupadas: Idioma y Tema muestran su valor y abren una hoja con
+ * las opciones; sonido, vibración, voz y ocultar son interruptores; la copia de seguridad abre su
+ * pantalla. Todo se guarda al tocar.
+ */
 @Composable
-fun SettingsScreen(
-    settings: AppSettings,
-    onIntent: (SettingsIntent) -> Unit,
-    onBack: () -> Unit,
-    extra: @Composable ColumnScope.() -> Unit = {},
-) {
-    Column(
-        Modifier.fillMaxSize().background(ForjaTheme.colors.background).statusBarsPadding().navigationBarsPadding()
-            .verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
-        verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-    ) {
-        TopBar(stringResource(Res.string.settings_title), ForjaMoreIcons.ChevronLeft, stringResource(Res.string.settings_back), onBack)
+fun SettingsScreen(settings: AppSettings, onIntent: (SettingsIntent) -> Unit, onBack: () -> Unit, onOpenBackup: () -> Unit = {}) {
+    var sheet by remember { mutableStateOf<SettingsSheet?>(null) }
+    Column(Modifier.fillMaxSize().background(ForjaTheme.colors.background).statusBarsPadding()) {
+        ForjaTopBar(stringResource(Res.string.settings_title), onBack, stringResource(Res.string.settings_back))
+        Column(
+            Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
+                .padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
+            verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
+        ) {
+            ForjaSectionLabel(stringResource(Res.string.settings_section_app))
+            ForjaListGroup {
+                ForjaListRow(
+                    stringResource(Res.string.settings_language),
+                    value = settings.language.label(),
+                    onClick = { sheet = SettingsSheet.LANGUAGE },
+                )
+                ForjaDivider()
+                ForjaListRow(
+                    stringResource(Res.string.settings_theme),
+                    value = settings.theme.label(),
+                    onClick = { sheet = SettingsSheet.THEME },
+                )
+            }
 
-        SectionLabel(stringResource(Res.string.settings_section_app))
-        SettingsCard {
-            Text(stringResource(Res.string.settings_language), style = ForjaTheme.typography.body, color = ForjaTheme.colors.text1)
-            ChoiceChips(AppLanguage.entries, { it == settings.language }, { it.label() }) { onIntent(SettingsIntent.Language(it)) }
-            Text(stringResource(Res.string.settings_theme), style = ForjaTheme.typography.body, color = ForjaTheme.colors.text1)
-            ChoiceChips(ThemeMode.entries, { it == settings.theme }, { it.label() }) { onIntent(SettingsIntent.Theme(it)) }
+            ForjaSectionLabel(stringResource(Res.string.settings_section_feedback))
+            ForjaListGroup {
+                ForjaSwitchRow(stringResource(Res.string.settings_sound), settings.sound, { onIntent(SettingsIntent.Sound(it)) })
+                ForjaDivider()
+                ForjaSwitchRow(stringResource(Res.string.settings_vibration), settings.vibration, {
+                    onIntent(SettingsIntent.Vibration(it))
+                })
+                ForjaDivider()
+                ForjaSwitchRow(
+                    stringResource(Res.string.settings_voice),
+                    settings.voice,
+                    { onIntent(SettingsIntent.Voice(it)) },
+                    subtitle = stringResource(Res.string.settings_voice_hint),
+                )
+            }
+
+            ForjaSectionLabel(stringResource(Res.string.settings_section_privacy))
+            ForjaListGroup {
+                ForjaSwitchRow(
+                    stringResource(Res.string.settings_hide),
+                    settings.hideBodyMetrics,
+                    { onIntent(SettingsIntent.HideBodyMetrics(it)) },
+                    subtitle = stringResource(Res.string.settings_hide_hint),
+                )
+            }
+
+            ForjaSectionLabel(stringResource(Res.string.backup_section))
+            ForjaListGroup {
+                ForjaListRow(
+                    stringResource(Res.string.settings_backup_row),
+                    subtitle = stringResource(Res.string.settings_backup_hint),
+                    onClick = onOpenBackup,
+                )
+            }
+            Spacer(Modifier.height(ForjaSpacing.esp8))
         }
+    }
 
-        SectionLabel(stringResource(Res.string.settings_section_feedback))
-        SettingsCard {
-            ToggleRow(stringResource(Res.string.settings_sound), null, settings.sound) { onIntent(SettingsIntent.Sound(it)) }
-            ToggleRow(stringResource(Res.string.settings_vibration), null, settings.vibration) { onIntent(SettingsIntent.Vibration(it)) }
-            ToggleRow(stringResource(Res.string.settings_voice), stringResource(Res.string.settings_voice_hint), settings.voice) {
-                onIntent(SettingsIntent.Voice(it))
+    when (sheet) {
+        SettingsSheet.LANGUAGE -> ForjaSheet(stringResource(Res.string.settings_language), onDismiss = { sheet = null }) {
+            AppLanguage.entries.forEachIndexed { index, language ->
+                if (index > 0) ForjaDivider()
+                ForjaRadioRow(language.label(), language == settings.language) {
+                    sheet = null
+                    onIntent(SettingsIntent.Language(language))
+                }
             }
         }
-
-        SectionLabel(stringResource(Res.string.settings_section_privacy))
-        SettingsCard {
-            ToggleRow(stringResource(Res.string.settings_hide), stringResource(Res.string.settings_hide_hint), settings.hideBodyMetrics) {
-                onIntent(SettingsIntent.HideBodyMetrics(it))
+        SettingsSheet.THEME -> ForjaSheet(stringResource(Res.string.settings_theme), onDismiss = { sheet = null }) {
+            ThemeMode.entries.forEachIndexed { index, theme ->
+                if (index > 0) ForjaDivider()
+                ForjaRadioRow(theme.label(), theme == settings.theme) {
+                    sheet = null
+                    onIntent(SettingsIntent.Theme(theme))
+                }
             }
         }
-        extra()
-        Spacer(Modifier.height(ForjaSpacing.esp8))
+        null -> Unit
     }
 }
 

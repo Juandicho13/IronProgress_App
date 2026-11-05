@@ -94,4 +94,6 @@ tasks.withType<Test>().configureEach {
     dependsOn(copyRobolectricAndroid)
     systemProperty("robolectric.offline", "true")
     systemProperty("robolectric.dependency.dir", robolectricJars.get().asFile.absolutePath)
+    // Capturas de las pantallas para revisarlas a ojo: ./gradlew ... -PshotsDir=/ruta
+    providers.gradleProperty("shotsDir").orNull?.let { systemProperty("shots.dir", it) }
 }

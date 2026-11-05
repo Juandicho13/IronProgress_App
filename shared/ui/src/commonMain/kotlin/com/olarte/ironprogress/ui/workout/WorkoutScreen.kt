@@ -28,7 +28,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -50,7 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.WeightUnit
@@ -63,10 +62,19 @@ import com.olarte.ironprogress.domain.session.equivalentPreviousSet
 import com.olarte.ironprogress.domain.session.groupOf
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorChoice
-import com.olarte.ironprogress.ui.components.EditorField
+import com.olarte.ironprogress.ui.components.ForjaButton
+import com.olarte.ironprogress.ui.components.ForjaButtonStyle
+import com.olarte.ironprogress.ui.components.ForjaDivider
+import com.olarte.ironprogress.ui.components.ForjaEmptyState
+import com.olarte.ironprogress.ui.components.ForjaIconButton
 import com.olarte.ironprogress.ui.components.ForjaIcons
+import com.olarte.ironprogress.ui.components.ForjaListRow
+import com.olarte.ironprogress.ui.components.ForjaNote
+import com.olarte.ironprogress.ui.components.ForjaSheet
+import com.olarte.ironprogress.ui.components.ForjaTextField
 import com.olarte.ironprogress.ui.components.forjaGlass
 import com.olarte.ironprogress.ui.format.Formats
+import com.olarte.ironprogress.ui.format.appLanguage
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.label
 import com.olarte.ironprogress.ui.resources.Res
@@ -79,7 +87,6 @@ import com.olarte.ironprogress.ui.resources.workout_all_done
 import com.olarte.ironprogress.ui.resources.workout_blank
 import com.olarte.ironprogress.ui.resources.workout_block_pending
 import com.olarte.ironprogress.ui.resources.workout_circuit
-import com.olarte.ironprogress.ui.resources.workout_close
 import com.olarte.ironprogress.ui.resources.workout_complete
 import com.olarte.ironprogress.ui.resources.workout_delete
 import com.olarte.ironprogress.ui.resources.workout_done
@@ -139,7 +146,7 @@ fun WorkoutRoute(viewModel: WorkoutViewModel, onMinimize: () -> Unit) {
 fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutIntent) -> Unit, onMinimize: () -> Unit) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
-    val language = Locale.current.language
+    val language = appLanguage()
     val formats = rememberFormats()
     val detail = state.session
     var optionsId by remember { mutableStateOf<WorkoutSetId?>(null) }
@@ -152,9 +159,7 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
 
     Column(Modifier.fillMaxSize().background(colors.background).statusBarsPadding().navigationBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = ForjaSpacing.esp4), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = onMinimize, modifier = Modifier.size(ForjaMeasures.minTouch)) {
-                Icon(ForjaIcons.ArrowBack, stringResource(Res.string.workout_minimize), tint = colors.text1)
-            }
+            ForjaIconButton(ForjaIcons.ArrowBack, stringResource(Res.string.workout_minimize), filled = false, onClick = onMinimize)
             Column(Modifier.weight(1f).padding(ForjaSpacing.esp2)) {
                 Text(state.routineName ?: stringResource(Res.string.workout_free), style = typography.title2, color = colors.text1)
                 Text(Formats.duration(elapsedSeconds), style = typography.smallFigure, color = colors.text2)
@@ -184,8 +189,10 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
             if (state.loading) item { Text(stringResource(Res.string.editor_loading), color = colors.text2) }
             if (state.failed) {
                 item {
-                    Text(stringResource(Res.string.workout_error), color = colors.danger, style = typography.body)
-                    EditorAction(stringResource(Res.string.editor_retry)) { onIntent(WorkoutIntent.Retry) }
+                    ForjaNote(stringResource(Res.string.workout_error), error = true)
+                    ForjaButton(stringResource(Res.string.editor_retry), style = ForjaButtonStyle.SECONDARY) {
+                        onIntent(WorkoutIntent.Retry)
+                    }
                 }
             }
             if (detail == null && !state.loading) {
@@ -195,7 +202,14 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
             }
             if (detail?.exercises?.isEmpty() == true) {
                 item {
-                    Text(stringResource(Res.string.workout_empty), color = colors.text2, style = typography.body)
+                    ForjaEmptyState(stringResource(Res.string.workout_empty)) {
+                        ForjaButton(
+                            stringResource(Res.string.workout_add_exercise),
+                            Modifier.fillMaxWidth(),
+                            enabled = enabled && state.pendingWrites == 0,
+                            icon = ForjaIcons.Add,
+                        ) { onIntent(WorkoutIntent.ChooseExercise) }
+                    }
                 }
             }
             if (detail != null) {
@@ -206,25 +220,34 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
                         Modifier.fillMaxWidth().clip(ForjaRadius.shapeL).background(colors.surface1).padding(ForjaSpacing.esp3),
                         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
                     ) {
-                        TextButton(onClick = { onIntent(WorkoutIntent.SelectExercise(exercise.id)) }, modifier = Modifier.fillMaxWidth()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 catalog?.name?.resolve(language) ?: exercise.exerciseId.value,
+                                Modifier.weight(1f).heightIn(min = ForjaMeasures.minTouch).clip(ForjaRadius.shapeS)
+                                    .clickable(role = Role.Button) { onIntent(WorkoutIntent.SelectExercise(exercise.id)) }
+                                    .padding(horizontal = ForjaSpacing.esp1, vertical = ForjaSpacing.esp3),
                                 style = typography.title3,
                                 color = colors.text1,
                             )
+                            if (expanded) {
+                                ForjaIconButton(
+                                    ForjaIcons.MoreVert,
+                                    stringResource(Res.string.workout_options_short),
+                                    enabled = enabled && state.pendingWrites == 0,
+                                    filled = false,
+                                    tint = colors.text2,
+                                ) { exerciseOptionsId = exercise.id }
+                            }
                         }
                         val group = detail.groupOf(exercise.id)
                         if (group.size > 1) {
                             Text(
                                 stringResource(if (group.size == 2) Res.string.workout_superset else Res.string.workout_circuit),
-                                color = colors.ember,
+                                color = colors.emberInk,
                                 style = typography.label,
                             )
                         }
                         if (expanded) {
-                            EditorAction(stringResource(Res.string.workout_options_short), enabled && state.pendingWrites == 0) {
-                                exerciseOptionsId = exercise.id
-                            }
                             catalog?.muscles?.map { it.muscle.label() }?.takeIf { it.isNotEmpty() }?.let { names ->
                                 Text(names.joinToString(" · "), color = colors.text2, style = typography.body2)
                             }
@@ -237,9 +260,12 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
                             if (state.invalidSetId in detail.setsOf(exercise.id).map { it.id }) {
                                 Text(stringResource(Res.string.workout_invalid), color = colors.danger, style = typography.body2)
                             }
-                            EditorAction(stringResource(Res.string.workout_add_set), enabled && state.pendingWrites == 0) {
-                                onIntent(WorkoutIntent.AddSet(exercise.id))
-                            }
+                            ForjaButton(
+                                stringResource(Res.string.workout_add_set),
+                                style = ForjaButtonStyle.TEXT,
+                                enabled = enabled && state.pendingWrites == 0,
+                                icon = ForjaIcons.Add,
+                            ) { onIntent(WorkoutIntent.AddSet(exercise.id)) }
                         } else {
                             val sets = detail.setsOf(exercise.id)
                             Text(
@@ -255,9 +281,15 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
                         }
                     }
                 }
-                item {
-                    EditorAction(stringResource(Res.string.workout_add_exercise), enabled && state.pendingWrites == 0) {
-                        onIntent(WorkoutIntent.ChooseExercise)
+                if (detail.exercises.isNotEmpty()) {
+                    item {
+                        ForjaButton(
+                            stringResource(Res.string.workout_add_exercise),
+                            Modifier.fillMaxWidth(),
+                            ForjaButtonStyle.TONAL,
+                            enabled = enabled && state.pendingWrites == 0,
+                            icon = ForjaIcons.Add,
+                        ) { onIntent(WorkoutIntent.ChooseExercise) }
                     }
                 }
                 item {
@@ -440,26 +472,24 @@ private fun WorkoutSetRow(
 @Composable
 private fun SetOptions(set: WorkoutSet, onIntent: (WorkoutIntent) -> Unit, onClose: () -> Unit) {
     var note by remember(set.id) { mutableStateOf(set.notes) }
-    AlertDialog(
-        onDismissRequest = onClose,
-        title = { Text(stringResource(Res.string.workout_options, set.sortOrder + 1), style = ForjaTheme.typography.title3) },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3)) {
-                EditorChoice(stringResource(Res.string.workout_type), set.setType, SetType.entries, { it.workoutLabel() }) {
-                    onIntent(WorkoutIntent.ChangeType(set.id, it))
-                }
-                EditorField(stringResource(Res.string.workout_note), note) {
-                    note = it
-                    onIntent(WorkoutIntent.ChangeNote(set.id, it))
-                }
-                EditorAction(stringResource(Res.string.workout_remove_set)) {
-                    onIntent(WorkoutIntent.RemoveSet(set.id))
-                    onClose()
-                }
+    ForjaSheet(stringResource(Res.string.workout_options, set.sortOrder + 1), onDismiss = onClose) {
+        Column(
+            Modifier.padding(horizontal = ForjaSpacing.esp5).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
+        ) {
+            EditorChoice(stringResource(Res.string.workout_type), set.setType, SetType.entries, { it.workoutLabel() }) {
+                onIntent(WorkoutIntent.ChangeType(set.id, it))
             }
-        },
-        confirmButton = { EditorAction(stringResource(Res.string.workout_close), onClick = onClose) },
-    )
+            ForjaTextField(stringResource(Res.string.workout_note), note, {
+                note = it
+                onIntent(WorkoutIntent.ChangeNote(set.id, it))
+            })
+            ForjaButton(stringResource(Res.string.workout_remove_set), Modifier.fillMaxWidth(), ForjaButtonStyle.SECONDARY) {
+                onIntent(WorkoutIntent.RemoveSet(set.id))
+                onClose()
+            }
+        }
+    }
 }
 
 /** Opciones de un ejercicio de la sesión: orden, saltar, cambiar y agrupar (F1-12). */
@@ -479,64 +509,63 @@ private fun ExerciseOptions(
         onIntent(intent)
         onClose()
     }
-    AlertDialog(
-        onDismissRequest = onClose,
-        title = { Text(stringResource(Res.string.workout_exercise_options), style = ForjaTheme.typography.title3) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
-                if (index > 0) EditorAction(stringResource(Res.string.workout_move_up)) { act(WorkoutIntent.MoveExercise(id, -1)) }
-                if (index in 0 until ordered.lastIndex) {
-                    EditorAction(stringResource(Res.string.workout_move_down)) { act(WorkoutIntent.MoveExercise(id, 1)) }
-                }
-                if (index in 0 until ordered.lastIndex) {
-                    EditorAction(stringResource(Res.string.workout_skip)) { act(WorkoutIntent.SkipExercise(id)) }
-                }
-                EditorAction(stringResource(Res.string.workout_substitute)) { act(WorkoutIntent.Substitute(id)) }
-                EditorAction(stringResource(if (unit == WeightUnit.LB) Res.string.workout_use_kg else Res.string.workout_use_lb)) {
-                    act(WorkoutIntent.ToggleUnit(id))
-                }
-                EditorAction(stringResource(Res.string.workout_plates)) {
-                    onPlates()
-                    onClose()
-                }
-                if (inGroup) {
-                    EditorAction(stringResource(Res.string.workout_ungroup)) { act(WorkoutIntent.ToggleGroup(id)) }
-                } else if (index in 0 until ordered.lastIndex) {
-                    EditorAction(stringResource(Res.string.workout_group)) { act(WorkoutIntent.ToggleGroup(id)) }
-                }
-            }
-        },
-        confirmButton = { EditorAction(stringResource(Res.string.workout_close), onClick = onClose) },
-    )
+    val rows = buildList<Pair<String, () -> Unit>> {
+        if (index > 0) add(stringResource(Res.string.workout_move_up) to { act(WorkoutIntent.MoveExercise(id, -1)) })
+        if (index in 0 until ordered.lastIndex) {
+            add(stringResource(Res.string.workout_move_down) to { act(WorkoutIntent.MoveExercise(id, 1)) })
+            add(stringResource(Res.string.workout_skip) to { act(WorkoutIntent.SkipExercise(id)) })
+        }
+        add(stringResource(Res.string.workout_substitute) to { act(WorkoutIntent.Substitute(id)) })
+        add(
+            stringResource(if (unit == WeightUnit.LB) Res.string.workout_use_kg else Res.string.workout_use_lb) to
+                { act(WorkoutIntent.ToggleUnit(id)) },
+        )
+        add(
+            stringResource(Res.string.workout_plates) to {
+                onPlates()
+                onClose()
+            },
+        )
+        if (inGroup) {
+            add(stringResource(Res.string.workout_ungroup) to { act(WorkoutIntent.ToggleGroup(id)) })
+        } else if (index in 0 until ordered.lastIndex) {
+            add(stringResource(Res.string.workout_group) to { act(WorkoutIntent.ToggleGroup(id)) })
+        }
+    }
+    ForjaSheet(stringResource(Res.string.workout_exercise_options), onDismiss = onClose) {
+        rows.forEachIndexed { position, (label, action) ->
+            if (position > 0) ForjaDivider()
+            ForjaListRow(label, chevron = false, onClick = action)
+        }
+    }
 }
 
 @Composable
 private fun ExercisePicker(state: WorkoutState, onIntent: (WorkoutIntent) -> Unit) {
-    val language = Locale.current.language
+    val language = appLanguage()
     val matches = state.catalog.values.filter { !it.isArchived && it.name.resolve(language).contains(state.query, ignoreCase = true) }
         .sortedBy { it.name.resolve(language) }
-    AlertDialog(
-        onDismissRequest = { onIntent(WorkoutIntent.ClosePicker) },
-        title = {
-            Text(stringResource(if (state.substitutingId != null) Res.string.workout_substitute_title else Res.string.workout_add_exercise))
-        },
-        text = {
-            Column {
-                EditorField(stringResource(Res.string.workout_search), state.query) { onIntent(WorkoutIntent.Search(it)) }
-                LazyColumn {
-                    if (matches.isEmpty()) item { Text(stringResource(Res.string.workout_no_results)) }
-                    items(matches, key = { it.id.value }) { exercise ->
-                        TextButton(onClick = {
-                            onIntent(WorkoutIntent.AddExercise(exercise.id))
-                        }, modifier = Modifier.fillMaxWidth().heightIn(min = ForjaMeasures.minTouch)) {
-                            Text(exercise.name.resolve(language), style = ForjaTheme.typography.body)
-                        }
-                    }
-                }
+    ForjaSheet(
+        stringResource(if (state.substitutingId != null) Res.string.workout_substitute_title else Res.string.workout_add_exercise),
+        onDismiss = { onIntent(WorkoutIntent.ClosePicker) },
+    ) {
+        Box(Modifier.padding(horizontal = ForjaSpacing.esp5).padding(bottom = ForjaSpacing.esp2)) {
+            ForjaTextField(stringResource(Res.string.workout_search), state.query, { onIntent(WorkoutIntent.Search(it)) })
+        }
+        LazyColumn(Modifier.fillMaxWidth().heightIn(max = 480.dp)) {
+            if (matches.isEmpty()) {
+                item { ForjaNote(stringResource(Res.string.workout_no_results), modifier = Modifier.padding(ForjaSpacing.esp5)) }
             }
-        },
-        confirmButton = { EditorAction(stringResource(Res.string.workout_close)) { onIntent(WorkoutIntent.ClosePicker) } },
-    )
+            items(matches, key = { it.id.value }) { exercise ->
+                ForjaListRow(
+                    exercise.name.resolve(language),
+                    subtitle = exercise.primaryMuscles.map { it.label() }.joinToString(" · ").ifBlank { null },
+                    chevron = false,
+                    onClick = { onIntent(WorkoutIntent.AddExercise(exercise.id)) },
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -649,7 +678,11 @@ private fun WorkoutKeyboardSheet(state: WorkoutState, onIntent: (WorkoutIntent) 
                 EditorAction(stringResource(Res.string.workout_next), !keyboard.invalid && !state.failed && state.pendingWrites == 0) {
                     onIntent(WorkoutIntent.NextField)
                 }
-                EditorAction(stringResource(Res.string.workout_complete), !keyboard.invalid && !state.failed && !set.isCompleted) {
+                EditorAction(
+                    stringResource(Res.string.workout_complete),
+                    !keyboard.invalid && !state.failed && !set.isCompleted,
+                    style = ForjaButtonStyle.PRIMARY,
+                ) {
                     onIntent(WorkoutIntent.Complete(set.id))
                 }
             }

@@ -40,6 +40,7 @@ import com.olarte.ironprogress.domain.wod.Wod
 import com.olarte.ironprogress.ui.a11y.timerPhase
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorField
+import com.olarte.ironprogress.ui.components.ForjaButtonStyle
 import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.interval.StepButton
 import com.olarte.ironprogress.ui.interval.TextAction
@@ -225,7 +226,9 @@ private fun Setup(state: WodState, languageCode: String, onIntent: (WodIntent) -
             }
         }
     }
-    EditorAction(stringResource(Res.string.wod_start), state.canStart) { onIntent(WodIntent.Start) }
+    EditorAction(stringResource(Res.string.wod_start), state.canStart, Modifier.fillMaxWidth(), ForjaButtonStyle.PRIMARY) {
+        onIntent(WodIntent.Start)
+    }
 }
 
 @Composable
@@ -336,7 +339,12 @@ private fun Running(state: WodState, languageCode: String, onIntent: (WodIntent)
                 if (state.failed) {
                     Text(stringResource(Res.string.wod_save_failed), style = ForjaTheme.typography.body2, color = colors.danger)
                 }
-                EditorAction(stringResource(Res.string.wod_save, mark(state.score.result(wod, state.elapsedSeconds))), !state.saving) {
+                EditorAction(
+                    stringResource(Res.string.wod_save, mark(state.score.result(wod, state.elapsedSeconds))),
+                    !state.saving,
+                    Modifier.fillMaxWidth(),
+                    ForjaButtonStyle.PRIMARY,
+                ) {
                     onIntent(WodIntent.Save)
                 }
             }

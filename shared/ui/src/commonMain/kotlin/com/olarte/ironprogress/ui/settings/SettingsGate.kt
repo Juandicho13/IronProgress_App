@@ -9,6 +9,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.settings.AppSettings
 import com.olarte.ironprogress.domain.settings.ThemeMode
+import com.olarte.ironprogress.ui.format.LocalAppLanguageTag
+import com.olarte.ironprogress.ui.format.systemLanguageTag
 import com.olarte.ironprogress.ui.theme.ForjaTheme
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -38,7 +40,11 @@ fun SettingsGate(content: @Composable () -> Unit) {
     val settings = state.settings
     CompositionLocalProvider(appLocaleProvider(settings.language.tag)) {
         key(settings.language) {
-            CompositionLocalProvider(LocalAppSettings provides settings, LocalSettingsIntents provides model::onIntent) {
+            CompositionLocalProvider(
+                LocalAppSettings provides settings,
+                LocalSettingsIntents provides model::onIntent,
+                LocalAppLanguageTag provides (settings.language.tag ?: systemLanguageTag()),
+            ) {
                 if (settings.onboardingDone) {
                     content()
                 } else {

@@ -39,6 +39,8 @@ sealed interface Route : NavKey {
 
     @Serializable data object Settings : Route
 
+    @Serializable data object Backup : Route
+
     @Serializable data object Disciplines : Route
 
     @Serializable data class Flow(val id: String) : Route
@@ -68,6 +70,7 @@ val navConfiguration = SavedStateConfiguration {
             subclass(Route.History::class, Route.History.serializer())
             subclass(Route.HistorySession::class, Route.HistorySession.serializer())
             subclass(Route.Settings::class, Route.Settings.serializer())
+            subclass(Route.Backup::class, Route.Backup.serializer())
             subclass(Route.Disciplines::class, Route.Disciplines.serializer())
             subclass(Route.Flow::class, Route.Flow.serializer())
             subclass(Route.Breathing::class, Route.Breathing.serializer())

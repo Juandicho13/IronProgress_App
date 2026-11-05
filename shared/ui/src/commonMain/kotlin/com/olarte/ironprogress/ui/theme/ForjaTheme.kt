@@ -2,6 +2,8 @@ package com.olarte.ironprogress.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -9,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 
 object ForjaTheme {
     val colors: ForjaColorPalette
@@ -62,14 +65,37 @@ fun ForjaTheme(
         LocalForjaMotion provides motion,
         LocalForjaHaptics provides haptics,
     ) {
-        MaterialTheme(
-            colorScheme = palette.toMaterialColorScheme(),
-            content = content,
-        )
+        MaterialTheme(colorScheme = palette.toMaterialColorScheme()) {
+            // Todo Text sin color propio sale en text1 y con la letra de Forja, en los dos temas.
+            CompositionLocalProvider(
+                LocalContentColor provides palette.text1,
+                LocalTextStyle provides typography.body,
+                content = content,
+            )
+        }
     }
 }
 
-private fun ForjaColorPalette.toMaterialColorScheme(): ColorScheme = if (isDark) {
+/**
+ * Material pinta diálogos, hojas, menús y campos con sus superficies "container": se igualan a las
+ * de Forja para que nada salga lavanda ni con texto oscuro en el tema oscuro.
+ */
+private fun ForjaColorPalette.toMaterialColorScheme(): ColorScheme = baseMaterialColorScheme().copy(
+    surfaceTint = Color.Transparent,
+    surfaceDim = background,
+    surfaceBright = surface2,
+    surfaceContainerLowest = background,
+    surfaceContainerLow = surface1,
+    surfaceContainer = surface1,
+    surfaceContainerHigh = surface2,
+    surfaceContainerHighest = surface3,
+    inverseSurface = text1,
+    inverseOnSurface = background,
+    inversePrimary = emberInk,
+    scrim = modalScrim,
+)
+
+private fun ForjaColorPalette.baseMaterialColorScheme(): ColorScheme = if (isDark) {
     darkColorScheme(
         primary = ember,
         onPrimary = onEmber,
