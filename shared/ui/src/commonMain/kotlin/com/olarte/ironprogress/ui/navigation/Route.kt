@@ -30,6 +30,8 @@ sealed interface Route : NavKey {
     @Serializable data class IntervalRun(val id: String) : Route
 
     @Serializable data object Wod : Route
+
+    @Serializable data class Summary(val sessionId: String) : Route
 }
 
 /**
@@ -50,6 +52,7 @@ val navConfiguration = SavedStateConfiguration {
             subclass(Route.IntervalEditor::class, Route.IntervalEditor.serializer())
             subclass(Route.IntervalRun::class, Route.IntervalRun.serializer())
             subclass(Route.Wod::class, Route.Wod.serializer())
+            subclass(Route.Summary::class, Route.Summary.serializer())
         }
     }
 }

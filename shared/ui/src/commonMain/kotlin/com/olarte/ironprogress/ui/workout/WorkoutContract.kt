@@ -82,6 +82,9 @@ sealed interface WorkoutIntent {
     data class Substitute(val id: SessionExerciseId) : WorkoutIntent
     data class ToggleGroup(val id: SessionExerciseId) : WorkoutIntent
     data class RemoveSet(val id: WorkoutSetId) : WorkoutIntent
+
+    /** Termina la sesión con el gesto de Deslizar para terminar (F1-21). */
+    data object Finish : WorkoutIntent
 }
 
 sealed interface WorkoutEffect {
@@ -89,4 +92,5 @@ sealed interface WorkoutEffect {
     data object RestFinished : WorkoutEffect
     data class OpenWorkout(val sessionId: String) : WorkoutEffect
     data object SetCompleted : WorkoutEffect
+    data class Finished(val sessionId: String) : WorkoutEffect
 }

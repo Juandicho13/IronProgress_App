@@ -258,3 +258,9 @@ Pasos en Xcode para Codex o Juan, en el Mac:
 5. Deployment target de la extensión igual al de la app (18.2). Compilar en el simulador; si algo falla, corregir el Swift con el error a la vista.
 6. Probar en el iPhone: empezar un descanso, bloquear el teléfono y usar -15 s, +15 s, Saltar y Completar serie.
 
+
+## 20. F1-21 en feat/f1-claude, 5 de noviembre de 2026
+
+- `domain/session/SessionSummary.kt`: `summarize(detail, history)` es puro y arma `SessionSummary` (duración, volumen y series de trabajo sin calentamiento, récords simples, ejercicios con sus series, bloques con resultado y la comparación con la sesión anterior de la misma rutina, o de la misma disciplina en un entreno libre). `SummarizeSession` lo carga desde el repositorio. 4 pruebas.
+- Entreno: `SlideToFinish` al final de la lista y `WorkoutIntent.Finish`, que termina la sesión con `EndSession`, limpia el descanso y emite `WorkoutEffect.Finished`. La app abre `Route.Summary`.
+- Resumen en `ui/summary/`. Listo vuelve a Hoy. El feedback por músculo y las molestias de 1.6 son de F2-06; compartir, de F5-07.

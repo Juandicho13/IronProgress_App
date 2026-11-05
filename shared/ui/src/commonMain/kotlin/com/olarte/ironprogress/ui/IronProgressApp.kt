@@ -167,6 +167,10 @@ fun IronProgressApp() {
                     WorkoutEffect.RestTick -> haptics.restCountdownTick()
                     WorkoutEffect.RestFinished -> haptics.restFinished()
                     WorkoutEffect.SetCompleted -> haptics.setCompleted()
+                    is WorkoutEffect.Finished -> {
+                        backStack.removeAll { it is Route.Workout }
+                        backStack.add(Route.Summary(effect.sessionId))
+                    }
                 }
             }
         }
@@ -271,6 +275,12 @@ fun IronProgressApp() {
                             },
                         )
                     }
+                    entry<Route.Summary> { route ->
+                        com.olarte.ironprogress.ui.summary.SummaryRoute(route.sessionId, languageCode, onDone = {
+                            backStack.removeAll { it is Route.Summary }
+                            if (backStack.isEmpty()) backStack.add(Route.Today)
+                        })
+                    }
                     entry<Route.Wod> {
                         com.olarte.ironprogress.ui.wod.WodRoute(languageCode = languageCode, onClose = { backStack.removeLastOrNull() })
                     }
@@ -306,6 +316,7 @@ fun IronProgressApp() {
                 currentDestination is Route.IntervalEditor ||
                 currentDestination is Route.IntervalRun ||
                 currentDestination is Route.Wod ||
+                currentDestination is Route.Summary ||
                 currentDestination is Route.RoutineEditor
             if (!isWorkoutScreenOpen && !isFullScreen) {
                 val activeBanner = workoutBanner(workoutState)
@@ -375,6 +386,7 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     is Route.IntervalEditor -> ForjaTab.PLAN
     is Route.IntervalRun -> ForjaTab.PLAN
     is Route.Wod -> ForjaTab.PLAN
+    is Route.Summary -> ForjaTab.TODAY
     Route.Catalog -> ForjaTab.TODAY
     is Route.Workout -> ForjaTab.TODAY
 }

@@ -389,6 +389,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-05 | F1-19 · bloque funcional | `feat/f1-claude` | AMRAP, EMOM, por tiempo y rondas en una pantalla (7.4), marcador rondas + reps, ritmo, marca anterior y resultado guardado como sesión FUNCTIONAL; 145 pruebas. Falta probar un AMRAP de 12 y un EMOM de 10 en el teléfono |
 | 2026-11-05 | F1-12 · cambios en la sesión | `feat/f1-claude` | Subir, bajar, saltar por ahora, cambiar ejercicio, quitar serie, superseries y circuitos sin descanso hasta el último; 148 pruebas. Falta la sesión real con superserie, uno por tiempo y uno por calorías |
 | 2026-11-05 | F1-16 · Live Activity del iPhone | `feat/f1-claude` | Diseño 5.9, puente Kotlin (`WorkoutActivitySync`, se actualiza solo en cambios de fase) y Swift (ActivityKit, App Intents, `ForjaTokens.swift`); 150 pruebas de Kotlin. **El Swift no se compiló:** falta crear la extensión en Xcode y probar en el iPhone |
+| 2026-11-05 | F1-21 · terminar y resumen | `feat/f1-claude` | Deslizar para terminar (1.5) y Resumen (1.6): duración, volumen, series, récords simples, comparación con la sesión anterior y resultado de cada bloque; `summarize` con 4 pruebas y 1 de ViewModel. Falta probar en el teléfono que los números cuadren con una sesión real |
 
 ---
 

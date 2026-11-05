@@ -136,6 +136,8 @@ Relojes:
   6. Botón principal **Guardar**.
 - **Toques:** dar el feedback 1 (todo viene en "Justo"); guardar 1.
 
+**Alcance implementado en F1-21:** Deslizar para terminar va al final de la lista de Entreno y solo se activa con una serie hecha; con lector de pantalla es un botón. El Resumen muestra la rutina y la fecha, los récords simples (más peso que nunca, o el mismo peso máximo con más reps; la primera vez de un ejercicio no cuenta), duración y volumen comparados con la sesión anterior de la misma rutina (o de la misma disciplina en un entreno libre), cada ejercicio con sus series y el resultado de cada bloque con tiempo. El botón principal es Listo. Compartir llega con F5-07 y el feedback por músculo y las molestias con F2-06.
+
 ---
 
 ## 2. Progreso, plan y ajuste del día

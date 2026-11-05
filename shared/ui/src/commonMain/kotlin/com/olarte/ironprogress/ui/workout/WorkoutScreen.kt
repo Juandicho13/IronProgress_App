@@ -103,6 +103,7 @@ import com.olarte.ironprogress.ui.resources.workout_saving
 import com.olarte.ironprogress.ui.resources.workout_search
 import com.olarte.ironprogress.ui.resources.workout_set_label
 import com.olarte.ironprogress.ui.resources.workout_skip
+import com.olarte.ironprogress.ui.resources.workout_slide_finish
 import com.olarte.ironprogress.ui.resources.workout_substitute
 import com.olarte.ironprogress.ui.resources.workout_substitute_title
 import com.olarte.ironprogress.ui.resources.workout_superset
@@ -249,6 +250,12 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
                     EditorAction(stringResource(Res.string.workout_add_exercise), enabled && state.pendingWrites == 0) {
                         onIntent(WorkoutIntent.ChooseExercise)
                     }
+                }
+                item {
+                    SlideToFinish(
+                        stringResource(Res.string.workout_slide_finish),
+                        enabled && state.pendingWrites == 0 && detail.sets.any { it.isCompleted },
+                    ) { onIntent(WorkoutIntent.Finish) }
                 }
             }
         }

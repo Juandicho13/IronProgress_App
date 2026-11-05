@@ -32,6 +32,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -222,6 +223,30 @@ class WorkoutViewModelTest {
             assertEquals(end, deadlines.last())
             model.onIntent(WorkoutIntent.SkipRest)
             assertNull(deadlines.last())
+        }
+    }
+
+    @Test
+    fun finishNeedsADoneSetEndsTheSessionAndOpensTheSummary() = runTest {
+        fixture { sessions, _, create ->
+            val model = create()
+            val id = start(model)
+            val effects = mutableListOf<WorkoutEffect>()
+            backgroundScope.launch { model.effects.collect { effects += it } }
+            model.onIntent(WorkoutIntent.Finish)
+            runCurrent()
+            assertTrue(effects.none { it is WorkoutEffect.Finished })
+            type(model, id, WorkoutField.WEIGHT, "60")
+            type(model, id, WorkoutField.REPS, "8")
+            model.onIntent(WorkoutIntent.Complete(id))
+            runCurrent()
+            model.onIntent(WorkoutIntent.Finish)
+            runCurrent()
+            val session = sessions.data.value.single().session
+            assertEquals(SessionStatus.FINISHED, session.status)
+            assertEquals(WorkoutEffect.Finished(session.id.value), effects.last())
+            assertNull(model.state.value.session)
+            assertNull(model.restController.state.value.timer)
         }
     }
 

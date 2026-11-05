@@ -63,4 +63,5 @@ val sharedAppModule: Module = module {
     factory { CompleteSet(get(), get()) }
     factory { AddSessionExercise(get(), get()) }
     factory { EndSession(get(), get()) }
+    factory { com.olarte.ironprogress.domain.session.SummarizeSession(get()) }
 }

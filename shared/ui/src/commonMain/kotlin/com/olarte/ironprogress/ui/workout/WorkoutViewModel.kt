@@ -7,6 +7,7 @@ import com.olarte.ironprogress.domain.common.IdGenerator
 import com.olarte.ironprogress.domain.routine.RoutineRepository
 import com.olarte.ironprogress.domain.session.AddSessionExercise
 import com.olarte.ironprogress.domain.session.CompleteSet
+import com.olarte.ironprogress.domain.session.EndSession
 import com.olarte.ironprogress.domain.session.SessionDetail
 import com.olarte.ironprogress.domain.session.SessionRepository
 import com.olarte.ironprogress.domain.session.SessionStatus
@@ -246,6 +247,18 @@ class WorkoutViewModel(
                 enqueue {
                     val session = startSession()
                     effectChannel.send(WorkoutEffect.OpenWorkout(session.session.id.value))
+                }
+            }
+            WorkoutIntent.Finish -> {
+                if (state.value.pendingWrites > 0) return
+                enqueue {
+                    val detail = active()
+                    if (detail.sets.none { it.isCompleted }) return@enqueue
+                    EndSession(sessions, clock)(detail.session)
+                    restController.clearRest()
+                    notifyRestDeadline(null)
+                    mutableState.update { it.copy(rest = null, restExpanded = false, keyboard = null, undoSetId = null) }
+                    effectChannel.send(WorkoutEffect.Finished(detail.session.id.value))
                 }
             }
             WorkoutIntent.Retry -> {
