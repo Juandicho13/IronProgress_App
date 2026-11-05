@@ -384,6 +384,8 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-05 | F1-14 · descanso con la app cerrada en Android | `feat/f1-claude` | Servicio `health` y Live Update según PANTALLAS 5.8. Lo escribió Argon; Claude corrigió un error de compilación y el estilo, y verificó 119 pruebas y los dos APK. Falta probar la Now Bar en el S25 Ultra |
 | 2026-11-05 | F1-17 · voz y audio | `feat/f1-voz` | Guion de la voz desde el motor (`voiceLinesBetween`, 6 pruebas), voz del sistema con la música atenuada en Android (TextToSpeech y foco de audio) e iPhone (AVSpeechSynthesizer con duckOthers); 124 pruebas. Falta compilar iOS en el Mac y oírla en los teléfonos |
 | 2026-11-05 | F1-18 · intervalos a tu medida | `feat/f1-voz` | Crear (5.2) y correr con voz (5.3), plantillas guardadas, reps por ronda en el descanso y resultado como sesión de HIIT; 132 pruebas. Falta probarlo en los teléfonos con música y pantalla bloqueada |
+| 2026-11-05 | F1-11 · descanso completo y barra | `feat/f1-argon`, `9a92729` | Motor por instantes, ajustes de 15 s, Saltar, minimizar/ampliar y eventos hápticos. 109 pruebas, estilo, APK y frameworks iOS en verde local. Prueba exacta de 20 descansos; falta aceptación visual/háptica en teléfonos. Avisos fuera de app y persistencia del descanso pendientes de sus tickets. Sin push |
+| 2026-11-05 | F1-15 · aviso local de descanso en iPhone | `feat/f1-argon`, commit de F1-15 | Permiso, programación desde el fin absoluto, ajustes y cancelación con cola serial. 115 pruebas sin fallos, estilo, APK Android/Wear y frameworks iOS en verde local. Entrega y sonido con iPhone bloqueado pendientes de prueba física. No incluye Live Activity ni restauración del anillo al matar el proceso. Sin push |
 
 ---
 

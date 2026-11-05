@@ -17,6 +17,7 @@ import com.olarte.ironprogress.domain.session.copyMeasurements
 import com.olarte.ironprogress.domain.session.equivalentPreviousSet
 import com.olarte.ironprogress.domain.session.hasRequiredMeasurements
 import com.olarte.ironprogress.ui.rest.RestController
+import com.olarte.ironprogress.ui.rest.RestNotifications
 import com.olarte.ironprogress.ui.rest.RestPhase
 import com.olarte.ironprogress.ui.rest.RestTimer
 import kotlinx.coroutines.CancellationException
@@ -42,8 +43,20 @@ class WorkoutViewModel(
     private val addExercise: AddSessionExercise,
     private val ids: IdGenerator,
     private val clock: Clock,
+    /** Aviso local del fin del descanso en iPhone (F1-15); en Android lo hace el servicio de F1-14. */
+    private val restNotifications: RestNotifications = RestNotifications { },
     val restController: RestController = RestController(),
 ) : ViewModel() {
+    private var notifiedDeadline: Long? = null
+
+    /** Solo avisa cuando cambia la hora de fin, nunca en cada cuadro. */
+    private fun notifyRestDeadline(timer: RestTimer?) {
+        val deadline = timer?.endsAtMs(clock.now().toEpochMilliseconds())
+        if (deadline == notifiedDeadline) return
+        notifiedDeadline = deadline
+        restNotifications.replace(deadline)
+    }
+
     private val mutableState = MutableStateFlow(WorkoutState())
     val state = mutableState.asStateFlow()
     private val effectChannel = Channel<WorkoutEffect>(Channel.BUFFERED)
@@ -67,6 +80,7 @@ class WorkoutViewModel(
         if (timer.isFinished) {
             mutableState.update { it.copy(rest = null, restExpanded = false, restNowMs = now) }
             restController.onRestCountdownFinished(now)
+            notifyRestDeadline(null)
             effectChannel.trySend(WorkoutEffect.RestFinished)
         } else {
             mutableState.update { it.copy(restNowMs = now) }
@@ -126,6 +140,7 @@ class WorkoutViewModel(
                     val sameSession = old.session?.session?.id == detail?.session?.id
                     if (detail == null) {
                         restController.clearRest()
+                        notifyRestDeadline(null)
                     }
                     val previous = if (sameSession) old.previous.toMutableMap() else mutableMapOf()
                     detail?.exercises?.forEach {
@@ -205,12 +220,14 @@ class WorkoutViewModel(
                 val adjusted = rest.adjust(now, intent.seconds)
                 mutableState.update { it.copy(rest = adjusted) }
                 restController.updateTimer(adjusted, now)
+                notifyRestDeadline(adjusted)
                 refreshRest()
             }
             WorkoutIntent.SkipRest -> {
                 val now = clock.now().toEpochMilliseconds()
                 mutableState.update { it.copy(rest = null, restExpanded = false) }
                 restController.skipFromUi(now)
+                notifyRestDeadline(null)
             }
             WorkoutIntent.ExpandRest -> {
                 refreshRest()
@@ -274,6 +291,7 @@ class WorkoutViewModel(
                 if (state.value.rest?.setId == id) {
                     mutableState.update { it.copy(rest = null, restExpanded = false) }
                     restController.clearIfSet(id)
+                    notifyRestDeadline(null)
                 }
             }
             is WorkoutIntent.ChangeType -> edit(intent.id) { it.copy(setType = intent.type) }
@@ -359,6 +377,7 @@ class WorkoutViewModel(
             } else {
                 restController.clearRest()
             }
+            notifyRestDeadline(rest)
             undoExpiresAt = clock.now().toEpochMilliseconds() + 5_000
             mutableState.update {
                 it.copy(

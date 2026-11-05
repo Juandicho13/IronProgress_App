@@ -192,7 +192,7 @@ Lo hizo Claude en paralelo con F1-10 (ChatGPT), en una rama aparte que sale del 
 - Ficha de ejercicio (PANTALLAS 7.5) en `ui/catalog/ExerciseDetailScreen.kt`, ruta `Route.ExerciseDetail`. Se abre tocando una tarjeta del catálogo. Quedan fuera por ahora la figura (llega con las figuras de F1-20), "Historial" (F1-23) y "Añadir a un entreno".
 - Verificado en Linux: 114 pruebas, los dos APK y ktlintCheck. Falta verla en los teléfonos.
 
-## 13b. F1-14 en feat/f1-claude, 5 de noviembre de 2026
+## 15. F1-14 en feat/f1-claude, 5 de noviembre de 2026
 
 - Lo escribió Argon (Gemini) en `build/claude-wt`; no pudo correr Gradle en su entorno. Claude lo compiló, corrigió un smart cast en `RestNotificationHelper.kt` y el estilo, y verificó 119 pruebas, los dos APK y ktlintCheck.
 - Piezas: `androidApp/.../session/RestForegroundService.kt` (servicio `health`), `androidApp/.../notifications/RestNotificationHelper.kt` (estados 1 y 2 de PANTALLAS 5.8), `shared/ui/.../rest/RestController.kt` y `RestNotificationBridge` (primer o segundo plano y permiso), manifiesto con `FOREGROUND_SERVICE_HEALTH` y `HIGH_SAMPLING_RATE_SENSORS`.
@@ -213,3 +213,11 @@ Rama nueva que sale de `feat/f1-claude` (después del diseño de 5.8), para no c
 - La voz sigue mientras la app esté viva. Con la pantalla bloqueada mucho rato, Android puede pausar la app: eso lo cubre el servicio de F1-14. Hay que probarlo con música en los dos teléfonos.
 - Verificado en Linux: 132 pruebas (2 de ViewModel, 2 de Room y 4 de dominio nuevas), los dos APK y ktlintCheck. iOS sin compilar aquí.
 
+## 16. F1-15 en feat/f1-argon, 5 de noviembre de 2026
+- F1-11 quedó en `9a92729`. Juan pidió continuar directamente con F1-15. No se adelantaron F1-13, F1-14 ni F1-16.
+- Aviso local de fin de descanso mediante `UNUserNotificationCenter` en iosMain. Pide autorización de alertas y sonido al programar el primer descanso. Los textos salen de recursos ES/EN. Si niegas el permiso, el registro de series y el descanso dentro de la app siguen funcionando.
+- Se programa después de guardar la serie, usando el fin absoluto calculado por el motor. Sumar/restar 15 s reemplaza el mismo identificador; Saltar, Deshacer, fin y cambio de sesión cancelan el aviso correspondiente. Minimizar y consultar cada cuadro no reprograman nada. Solo se retiran notificaciones de descanso, no todas las de la app.
+- Una cola serial conserva el último ajuste mientras se responde al permiso y espera la confirmación de una programación antes de cancelarla. Evita resucitar un aviso saltado y no avisa tarde si el descanso venció durante el permiso. Los fallos nativos se registran sin bloquear el guardado de series; una petición posterior puede volver a programar.
+- El aviso entregado a iOS no depende de que siga vivo el ViewModel. Abrir otra vez la app no cancela automáticamente una solicitud pendiente. Esto no restaura el anillo tras matar el proceso: la persistencia del estado del descanso y la Live Activity siguen pendientes. Android conserva su comportamiento anterior hasta F1-14. No hay pantalla nueva ni cambios de versiones, enums o Room.
+- Verificación local observada: ktlintCheck, tres suites AndroidHostTest, APK Android/Wear OS y frameworks iOS de iPhone/simulador con BUILD SUCCESSFUL. 115 pruebas, sin fallos ni errores (domain 55, data 34, ui 26). Se añadieron 6 pruebas de permisos tardíos/denegados, vencimiento, cancelación durante programación, recuperación tras error e integración con guardado, ajustes y Deshacer.
+- Pendiente en iPhone físico: aceptar y negar permiso; completar serie y bloquear pantalla o cerrar la app antes del fin; comprobar un solo aviso con sonido, +15 s y -15 s sin aviso a la hora anterior, Saltar y Deshacer sin aviso; repetir en ES/EN y volver a abrir antes del fin. La entrega y el sonido reales no se probaron en un dispositivo. Sin push. F1-06 sigue reservado para Juan.

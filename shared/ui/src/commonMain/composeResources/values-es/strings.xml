@@ -392,4 +392,6 @@
     <string name="plan_interval_line">%1$s · %2$d rondas · %3$s</string>
     <string name="plan_interval_start">Empezar</string>
     <string name="plan_interval_edit">Editar</string>
+    <string name="rest_notification_title">Terminó el descanso</string>
+    <string name="rest_notification_body">Continúa tu entrenamiento.</string>
 </resources>
