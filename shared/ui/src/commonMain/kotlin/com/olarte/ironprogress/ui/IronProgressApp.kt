@@ -43,6 +43,8 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -488,6 +490,7 @@ private fun ForjaPlanScreen(listState: LazyListState, isSessionStarted: Boolean,
             ) {
                 Text(
                     text = "Plan",
+                    modifier = Modifier.semantics { heading() },
                     style = typography.title1,
                     color = colors.text1,
                 )
@@ -1034,8 +1037,8 @@ private fun CapsulePart(width: Dp, height: Dp, color: Color) {
 private fun ProgressTitle(onHistory: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
-            text = "Progreso",
-            modifier = Modifier.weight(1f),
+            text = stringResource(Res.string.nav_progress),
+            modifier = Modifier.weight(1f).semantics { heading() },
             style = ForjaTheme.typography.title1,
             color = ForjaTheme.colors.text1,
         )

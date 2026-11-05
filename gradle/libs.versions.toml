@@ -26,6 +26,10 @@ ktlint-gradle = "14.2.0"
 kover = "0.9.9"
 wear-compose = "1.7.1"
 datastore = "1.2.0"
+turbine = "1.2.1"
+robolectric = "4.16"
+robolectric-androidAll = "15-robolectric-13954326-i7"
+androidx-compose-uiTest = "1.10.0"
 wear-minSdk = "30"
 wear-targetSdk = "35"
 
@@ -66,6 +70,13 @@ haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wear-compose" }
 wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
+
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+robolectric-androidAll = { module = "org.robolectric:android-all-instrumented", version.ref = "robolectric-androidAll" }
+compose-uiTest = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "composeMultiplatform" }
+androidx-compose-uiTestJunit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-compose-uiTest" }
+androidx-compose-uiTestManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-compose-uiTest" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.time.SegmentKind
+import com.olarte.ironprogress.ui.a11y.timerPhase
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.interval_breathe
 import com.olarte.ironprogress.ui.resources.interval_close
@@ -156,6 +157,7 @@ fun IntervalRunScreen(state: IntervalRunState, subtitle: String?, onIntent: (Int
         val phaseColor = if (working) colors.ember else colors.ice
         Text(
             stringResource(if (working) Res.string.interval_phase_work else Res.string.interval_phase_rest),
+            modifier = Modifier.timerPhase(),
             style = type.label,
             color = phaseColor,
         )

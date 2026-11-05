@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -110,7 +111,7 @@ internal fun TopBar(title: String, icon: Painter, iconDescription: String, onIco
             Icon(icon, contentDescription = null, tint = ForjaTheme.colors.text1, modifier = Modifier.size(ForjaMeasures.iconSize))
         }
         Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, style = ForjaTheme.typography.title3, color = ForjaTheme.colors.text1)
+            Text(title, Modifier.semantics { heading() }, style = ForjaTheme.typography.title3, color = ForjaTheme.colors.text1)
             subtitle?.let { Text(it, style = ForjaTheme.typography.caption, color = ForjaTheme.colors.text2) }
         }
         Spacer(Modifier.size(ForjaMeasures.minTouch))

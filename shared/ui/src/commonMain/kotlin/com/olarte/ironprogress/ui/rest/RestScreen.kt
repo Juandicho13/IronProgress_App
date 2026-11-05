@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
+import com.olarte.ironprogress.ui.a11y.timerPhase
 import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
@@ -106,7 +107,12 @@ fun RestScreen(state: WorkoutState, onIntent: (WorkoutIntent) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
     ) {
         TextButton(onClick = dismiss) { Text(stringResource(Res.string.rest_minimize)) }
-        Text(state.routineName ?: stringResource(Res.string.rest_title), color = colors.ice, style = typography.title2)
+        Text(
+            state.routineName ?: stringResource(Res.string.rest_title),
+            modifier = Modifier.timerPhase(),
+            color = colors.ice,
+            style = typography.title2,
+        )
         Box(contentAlignment = Alignment.Center) {
             RestRing((timer.remainingInSegmentMs ?: 0).toFloat() / (timer.segmentDurationMs ?: 1).coerceAtLeast(1), true)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

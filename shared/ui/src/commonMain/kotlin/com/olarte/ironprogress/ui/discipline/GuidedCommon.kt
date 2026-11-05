@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.olarte.ironprogress.ui.components.ForjaMoreIcons
@@ -53,7 +54,7 @@ internal fun GuidedTopBar(title: String, subtitle: String?, muted: Boolean, onCl
     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
         RoundIconButton(ForjaMoreIcons.ChevronLeft, stringResource(Res.string.flow_close), onClick = onClose)
         Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, style = ForjaTheme.typography.title3, color = ForjaTheme.colors.text1)
+            Text(title, Modifier.semantics { heading() }, style = ForjaTheme.typography.title3, color = ForjaTheme.colors.text1)
             subtitle?.let { Text(it, style = ForjaTheme.typography.caption, color = ForjaTheme.colors.text2) }
         }
         RoundIconButton(

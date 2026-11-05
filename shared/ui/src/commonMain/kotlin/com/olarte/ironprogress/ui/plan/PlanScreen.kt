@@ -19,6 +19,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.routine.Folder
 import com.olarte.ironprogress.ui.components.EditorAction
@@ -68,7 +70,12 @@ fun PlanScreen(state: PlanState, onIntent: (PlanIntent) -> Unit, onEdit: (String
             .verticalScroll(rememberScrollState()).padding(ForjaSpacing.esp5),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
     ) {
-        Text(stringResource(Res.string.plan_title), style = ForjaTheme.typography.title1, color = ForjaTheme.colors.text1)
+        Text(
+            stringResource(Res.string.plan_title),
+            Modifier.semantics { heading() },
+            style = ForjaTheme.typography.title1,
+            color = ForjaTheme.colors.text1,
+        )
         intervals()
         EditorAction(stringResource(Res.string.plan_create), !state.busy) { onEdit(null) }
         EditorAction(stringResource(Res.string.plan_create_folder), !state.busy) {

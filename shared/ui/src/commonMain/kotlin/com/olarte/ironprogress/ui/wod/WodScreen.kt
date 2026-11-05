@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.routine.BlockFormat
 import com.olarte.ironprogress.domain.session.BlockResult
 import com.olarte.ironprogress.domain.wod.Wod
+import com.olarte.ironprogress.ui.a11y.timerPhase
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorField
 import com.olarte.ironprogress.ui.format.Formats
@@ -248,6 +249,7 @@ private fun Running(state: WodState, languageCode: String, onIntent: (WodIntent)
         when {
             wod.format == BlockFormat.EMOM -> Text(
                 stringResource(Res.string.wod_minute, timer.round, wod.minutes!!),
+                modifier = Modifier.timerPhase(),
                 style = ForjaTheme.typography.body2,
                 color = colors.text2,
             )

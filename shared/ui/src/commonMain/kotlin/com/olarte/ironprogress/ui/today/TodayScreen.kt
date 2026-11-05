@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
@@ -579,6 +580,7 @@ private fun TodayTitle(state: TodayState, formats: Formats, modifier: Modifier) 
         }
         Text(
             text = stringResource(Res.string.nav_today),
+            modifier = Modifier.semantics { heading() },
             style = ForjaTheme.typography.title1,
             color = ForjaTheme.colors.text1,
         )

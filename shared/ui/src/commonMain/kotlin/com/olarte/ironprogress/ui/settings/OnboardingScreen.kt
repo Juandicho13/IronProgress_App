@@ -20,6 +20,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.settings.ExperienceLevel
 import com.olarte.ironprogress.domain.settings.TrainingGoal
@@ -81,7 +83,12 @@ fun OnboardingScreen(onFinish: (TrainingProfile) -> Unit) {
             .verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp6),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
     ) {
-        Text(stringResource(Res.string.onb_title), style = ForjaTheme.typography.title1, color = colors.text1)
+        Text(
+            stringResource(Res.string.onb_title),
+            Modifier.semantics { heading() },
+            style = ForjaTheme.typography.title1,
+            color = colors.text1,
+        )
         Text(stringResource(Res.string.onb_subtitle), style = ForjaTheme.typography.body, color = colors.text2)
 
         SettingsCard {

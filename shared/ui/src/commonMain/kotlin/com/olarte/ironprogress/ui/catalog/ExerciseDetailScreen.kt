@@ -28,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.Exercise
@@ -114,7 +116,7 @@ private fun DetailContent(state: ExerciseDetailState, exercise: Exercise, langua
     val colors = ForjaTheme.colors
     val type = ForjaTheme.typography
     Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
-        Text(exercise.name.resolve(languageCode), style = type.title1, color = colors.text1)
+        Text(exercise.name.resolve(languageCode), Modifier.semantics { heading() }, style = type.title1, color = colors.text1)
         Text(
             "${exercise.discipline.editorLabel()} · ${exercise.equipment.label()}",
             style = type.body2,

@@ -300,3 +300,43 @@ Pasos en Xcode para Codex o Juan, en el Mac:
 - `ui/discipline`: `DisciplinesScreen` (ruta `Disciplines`, desde Plan), `FlowRoute` (ruta `Flow(id)`) y `BreathingRoute` (ruta `Breathing`). `GuidedRunViewModel` lee `stateAt` en cada consulta y saca los cambios de tramo de `eventsBetween`; además mira el índice del tramo, porque Siguiente postura cambia de tramo sin que pase el tiempo y `eventsBetween` no lo ve.
 - Figuras: `PoseFigures.kt`, lienzo de 372 × 240, trazo de 16, cabeza de radio 14, perfil a la izquierda y suelo fijo. Para una postura nueva se agrega su dibujo con el mismo id que `FlowPose.figure`.
 - La voz y la vibración salen en cada cambio de tramo; con la voz apagada (en la pantalla o en Ajustes) solo vibra. La pantalla bloqueada todavía no mantiene el reloj vivo en segundo plano: el plan se recalcula al volver, pero la voz se calla mientras la app no está a la vista. Revisarlo en la prueba con la pantalla bloqueada y, si hace falta, llevarlo al servicio de F1-14.
+
+## 26. F1-27 en feat/f1-claude, 5 de noviembre de 2026
+
+- Accesibilidad: `ui/a11y/TimerSemantics.kt` trae `Modifier.timerPhase()`, la región viva para las etiquetas de fase. Va en Intervalos (Trabajo o Descanso), Descanso (título), Bloque funcional (minuto del EMOM) y Respiración (Inhala, Retén, Exhala); Flujo ya la tenía en el nombre de la postura. Respiración tenía los segundos dentro de la región viva y se anunciaban cada segundo; ya no. Regla para pantallas nuevas: nunca `liveRegion` en algo que cambie cada segundo.
+- Títulos de Hoy, Plan, Catálogo, Progreso, Ajustes, Bienvenida, ficha y editores, y de las barras de Flujo y Respiración, con `heading()`. El título de Progreso ahora sale de `nav_progress` (antes estaba escrito a mano en español).
+- Pruebas de interfaz: `shared/ui/src/androidHostTest/.../workout/WorkoutScreenUiTest.kt`, con Compose UI Test y Robolectric 4.16 en la JVM (corren con `:shared:ui:testAndroidHostTest`, sin emulador). Registran una serie con el teclado propio (60 kg × 8) y recuperan la sesión con un ViewModel nuevo. Robolectric necesita su Android de prueba (`android-all-instrumented`); Gradle lo baja como dependencia normal y las pruebas corren con `robolectric.offline`, así que no salen a la red. La pantalla de prueba es de 411 × 891 dp: con la de Robolectric por defecto el teclado queda fuera y los toques no llegan.
+- Los dobles de Entreno (`TestSessions`, `TestClock`, `TestCatalog`, `EmptyRoutines`, `newWorkoutViewModel`) pasaron a `commonTest/.../workout/WorkoutTestDoubles.kt` y los usan las pruebas de ViewModel y las de interfaz.
+- Turbine 1.2.1: `RestControllerFlowTest` (fases en orden y sin repetir), `WorkoutFlowTest` (Terminar emite un solo `Finished`; el Resumen pasa de Cargando a los números guardados).
+- Queda para Juan: la beta interna de 2 semanas, y revisar TalkBack, VoiceOver y el texto al máximo en los dos teléfonos.
+
+### Criterio de salida de F1: qué probar en los teléfonos
+
+Marca cada línea en el S25 Ultra y en el iPhone; el Watch4 solo donde se dice.
+
+- [ ] F0-01: la base abre en el S25 Ultra, el iPhone y el Watch4.
+- [ ] F1-05: "62,5 kg" y "8.420 kg" en español; "62.5 kg" y "8,420 kg" en inglés.
+- [ ] F1-06: revisar la exigencia y los porcentajes de los 77 ejercicios (página "Revisión F1-06").
+- [ ] F1-07: un ejercicio propio aparece en la búsqueda en los dos idiomas.
+- [ ] F1-08: armar tus rutinas reales de fuerza.
+- [ ] F1-09: Hoy muestra la rutina que toca.
+- [ ] F1-10: matar la app en mitad de una sesión y volver sin perder nada.
+- [ ] F1-11: 20 descansos seguidos con el tiempo exacto.
+- [ ] F1-12: una sesión con superserie, un ejercicio por tiempo y uno por calorías.
+- [ ] F1-13: la app abre igual que antes.
+- [ ] F1-14: con el S25 Ultra bloqueado, el descanso avisa a su hora, se ve en la Now Bar y los botones funcionan.
+- [ ] F1-15: con el iPhone bloqueado, el descanso avisa a su hora.
+- [ ] F1-16: crear y compilar la extensión en Xcode (sección 19); con el iPhone bloqueado la isla cuenta y los botones guardan.
+- [ ] F1-17: con música, la voz cuenta, la música baja y vuelve, con la pantalla apagada.
+- [ ] F1-18: 15 s a tope y 45 s de descanso, 10 rondas, con la pantalla bloqueada; se guardan las reps.
+- [ ] F1-19: un AMRAP de 12 min y un EMOM de 10 con el resultado correcto en el historial.
+- [ ] F1-20: Saludo al sol A de 5 rondas y 5 min de respiración cuadrada con voz y vibración, con la pantalla bloqueada; mirar las figuras de las posturas.
+- [ ] F1-21: deslizar para terminar y que el Resumen cuadre con la sesión.
+- [ ] F1-22: con el ejercicio en lb, 62,5 kg se ve "137,8 lb"; los discos por lado con una barra real; Agregar el calentamiento.
+- [ ] F1-23: editar una serie de ayer en el historial y verla corregida.
+- [ ] F1-24: hacer una copia en el S25 Ultra y restaurarla en el iPhone (el selector del iPhone se compila en el Mac).
+- [ ] F1-25: cambiar idioma y tema desde Ajustes sin cerrar la app; con Ocultar encendido no se ve ninguna caloría.
+- [ ] F1-27: TalkBack y VoiceOver en un descanso, unos intervalos y una respiración: anuncian la fase, no cada segundo. Letra al máximo en Hoy, Entreno, Descanso y Resumen sin textos cortados.
+- [ ] F1-27: beta interna de 2 semanas.
+- F1-26 sigue bloqueado por diseño (PAR-Q+, modo joven y permiso de los padres).
+

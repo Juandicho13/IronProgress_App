@@ -30,6 +30,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -112,6 +114,7 @@ fun DisciplinesScreen(onBack: () -> Unit, onOpen: (DisciplineTarget) -> Unit) {
         TopBar(stringResource(Res.string.disc_bar), ForjaMoreIcons.ChevronLeft, stringResource(Res.string.settings_back), onBack)
         Text(
             stringResource(Res.string.disc_title),
+            modifier = Modifier.semantics { heading() },
             style = ForjaTheme.typography.title1.copy(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold),
             color = colors.text1,
         )

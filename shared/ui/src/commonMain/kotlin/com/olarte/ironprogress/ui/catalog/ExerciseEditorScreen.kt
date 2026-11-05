@@ -21,6 +21,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.catalog.Equipment
@@ -83,6 +85,7 @@ fun ExerciseEditorScreen(state: ExerciseEditorState, onIntent: (ExerciseEditorIn
     ) {
         Text(
             stringResource(if (editing) Res.string.editor_edit else Res.string.editor_create),
+            modifier = Modifier.semantics { heading() },
             style = ForjaTheme.typography.title1,
             color = ForjaTheme.colors.text1,
         )

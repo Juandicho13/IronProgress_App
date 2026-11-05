@@ -41,6 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.catalog.Equipment
@@ -110,6 +112,7 @@ fun CatalogScreen(
         // Un solo titulo grande por pantalla (titulo-1)
         Text(
             text = stringResource(Res.string.catalog_title),
+            modifier = Modifier.semantics { heading() },
             style = typography.title1,
             color = colors.text1,
         )

@@ -34,15 +34,13 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.discipline.BreathingPattern
 import com.olarte.ironprogress.domain.time.SegmentKind
 import com.olarte.ironprogress.domain.time.TimerState
+import com.olarte.ironprogress.ui.a11y.timerPhase
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaMoreIcons
 import com.olarte.ironprogress.ui.interval.StepButton
@@ -159,9 +157,11 @@ fun BreathingScreen(
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             Box(Modifier.widthIn(max = 300.dp).fillMaxWidth().aspectRatio(1f), contentAlignment = Alignment.Center) {
                 BreathFigure(pattern, timer)
-                Column(Modifier.semantics { liveRegion = LiveRegionMode.Polite }, horizontalAlignment = Alignment.CenterHorizontally) {
+                // Solo la fase es región viva: los segundos de abajo no se anuncian cada segundo.
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         stringResource((timer?.kind ?: SegmentKind.INHALE).phaseText()),
+                        modifier = Modifier.timerPhase(),
                         style = ForjaTheme.typography.title1.copy(fontSize = 30.sp, lineHeight = 36.sp),
                         color = colors.ice,
                     )

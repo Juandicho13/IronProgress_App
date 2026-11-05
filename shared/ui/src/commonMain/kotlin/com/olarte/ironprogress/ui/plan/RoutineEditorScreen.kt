@@ -22,6 +22,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.ExerciseQuery
@@ -86,7 +88,12 @@ fun RoutineEditorScreen(state: RoutineEditorState, onIntent: (RoutineEditorInten
             .verticalScroll(rememberScrollState()).padding(ForjaSpacing.esp5),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
     ) {
-        Text(stringResource(Res.string.plan_edit), style = ForjaTheme.typography.title1, color = ForjaTheme.colors.text1)
+        Text(
+            stringResource(Res.string.plan_edit),
+            Modifier.semantics { heading() },
+            style = ForjaTheme.typography.title1,
+            color = ForjaTheme.colors.text1,
+        )
         EditorAction(stringResource(Res.string.editor_back), !state.saving) { onIntent(RoutineEditorIntent.Back) }
         if (state.loading) Text(stringResource(Res.string.editor_loading))
         if (state.failed) {
