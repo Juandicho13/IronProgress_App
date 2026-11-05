@@ -253,6 +253,21 @@ class TodayViewModelTest {
         override fun observeFinishedSessions(): Flow<List<WorkoutSession>> =
             sessions.map { all -> all.values.filter { it.status == SessionStatus.FINISHED } }
 
+        override suspend fun createSession(detail: SessionDetail): SessionDetail {
+            observeActiveSession().first()?.let { return it }
+            detail.blocks.forEach { saveBlock(it) }
+            detail.exercises.forEach { saveExercise(it) }
+            detail.sets.forEach { saveSet(it) }
+            saveSession(detail.session)
+            return detail
+        }
+
+        override suspend fun appendExercise(block: SessionBlock, exercise: SessionExercise, sets: List<WorkoutSet>) {
+            saveBlock(block)
+            saveExercise(exercise)
+            sets.forEach { saveSet(it) }
+        }
+
         override suspend fun saveSession(session: WorkoutSession) {
             sessions.value = sessions.value + (session.id to session)
         }

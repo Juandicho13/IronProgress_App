@@ -15,6 +15,7 @@ import kotlinx.coroutines.IO
  * Base local de IronProgress. Si cambias una entidad, sube [SCHEMA_VERSION] y version a la vez,
  * agrega la migración y amplía CatalogMigrationTest con el esquema anterior.
  *
+ * Versión 3 (F1-10): agrega notes a workout_sets con valor vacío por defecto.
  * Versión 2 (F1-03): rutinas, sesiones, bloques y las tablas de la Etapa 1, más discipline,
  * level y aliases en exercises y work_share en exercise_muscles. La 1 a 2 solo agrega tablas y
  * columnas con valor por defecto, así que Room la genera (AutoMigration).
@@ -40,10 +41,11 @@ import kotlinx.coroutines.IO
         ScreeningAnswerEntity::class,
         GuardianConsentEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3),
     ],
 )
 @ConstructedBy(IronProgressDatabaseConstructor::class)
@@ -58,7 +60,7 @@ abstract class IronProgressDatabase : RoomDatabase() {
     abstract fun stageOneDao(): StageOneDao
 
     companion object {
-        const val SCHEMA_VERSION = 2
+        const val SCHEMA_VERSION = 3
         const val DATABASE_NAME = "ironprogress.db"
     }
 }

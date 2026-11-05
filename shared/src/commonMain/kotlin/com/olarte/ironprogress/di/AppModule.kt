@@ -19,6 +19,7 @@ import com.olarte.ironprogress.domain.routine.CreateRoutine
 import com.olarte.ironprogress.domain.routine.EditRoutines
 import com.olarte.ironprogress.domain.routine.ObserveNextRoutine
 import com.olarte.ironprogress.domain.routine.RoutineRepository
+import com.olarte.ironprogress.domain.session.AddSessionExercise
 import com.olarte.ironprogress.domain.session.CompleteSet
 import com.olarte.ironprogress.domain.session.EndSession
 import com.olarte.ironprogress.domain.session.SessionRepository
@@ -54,5 +55,6 @@ val sharedAppModule: Module = module {
     factory { ObserveNextRoutine(get(), get()) }
     factory { StartSession(get(), get(), get()) }
     factory { CompleteSet(get(), get()) }
+    factory { AddSessionExercise(get(), get()) }
     factory { EndSession(get(), get()) }
 }

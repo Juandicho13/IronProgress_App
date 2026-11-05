@@ -13,6 +13,7 @@ import com.olarte.ironprogress.domain.routine.WorkoutBlock
 import com.olarte.ironprogress.domain.routine.addExercise
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -51,6 +52,21 @@ class SessionUseCasesTest {
 
         override fun observeFinishedSessions(): Flow<List<WorkoutSession>> =
             sessions.map { all -> all.values.filter { it.status == SessionStatus.FINISHED } }
+
+        override suspend fun createSession(detail: SessionDetail): SessionDetail {
+            observeActiveSession().first()?.let { return it }
+            detail.blocks.forEach { saveBlock(it) }
+            detail.exercises.forEach { saveExercise(it) }
+            detail.sets.forEach { saveSet(it) }
+            saveSession(detail.session)
+            return detail
+        }
+
+        override suspend fun appendExercise(block: SessionBlock, exercise: SessionExercise, sets: List<WorkoutSet>) {
+            saveBlock(block)
+            saveExercise(exercise)
+            sets.forEach { saveSet(it) }
+        }
 
         override suspend fun saveSession(session: WorkoutSession) {
             sessions.value = sessions.value + (session.id to session)
@@ -101,6 +117,39 @@ class SessionUseCasesTest {
         assertEquals(5, detail.sets.size)
         assertEquals(0, detail.workingSetsDone)
         assertNotNull(repo.observeActiveSessionValue())
+    }
+
+    @Test
+    fun routineUsesPreviousValuesWithoutCopyingCompletionOrNotes() = runTest {
+        val repo = FakeSessionRepository()
+        val ids = ids()
+        val clock = FakeClock(start)
+        val routine = routine(ids)
+        val old = StartSession(repo, ids, clock)(routine)
+        CompleteSet(repo, clock)(old.sets.first().copy(weightKg = 62.5, reps = 11, notes = "Solo de ayer"))
+        EndSession(repo, clock)(old.session)
+        clock.now += 5.minutes
+        val next = StartSession(repo, ids, clock)(routine)
+        assertEquals(62.5, next.sets.first().weightKg)
+        assertEquals(11, next.sets.first().reps)
+        assertEquals("", next.sets.first().notes)
+        assertNull(next.sets.first().completedAt)
+        assertEquals(8, next.sets[1].reps)
+    }
+
+    @Test
+    fun equivalentSetMatchesTypeAndPreservesTheCurrentIdentity() {
+        val exerciseId = SessionExerciseId("e")
+        val warmup = WorkoutSet(WorkoutSetId("warmup"), exerciseId, 0, SetType.WARMUP, weightKg = 20.0, reps = 10)
+        val working = WorkoutSet(WorkoutSetId("working"), exerciseId, 1, weightKg = 60.0, reps = 8, completedAt = start)
+        val current = WorkoutSet(WorkoutSetId("current"), SessionExerciseId("new"), 0, notes = "De hoy")
+        val previous = assertNotNull(equivalentPreviousSet(current, listOf(current), listOf(warmup, working)))
+        assertEquals(working, previous)
+        val copied = current.copyMeasurements(previous)
+        assertEquals(current.id, copied.id)
+        assertEquals("De hoy", copied.notes)
+        assertNull(copied.completedAt)
+        assertEquals(60.0, copied.weightKg)
     }
 
     @Test

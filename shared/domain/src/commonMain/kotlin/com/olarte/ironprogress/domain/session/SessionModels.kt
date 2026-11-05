@@ -118,6 +118,7 @@ data class WorkoutSet(
     val suggestion: String? = null,
     val endHeartRate: Int? = null,
     val recoverySeconds: Int? = null,
+    val notes: String = "",
 ) {
     init {
         require(weightKg == null || weightKg >= 0) { "El peso no puede ser negativo" }

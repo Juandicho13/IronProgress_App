@@ -243,4 +243,5 @@ data class WorkoutSetEntity(
     @ColumnInfo(name = "created_at") val createdAt: Long,
     @ColumnInfo(name = "updated_at") val updatedAt: Long,
     @ColumnInfo(name = "deleted_at") val deletedAt: Long? = null,
+    @ColumnInfo(name = "notes", defaultValue = "''") val notes: String = "",
 )

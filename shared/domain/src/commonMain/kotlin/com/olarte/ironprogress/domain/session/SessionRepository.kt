@@ -1,6 +1,8 @@
 package com.olarte.ironprogress.domain.session
 
+import com.olarte.ironprogress.domain.catalog.ExerciseId
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 /** Sesiones y series. Cada serie se guarda al completarla, nunca al final (HANDOFF 8.4). */
 interface SessionRepository {
@@ -11,6 +13,23 @@ interface SessionRepository {
 
     /** Sesiones terminadas, de la más reciente a la más vieja. */
     fun observeFinishedSessions(): Flow<List<WorkoutSession>>
+
+    /** Crea la sesión completa en una transacción, o devuelve la que ya está activa. */
+    suspend fun createSession(detail: SessionDetail): SessionDetail
+
+    /** Agrega el ejercicio y sus series juntos, sin dejar filas incompletas. */
+    suspend fun appendExercise(block: SessionBlock, exercise: SessionExercise, sets: List<WorkoutSet>)
+
+    /** Series hechas en la última aparición del ejercicio dentro de una sesión terminada. */
+    suspend fun previousSets(exerciseId: ExerciseId): List<WorkoutSet> {
+        for (session in observeFinishedSessions().first().sortedByDescending { it.endedAt }) {
+            val detail = findSession(session.id) ?: continue
+            val exercise = detail.exercises.lastOrNull { it.exerciseId == exerciseId } ?: continue
+            val sets = detail.setsOf(exercise.id).filter { it.isCompleted }
+            if (sets.isNotEmpty()) return sets
+        }
+        return emptyList()
+    }
 
     suspend fun saveSession(session: WorkoutSession)
 

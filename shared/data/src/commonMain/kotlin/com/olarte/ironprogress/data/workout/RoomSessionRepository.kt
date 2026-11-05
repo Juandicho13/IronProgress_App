@@ -1,6 +1,7 @@
 package com.olarte.ironprogress.data.workout
 
 import com.olarte.ironprogress.data.local.SessionDao
+import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.session.SessionBlock
 import com.olarte.ironprogress.domain.session.SessionDetail
 import com.olarte.ironprogress.domain.session.SessionExercise
@@ -56,6 +57,28 @@ class RoomSessionRepository(private val dao: SessionDao, private val clock: Cloc
 
     override fun observeFinishedSessions(): Flow<List<WorkoutSession>> =
         dao.observeFinishedSessions().map { rows -> rows.map { it.toDomain() } }
+
+    override suspend fun createSession(detail: SessionDetail): SessionDetail {
+        val now = now()
+        val id = dao.createSession(
+            detail.session.toEntity(now, now),
+            detail.blocks.map { it.toEntity(now, now) },
+            detail.exercises.map { it.toEntity(now, now) },
+            detail.sets.map { it.toEntity(now, now) },
+        )
+        return requireNotNull(findSession(SessionId(id)))
+    }
+
+    override suspend fun appendExercise(block: SessionBlock, exercise: SessionExercise, sets: List<WorkoutSet>) {
+        val now = now()
+        dao.appendExercise(
+            block.toEntity(dao.blockCreatedAt(block.id.value) ?: now, now),
+            exercise.toEntity(now, now),
+            sets.map { it.toEntity(now, now) },
+        )
+    }
+
+    override suspend fun previousSets(exerciseId: ExerciseId): List<WorkoutSet> = dao.previousSets(exerciseId.value).map { it.toDomain() }
 
     override suspend fun saveSession(session: WorkoutSession) {
         val now = now()

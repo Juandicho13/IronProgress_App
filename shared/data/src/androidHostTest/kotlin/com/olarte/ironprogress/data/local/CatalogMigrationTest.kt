@@ -25,7 +25,7 @@ import kotlin.test.assertTrue
 /**
  * Protege a quien ya tiene la app instalada: una base creada con un esquema exportado debe abrir
  * con el código actual sin perder datos. La 1 a 2 la genera Room (AutoMigration); cuando llegue
- * la 3, agrega una prueba igual que parta del esquema 2.
+ * otra versión, agrega una prueba que parta del esquema anterior.
  */
 class CatalogMigrationTest {
 
@@ -106,6 +106,65 @@ class CatalogMigrationTest {
             assertNull(backupBeforeMigration(file.absolutePath))
         } finally {
             listOf("", "-wal", "-shm", "-journal", ".v1.bak").forEach { File(file.path + it).delete() }
+        }
+    }
+
+    @Test
+    fun version2KeepsActiveSessionAndAddsPersistentSetNotes() = runTest {
+        val file = File.createTempFile("ironprogress-v2", ".db").apply { delete() }
+        try {
+            createDatabaseFromSchema(file, version = 2) { connection ->
+                connection.execSQL(
+                    "INSERT INTO workout_sessions (id, discipline, started_at, status, notes, adjustment_applied, created_at, updated_at) VALUES ('session', 'STRENGTH', 1000, 'IN_PROGRESS', 'nota previa', 0, 1, 1)",
+                )
+                connection.execSQL(
+                    "INSERT INTO workout_blocks (id, session_id, sort_order, format, created_at, updated_at) VALUES ('block', 'session', 0, 'SETS', 1, 1)",
+                )
+                connection.execSQL(
+                    "INSERT INTO session_exercises (id, session_id, block_id, exercise_id, sort_order, notes, created_at, updated_at) VALUES ('exercise', 'session', 'block', 'bench', 0, '', 1, 1)",
+                )
+                connection.execSQL(
+                    "INSERT INTO workout_sets (id, session_exercise_id, sort_order, set_type, weight_kg, reps, rir, created_at, updated_at) VALUES ('set', 'exercise', 0, 'WORKING', 62.5, 10, 2, 1, 1)",
+                )
+            }
+            assertEquals(file.absolutePath + ".v2.bak", backupBeforeMigration(file.absolutePath))
+            fun open() = Room.databaseBuilder<IronProgressDatabase>(
+                name = file.absolutePath,
+                factory = { IronProgressDatabaseConstructor.initialize() },
+            ).buildIronProgressDatabase()
+            val database = open()
+            try {
+                val repository = com.olarte.ironprogress.data.workout.RoomSessionRepository(database.sessionDao(), kotlin.time.Clock.System)
+                val active = assertNotNull(repository.observeActiveSession().first())
+                assertEquals("nota previa", active.session.notes)
+                val set = active.sets.single()
+                assertEquals(62.5, set.weightKg)
+                assertEquals(10, set.reps)
+                assertEquals(2, set.rir)
+                assertEquals("", set.notes)
+                val timings = (1..20).map { index ->
+                    val mark = kotlin.time.TimeSource.Monotonic.markNow()
+                    repository.saveSet(
+                        set.copy(notes = "Nota $index", reps = 11, completedAt = kotlin.time.Instant.fromEpochMilliseconds(2000)),
+                    )
+                    mark.elapsedNow().inWholeMicroseconds / 1000.0
+                }.sorted()
+                println("F1-10 guardado Room en disco del host: p95=${timings[18]} ms; máximo=${timings.last()} ms")
+            } finally {
+                database.close()
+            }
+            val reopened = open()
+            try {
+                val repository = com.olarte.ironprogress.data.workout.RoomSessionRepository(reopened.sessionDao(), kotlin.time.Clock.System)
+                val active = assertNotNull(repository.observeActiveSession().first())
+                assertEquals("Nota 20", active.sets.single().notes)
+                assertEquals(11, active.sets.single().reps)
+                assertTrue(active.sets.single().isCompleted)
+            } finally {
+                reopened.close()
+            }
+        } finally {
+            listOf("", "-wal", "-shm", "-journal", ".v2.bak").forEach { File(file.path + it).delete() }
         }
     }
 

@@ -20,12 +20,14 @@ import com.olarte.ironprogress.domain.session.EndSession
 import com.olarte.ironprogress.domain.session.SessionStatus
 import com.olarte.ironprogress.domain.session.Side
 import com.olarte.ironprogress.domain.session.StartSession
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -88,6 +90,54 @@ class RoomWorkoutRepositoryTest {
         assertEquals(second.setTemplates.toSet(), next.detail.setTemplates.toSet())
         assertEquals(2, next.positionInRotation)
         assertEquals(folder, next.folder)
+    }
+
+    @Test
+    fun simultaneousStartsCreateOnlyOneCompleteSession() = runTest {
+        val routine = CreateRoutine(routines, ids)("Torso").let {
+            it.addExercise(ids, it.blocks.single().id, ExerciseId("bench"))
+        }
+        val first = async { StartSession(sessions, ids, clock)(routine) }
+        val second = async { StartSession(sessions, ids, clock)(routine) }
+        val saved = first.await()
+        assertEquals(saved.session.id, second.await().session.id)
+        assertEquals(3, sessions.findSession(saved.session.id)?.sets?.size)
+    }
+
+    @Test
+    fun failedCreationRollsBackTheWholeSession() = runTest {
+        val session = com.olarte.ironprogress.domain.session.WorkoutSession(
+            com.olarte.ironprogress.domain.session.SessionId("invalid"),
+            null,
+            com.olarte.ironprogress.domain.catalog.Discipline.STRENGTH,
+            clock.now,
+        )
+        val set = com.olarte.ironprogress.domain.session.WorkoutSet(
+            com.olarte.ironprogress.domain.session.WorkoutSetId("set"),
+            com.olarte.ironprogress.domain.session.SessionExerciseId("missing"),
+            0,
+        )
+        assertFailsWith<Exception> {
+            sessions.createSession(com.olarte.ironprogress.domain.session.SessionDetail(session, emptyList(), emptyList(), listOf(set)))
+        }
+        assertNull(sessions.observeActiveSession().first())
+        assertNull(sessions.findSession(session.id))
+    }
+
+    @Test
+    fun previousSetsIgnoreDiscardedSessionsAndKeepSetOrder() = runTest {
+        val routine = CreateRoutine(routines, ids)("Torso").let {
+            it.addExercise(ids, it.blocks.single().id, ExerciseId("bench"), sets = 2)
+        }
+        val old = StartSession(sessions, ids, clock)(routine)
+        CompleteSet(sessions, clock)(old.sets[1].copy(weightKg = 65.0, reps = 8))
+        clock.now += 1.minutes
+        CompleteSet(sessions, clock)(old.sets[0].copy(weightKg = 60.0, reps = 10))
+        EndSession(sessions, clock)(old.session)
+        val discarded = StartSession(sessions, ids, clock)(routine)
+        CompleteSet(sessions, clock)(discarded.sets[0].copy(weightKg = 100.0, reps = 1))
+        EndSession(sessions, clock)(discarded.session, discard = true)
+        assertEquals(listOf(60.0, 65.0), sessions.previousSets(ExerciseId("bench")).map { it.weightKg })
     }
 
     @Test
