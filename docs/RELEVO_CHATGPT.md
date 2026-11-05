@@ -221,3 +221,12 @@ Rama nueva que sale de `feat/f1-claude` (después del diseño de 5.8), para no c
 - El aviso entregado a iOS no depende de que siga vivo el ViewModel. Abrir otra vez la app no cancela automáticamente una solicitud pendiente. Esto no restaura el anillo tras matar el proceso: la persistencia del estado del descanso y la Live Activity siguen pendientes. Android conserva su comportamiento anterior hasta F1-14. No hay pantalla nueva ni cambios de versiones, enums o Room.
 - Verificación local observada: ktlintCheck, tres suites AndroidHostTest, APK Android/Wear OS y frameworks iOS de iPhone/simulador con BUILD SUCCESSFUL. 115 pruebas, sin fallos ni errores (domain 55, data 34, ui 26). Se añadieron 6 pruebas de permisos tardíos/denegados, vencimiento, cancelación durante programación, recuperación tras error e integración con guardado, ajustes y Deshacer.
 - Pendiente en iPhone físico: aceptar y negar permiso; completar serie y bloquear pantalla o cerrar la app antes del fin; comprobar un solo aviso con sonido, +15 s y -15 s sin aviso a la hora anterior, Saltar y Deshacer sin aviso; repetir en ES/EN y volver a abrir antes del fin. La entrega y el sonido reales no se probaron en un dispositivo. Sin push. F1-06 sigue reservado para Juan.
+
+## 17. F1-19 en feat/f1-claude, 5 de noviembre de 2026
+
+- Dominio en `domain/wod/`: `Wod` (formato, minutos y movimientos con reps y carga), `WodScore` (tocar cada movimiento suma la ronda sola, "+ 1 ronda", ritmo del AMRAP y resultado por formato), `isBetter`, `SaveWodResult` (sesión `FUNCTIONAL` con el nombre del bloque en las notas) y `FindWodBest` ("Tu marca", por nombre y formato).
+- Pantalla en `ui/wod/`: se arma (nombre, formato, minutos y movimientos) y se corre en la misma pantalla de 7.4: tiempo que queda o que pasa, barra de avance, marcador rondas + reps, tu marca, el ritmo, la tarjeta de la ronda con cada movimiento y "+ 1 ronda". Al acabar, "Tiempo" y "Guardar 8 + 12".
+- Se entra desde Plan, con el botón "Bloque funcional" de la sección de intervalos.
+- La voz solo cuenta los últimos 5 s. El aviso de cada minuto y el pulso quedan para después. El bloque no se guarda como plantilla: se arma cada vez.
+- Verificado en Linux: 145 pruebas (5 de dominio y 1 de ViewModel nuevas), los dos APK y ktlintCheck.
+

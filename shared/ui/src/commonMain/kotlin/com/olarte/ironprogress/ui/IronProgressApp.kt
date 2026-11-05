@@ -255,6 +255,7 @@ fun IronProgressApp() {
                                     onNew = { backStack.add(Route.IntervalEditor()) },
                                     onEdit = { backStack.add(Route.IntervalEditor(it)) },
                                     onRun = { backStack.add(Route.IntervalRun(it)) },
+                                    onWod = { backStack.add(Route.Wod) },
                                 )
                             },
                         )
@@ -269,6 +270,9 @@ fun IronProgressApp() {
                                 backStack.add(Route.IntervalRun(id))
                             },
                         )
+                    }
+                    entry<Route.Wod> {
+                        com.olarte.ironprogress.ui.wod.WodRoute(languageCode = languageCode, onClose = { backStack.removeLastOrNull() })
                     }
                     entry<Route.IntervalRun> { route ->
                         com.olarte.ironprogress.ui.interval.IntervalRunRoute(
@@ -301,6 +305,7 @@ fun IronProgressApp() {
                 currentDestination is Route.ExerciseDetail ||
                 currentDestination is Route.IntervalEditor ||
                 currentDestination is Route.IntervalRun ||
+                currentDestination is Route.Wod ||
                 currentDestination is Route.RoutineEditor
             if (!isWorkoutScreenOpen && !isFullScreen) {
                 val activeBanner = workoutBanner(workoutState)
@@ -369,6 +374,7 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     is Route.ExerciseDetail -> ForjaTab.TODAY
     is Route.IntervalEditor -> ForjaTab.PLAN
     is Route.IntervalRun -> ForjaTab.PLAN
+    is Route.Wod -> ForjaTab.PLAN
     Route.Catalog -> ForjaTab.TODAY
     is Route.Workout -> ForjaTab.TODAY
 }

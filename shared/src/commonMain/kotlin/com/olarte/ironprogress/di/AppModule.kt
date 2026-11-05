@@ -50,6 +50,8 @@ val sharedAppModule: Module = module {
         com.olarte.ironprogress.data.workout.RoomIntervalTemplateRepository(get(), get())
     }
     factory { com.olarte.ironprogress.domain.interval.SaveIntervalResult(get(), get(), get()) }
+    factory { com.olarte.ironprogress.domain.wod.SaveWodResult(get(), get(), get()) }
+    factory { com.olarte.ironprogress.domain.wod.FindWodBest(get()) }
 
     factory { SaveCustomExercise(get(), get()) }
     factory { SearchExercises(get()) }

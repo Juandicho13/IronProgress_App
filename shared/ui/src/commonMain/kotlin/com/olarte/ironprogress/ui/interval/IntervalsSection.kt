@@ -20,6 +20,7 @@ import com.olarte.ironprogress.ui.resources.plan_interval_line
 import com.olarte.ironprogress.ui.resources.plan_interval_start
 import com.olarte.ironprogress.ui.resources.plan_intervals
 import com.olarte.ironprogress.ui.resources.plan_new_interval
+import com.olarte.ironprogress.ui.resources.plan_wod
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
@@ -28,7 +29,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 /** Sección de Plan con los intervalos guardados: empezar, editar o crear uno nuevo. */
 @Composable
-fun IntervalsSection(onNew: () -> Unit, onEdit: (String) -> Unit, onRun: (String) -> Unit) {
+fun IntervalsSection(onNew: () -> Unit, onEdit: (String) -> Unit, onRun: (String) -> Unit, onWod: () -> Unit = {}) {
     val model = koinViewModel<IntervalListViewModel>()
     val templates by model.templates.collectAsStateWithLifecycle()
     val colors = ForjaTheme.colors
@@ -57,5 +58,6 @@ fun IntervalsSection(onNew: () -> Unit, onEdit: (String) -> Unit, onRun: (String
             }
         }
         EditorAction(stringResource(Res.string.plan_new_interval), onClick = onNew)
+        EditorAction(stringResource(Res.string.plan_wod), onClick = onWod)
     }
 }
