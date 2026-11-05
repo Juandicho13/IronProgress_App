@@ -442,4 +442,14 @@
     <string name="workout_circuit">Circuit</string>
     <string name="workout_remove_set">Remove set</string>
     <string name="workout_options_short">Options</string>
+    <!-- Live Activity del iPhone (F1-16), los mismos textos de la Live Update -->
+    <string name="live_reps">reps</string>
+    <string name="live_ready_chip">Ready</string>
+    <string name="live_resting_title">Rest · %1$s</string>
+    <string name="live_next_with_target">Next: set %1$d of %2$d · %3$s</string>
+    <string name="live_next_only">Next: set %1$d of %2$d</string>
+    <string name="live_completed_line">Set %1$d done: %2$s</string>
+    <string name="live_ready_title">Time for set %1$d of %2$d</string>
+    <string name="live_ready_text">%1$s · %2$s</string>
+    <string name="live_free">Free workout</string>
 </resources>

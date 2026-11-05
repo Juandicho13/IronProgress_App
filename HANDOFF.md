@@ -388,6 +388,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-05 | F1-15 · aviso local de descanso en iPhone | `feat/f1-argon`, commit de F1-15 | Permiso, programación desde el fin absoluto, ajustes y cancelación con cola serial. 115 pruebas sin fallos, estilo, APK Android/Wear y frameworks iOS en verde local. Entrega y sonido con iPhone bloqueado pendientes de prueba física. No incluye Live Activity ni restauración del anillo al matar el proceso. Sin push |
 | 2026-11-05 | F1-19 · bloque funcional | `feat/f1-claude` | AMRAP, EMOM, por tiempo y rondas en una pantalla (7.4), marcador rondas + reps, ritmo, marca anterior y resultado guardado como sesión FUNCTIONAL; 145 pruebas. Falta probar un AMRAP de 12 y un EMOM de 10 en el teléfono |
 | 2026-11-05 | F1-12 · cambios en la sesión | `feat/f1-claude` | Subir, bajar, saltar por ahora, cambiar ejercicio, quitar serie, superseries y circuitos sin descanso hasta el último; 148 pruebas. Falta la sesión real con superserie, uno por tiempo y uno por calorías |
+| 2026-11-05 | F1-16 · Live Activity del iPhone | `feat/f1-claude` | Diseño 5.9, puente Kotlin (`WorkoutActivitySync`, se actualiza solo en cambios de fase) y Swift (ActivityKit, App Intents, `ForjaTokens.swift`); 150 pruebas de Kotlin. **El Swift no se compiló:** falta crear la extensión en Xcode y probar en el iPhone |
 
 ---
 
@@ -1210,7 +1211,7 @@ Desde los 13 años; por debajo no entra nadie por ahora. De 13 a 17, modo joven 
 
 Son 29 en el lienzo de Claude: 15 de la v2 (el entreno de punta a punta, progreso, plan, ajuste del día, tema claro y dos caras del Galaxy Watch4) y 14 del v3 (descanso a pantalla completa, intervalos, adaptación antes y durante, cuatro del Apple Watch, disciplinas, yoga, respiración, AMRAP y la ficha de ejercicio). Todas están descritas en `docs/PANTALLAS.md` con estructura, medidas, estados, textos y toques.
 
-Siguen sin diseño: el PAR-Q+, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, el ajuste del ciclo menstrual y la tarjeta de movilidad al caminar. Una hormiga que llegue a una pantalla sin diseño se detiene y el jefe se la pide a Juan; nunca se inventa una pantalla.
+Siguen sin diseño: el PAR-Q+, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, el ajuste del ciclo menstrual y la tarjeta de movilidad al caminar. Una hormiga que llegue a una pantalla sin diseño se detiene y el jefe se la pide a Juan; nunca se inventa una pantalla.
 
 ---
 

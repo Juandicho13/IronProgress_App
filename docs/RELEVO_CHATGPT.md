@@ -237,3 +237,24 @@ Rama nueva que sale de `feat/f1-claude` (después del diseño de 5.8), para no c
 - Los tipos de registro nuevos y los de serie (rest-pause, myo-reps y cluster) ya estaban desde F1-01 y F1-10: el teclado pide los campos de `TrackingType.fields`.
 - No hay prueba de ViewModel nueva: el catálogo de prueba de `WorkoutViewModelTest` solo tiene un ejercicio. La lógica está probada en domain.
 
+## 19. F1-16 en feat/f1-claude, 5 de noviembre de 2026
+
+Diseño en `docs/PANTALLAS.md` 5.9. **El Swift lo escribió Claude sin poder compilarlo** (no hay Xcode en su entorno): lo primero es compilarlo en el Mac.
+
+Kotlin (verificado en Linux):
+- `shared/.../live/WorkoutActivity.kt`: `WorkoutActivityState`, la interfaz `WorkoutActivityBridge` que Swift implementa y `WorkoutActivitySync`, que observa el `RestController` de F1-14 y solo actualiza en los cambios de fase, de hora de fin o de primer plano. Prueba `WorkoutActivitySyncTest`.
+- `shared/.../IosStartup.kt`: `startIronProgress(bridge:)`, `setAppInForeground(active:)` (lo llama SwiftUI con `scenePhase`) y `runWorkoutAction(action:completion:)` para los botones ("plus", "minus", "skip" y "complete", que usan `RestBackgroundActions`).
+- `shared/ui/.../rest/RestNotificationTexts.kt`: los textos de la Live Update desde los recursos de Compose para iPhone.
+
+Swift (sin compilar):
+- En la app (la carpeta `iosApp/iosApp` está sincronizada, así que entran solos): `LiveActivity/WorkoutActivityAttributes.swift`, `LiveActivity/WorkoutActivityIntents.swift`, `LiveActivity/WorkoutActivityController.swift`, el `iOSApp.swift` nuevo y `NSSupportsLiveActivities` en `Info.plist`.
+- La extensión, en `iosApp/IronProgressLiveActivity/`: `IronProgressWidgetBundle.swift`, `IronProgressLiveActivity.swift` y `ForjaTokens.swift`.
+
+Pasos en Xcode para Codex o Juan, en el Mac:
+1. Mover la carpeta `iosApp/IronProgressLiveActivity` fuera del repo un momento.
+2. File, New, Target, **Widget Extension**, nombre `IronProgressLiveActivity`, con **Include Live Activity** marcado y sin Configuration Intent. Embebida en `iosApp`.
+3. Borrar los archivos que generó Xcode dentro de la carpeta nueva y devolver los tres de este repo.
+4. Seleccionar `WorkoutActivityAttributes.swift` y `WorkoutActivityIntents.swift` y marcar también el target `IronProgressLiveActivity` en Target Membership.
+5. Deployment target de la extensión igual al de la app (18.2). Compilar en el simulador; si algo falla, corregir el Swift con el error a la vista.
+6. Probar en el iPhone: empezar un descanso, bloquear el teléfono y usar -15 s, +15 s, Saltar y Completar serie.
+

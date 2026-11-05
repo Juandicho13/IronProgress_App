@@ -329,6 +329,19 @@ Diseño escrito por Claude el 5 de noviembre de 2026, con la plantilla 15.7 del 
 - **Textos:** todos en `values/` y `values-es/`. Sin signos de exclamación ni emoji.
 - **Datos:** la sesión y la serie siguiente salen de `SessionRepository`; el tiempo, de `TimerPlan.stateAt` y `segmentEndsAtMs`.
 
+### 5.9 Live Activity del entreno en iPhone (F1-16)
+
+Diseño escrito por Claude el 5 de noviembre de 2026 con las reglas de `HANDOFF.md` 12.10. Fondo negro siempre, brasa y hielo en sus tonos oscuros y cifras tabulares.
+
+- **Para qué:** ver y manejar el descanso desde la isla, la pantalla bloqueada y StandBy sin abrir la app (RF-VIV-01, RF-VIV-02).
+- **Cuándo aparece:** con un descanso en curso o en Listo y la app fuera de la vista. Se va al completar la serie dentro de la app, al terminar o al descartar la sesión. Lee lo mismo que la Live Update de Android (5.8): título, detalle y hora de fin.
+- **Compacta:** a la izquierda, un anillo de hielo que se vacía; a la derecha, "1:12" en hielo. En Listo, anillo en brasa y "Listo" en brasa.
+- **Mínima:** solo el anillo.
+- **Expandida:** anillo de 44 a la izquierda, "Descanso · Press banca" y "Sigue: serie 3 de 4 · 62,5 kg × 10" al centro, la cuenta atrás grande a la derecha. Abajo, los botones **-15 s**, **+15 s** y **Saltar** (este en hielo). En Listo: "A la serie 3 de 4" y un solo botón, **Completar serie**, en brasa.
+- **Pantalla bloqueada y StandBy:** tarjeta negra con el anillo de 40, título y detalle, la cuenta atrás de 34 a la derecha y los mismos botones abajo. En StandBy el sistema la muestra al 200 %.
+- **Toques:** cada botón actúa en un toque sin abrir la app (App Intents, `LiveActivityIntent`). Tocar la tarjeta abre la app en Entreno.
+- **Reglas:** el contador lo dibuja el sistema con `Text(timerInterval:)`; la app solo actualiza en los cambios de fase (en una sesión de 60 min, unas decenas de veces). Sin pulso por ahora: llega con Salud en F4. Horizontal en iOS 27: queda para cuando exista ese SDK.
+
 ---
 
 ## 6. Ajuste durante el entreno
@@ -491,4 +504,4 @@ Estos formularios sencillos siguen Forja y se pueden cambiar sin modificar los c
 - Toques: añadir ejercicio abre el selector en un toque y elegirlo requiere otro; Guardar toma un toque.
 - De dónde se abre y a dónde lleva: Plan, Crear rutina o tocar una existente; guardar vuelve a Plan. No inicia una sesión ni modifica sesiones pasadas.
 
-Siguen sin diseño en el lienzo (Etapa 1): el PAR-Q+ al crear la cuenta, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, el ajuste del ciclo menstrual con su explicación de privacidad y la tarjeta de movilidad al caminar. Hasta que estén, una hormiga que llegue a ellas pide el diseño al jefe y el jefe se lo pide a Juan; no se inventa una pantalla nueva.
+Siguen sin diseño en el lienzo (Etapa 1): el PAR-Q+ al crear la cuenta, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, el ajuste del ciclo menstrual con su explicación de privacidad y la tarjeta de movilidad al caminar. Hasta que estén, una hormiga que llegue a ellas pide el diseño al jefe y el jefe se lo pide a Juan; no se inventa una pantalla nueva.
