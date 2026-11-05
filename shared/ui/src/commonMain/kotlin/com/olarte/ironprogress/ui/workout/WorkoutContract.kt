@@ -48,6 +48,8 @@ data class WorkoutState(
     val undoSetId: WorkoutSetId? = null,
     val highlightedSetId: WorkoutSetId? = null,
     val choosingExercise: Boolean = false,
+    /** Si el selector está abierto para cambiar este ejercicio en vez de agregar uno (F1-12). */
+    val substitutingId: SessionExerciseId? = null,
     val query: String = "",
 )
 
@@ -75,6 +77,11 @@ sealed interface WorkoutIntent {
     data object Undo : WorkoutIntent
     data class ChangeType(val id: WorkoutSetId, val type: SetType) : WorkoutIntent
     data class ChangeNote(val id: WorkoutSetId, val note: String) : WorkoutIntent
+    data class MoveExercise(val id: SessionExerciseId, val delta: Int) : WorkoutIntent
+    data class SkipExercise(val id: SessionExerciseId) : WorkoutIntent
+    data class Substitute(val id: SessionExerciseId) : WorkoutIntent
+    data class ToggleGroup(val id: SessionExerciseId) : WorkoutIntent
+    data class RemoveSet(val id: WorkoutSetId) : WorkoutIntent
 }
 
 sealed interface WorkoutEffect {

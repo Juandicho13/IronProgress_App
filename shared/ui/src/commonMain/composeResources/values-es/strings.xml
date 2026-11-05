@@ -429,4 +429,17 @@
     <string name="wod_format_for_time">Por tiempo</string>
     <string name="wod_format_rounds">Rondas</string>
     <string name="plan_wod">Bloque funcional · AMRAP, EMOM, por tiempo</string>
+    <!-- Cambios en la sesión (F1-12) -->
+    <string name="workout_exercise_options">Opciones del ejercicio</string>
+    <string name="workout_move_up">Subir</string>
+    <string name="workout_move_down">Bajar</string>
+    <string name="workout_skip">Saltar por ahora</string>
+    <string name="workout_substitute">Cambiar ejercicio</string>
+    <string name="workout_substitute_title">Cambiar por</string>
+    <string name="workout_group">Unir con el siguiente</string>
+    <string name="workout_ungroup">Separar del grupo</string>
+    <string name="workout_superset">Superserie</string>
+    <string name="workout_circuit">Circuito</string>
+    <string name="workout_remove_set">Quitar serie</string>
+    <string name="workout_options_short">Opciones</string>
 </resources>

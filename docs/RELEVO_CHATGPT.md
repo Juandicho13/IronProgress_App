@@ -230,3 +230,10 @@ Rama nueva que sale de `feat/f1-claude` (después del diseño de 5.8), para no c
 - La voz solo cuenta los últimos 5 s. El aviso de cada minuto y el pulso quedan para después. El bloque no se guarda como plantilla: se arma cada vez.
 - Verificado en Linux: 145 pruebas (5 de dominio y 1 de ViewModel nuevas), los dos APK y ktlintCheck.
 
+## 18. F1-12 en feat/f1-claude, 5 de noviembre de 2026
+
+- `domain/session/SessionEdits.kt`: `moveExercise`, `skipExercise` (lo manda al final y lo saca del grupo), `groupWithNext` y `ungroup` (dos es superserie, tres o más es circuito), `nextInGroupWithoutRest`, `firstPendingInGroup` y `substitute` (si ya hay series hechas, quedan y las pendientes pasan a un ejercicio nuevo justo después, sin medidas). 3 pruebas.
+- Entreno: botón "Opciones" en el ejercicio abierto (subir, bajar, saltar por ahora, cambiar ejercicio, unir con el siguiente o separar) y "Quitar serie" en las opciones de la serie. En una superserie o circuito no hay descanso entre ejercicios del grupo: descansa después del último y la vuelta siguiente empieza por el primero con series pendientes. La tarjeta dice "Superserie" o "Circuito".
+- Los tipos de registro nuevos y los de serie (rest-pause, myo-reps y cluster) ya estaban desde F1-01 y F1-10: el teclado pide los campos de `TrackingType.fields`.
+- No hay prueba de ViewModel nueva: el catálogo de prueba de `WorkoutViewModelTest` solo tiene un ejercicio. La lógica está probada en domain.
+

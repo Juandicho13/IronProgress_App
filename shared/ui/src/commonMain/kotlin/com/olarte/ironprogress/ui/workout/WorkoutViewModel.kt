@@ -15,7 +15,14 @@ import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.domain.session.WorkoutSetId
 import com.olarte.ironprogress.domain.session.copyMeasurements
 import com.olarte.ironprogress.domain.session.equivalentPreviousSet
+import com.olarte.ironprogress.domain.session.firstPendingInGroup
+import com.olarte.ironprogress.domain.session.groupWithNext
 import com.olarte.ironprogress.domain.session.hasRequiredMeasurements
+import com.olarte.ironprogress.domain.session.moveExercise
+import com.olarte.ironprogress.domain.session.nextInGroupWithoutRest
+import com.olarte.ironprogress.domain.session.skipExercise
+import com.olarte.ironprogress.domain.session.substitute
+import com.olarte.ironprogress.domain.session.ungroup
 import com.olarte.ironprogress.ui.rest.RestController
 import com.olarte.ironprogress.ui.rest.RestNotifications
 import com.olarte.ironprogress.ui.rest.RestPhase
@@ -247,11 +254,38 @@ class WorkoutViewModel(
                 drain()
             }
             is WorkoutIntent.SelectExercise -> mutableState.update { it.copy(selectedExerciseId = intent.id) }
-            WorkoutIntent.ChooseExercise -> mutableState.update { it.copy(choosingExercise = true, query = "") }
+            WorkoutIntent.ChooseExercise -> mutableState.update { it.copy(choosingExercise = true, query = "", substitutingId = null) }
+            is WorkoutIntent.Substitute -> mutableState.update { it.copy(choosingExercise = true, query = "", substitutingId = intent.id) }
+            is WorkoutIntent.MoveExercise -> enqueue {
+                active().moveExercise(intent.id, intent.delta).forEach { sessions.saveExercise(it) }
+            }
+            is WorkoutIntent.SkipExercise -> enqueue {
+                val detail = active()
+                detail.skipExercise(intent.id).forEach { sessions.saveExercise(it) }
+                val next = detail.exercises.sortedBy { it.sortOrder }
+                    .firstOrNull { item -> item.id != intent.id && detail.setsOf(item.id).any { !it.isCompleted } }
+                mutableState.update { it.copy(selectedExerciseId = next?.id ?: intent.id) }
+            }
+            is WorkoutIntent.ToggleGroup -> enqueue {
+                val detail = active()
+                val inGroup = detail.exercises.firstOrNull { it.id == intent.id }?.supersetGroup != null
+                (if (inGroup) detail.ungroup(intent.id) else detail.groupWithNext(intent.id)).forEach { sessions.saveExercise(it) }
+            }
+            is WorkoutIntent.RemoveSet -> enqueue { sessions.deleteSet(intent.id) }
             WorkoutIntent.ClosePicker -> mutableState.update { it.copy(choosingExercise = false) }
             is WorkoutIntent.Search -> mutableState.update { it.copy(query = intent.query) }
             is WorkoutIntent.AddExercise -> {
-                mutableState.update { it.copy(choosingExercise = false) }
+                val substituting = state.value.substitutingId
+                mutableState.update { it.copy(choosingExercise = false, substitutingId = null) }
+                if (substituting != null) {
+                    enqueue {
+                        val change = active().substitute(substituting, intent.id, ids) ?: return@enqueue
+                        change.exercises.forEach { sessions.saveExercise(it) }
+                        change.sets.forEach { sessions.saveSet(it) }
+                        mutableState.update { it.copy(selectedExerciseId = change.selected) }
+                    }
+                    return
+                }
                 enqueue {
                     val id = addExercise(active().session.id, intent.id)
                     mutableState.update { it.copy(selectedExerciseId = id) }
@@ -368,10 +402,16 @@ class WorkoutViewModel(
                 ?: routine?.routine?.restSeconds ?: com.olarte.ironprogress.domain.routine.Routine.DEFAULT_REST_SECONDS
             val completed = completeSet(set)
             completing.remove(id)
-            val next = detail.exercises.firstOrNull { item -> detail.setsOf(item.id).any { !it.isCompleted && it.id != id } }
+            // Superserie o circuito: sin descanso hasta el último del grupo; después, la vuelta empieza
+            // por el primero del grupo con series pendientes (F1-12).
+            val after = detail.copy(sets = detail.sets.map { if (it.id == id) completed else it })
+            val nextInGroup = after.nextInGroupWithoutRest(exercise.id)
+            val next = nextInGroup
+                ?: after.firstPendingInGroup(exercise.id)?.takeIf { exercise.supersetGroup != null }
+                ?: detail.exercises.firstOrNull { item -> detail.setsOf(item.id).any { !it.isCompleted && it.id != id } }
             val started = requireNotNull(completed.completedAt).toEpochMilliseconds()
             lastRestFrameMs = started
-            val rest = if (restSeconds > 0) RestTimer(id, started, restSeconds) else null
+            val rest = if (restSeconds > 0 && nextInGroup == null) RestTimer(id, started, restSeconds) else null
             if (rest != null) {
                 restController.startRest(detail.session.id, rest)
             } else {

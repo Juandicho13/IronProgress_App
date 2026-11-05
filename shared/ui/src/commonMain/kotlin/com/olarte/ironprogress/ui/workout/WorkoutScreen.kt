@@ -58,6 +58,7 @@ import com.olarte.ironprogress.domain.routine.SetType
 import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.domain.session.WorkoutSetId
 import com.olarte.ironprogress.domain.session.equivalentPreviousSet
+import com.olarte.ironprogress.domain.session.groupOf
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorChoice
 import com.olarte.ironprogress.ui.components.EditorField
@@ -74,28 +75,40 @@ import com.olarte.ironprogress.ui.resources.workout_add_set
 import com.olarte.ironprogress.ui.resources.workout_all_done
 import com.olarte.ironprogress.ui.resources.workout_blank
 import com.olarte.ironprogress.ui.resources.workout_block_pending
+import com.olarte.ironprogress.ui.resources.workout_circuit
 import com.olarte.ironprogress.ui.resources.workout_close
 import com.olarte.ironprogress.ui.resources.workout_complete
 import com.olarte.ironprogress.ui.resources.workout_delete
 import com.olarte.ironprogress.ui.resources.workout_done
 import com.olarte.ironprogress.ui.resources.workout_empty
 import com.olarte.ironprogress.ui.resources.workout_error
+import com.olarte.ironprogress.ui.resources.workout_exercise_options
 import com.olarte.ironprogress.ui.resources.workout_free
+import com.olarte.ironprogress.ui.resources.workout_group
 import com.olarte.ironprogress.ui.resources.workout_invalid
 import com.olarte.ironprogress.ui.resources.workout_invalid_value
 import com.olarte.ironprogress.ui.resources.workout_minimize
+import com.olarte.ironprogress.ui.resources.workout_move_down
+import com.olarte.ironprogress.ui.resources.workout_move_up
 import com.olarte.ironprogress.ui.resources.workout_next
 import com.olarte.ironprogress.ui.resources.workout_no_results
 import com.olarte.ironprogress.ui.resources.workout_no_session
 import com.olarte.ironprogress.ui.resources.workout_note
 import com.olarte.ironprogress.ui.resources.workout_options
+import com.olarte.ironprogress.ui.resources.workout_options_short
 import com.olarte.ironprogress.ui.resources.workout_previous
+import com.olarte.ironprogress.ui.resources.workout_remove_set
 import com.olarte.ironprogress.ui.resources.workout_saved
 import com.olarte.ironprogress.ui.resources.workout_saving
 import com.olarte.ironprogress.ui.resources.workout_search
 import com.olarte.ironprogress.ui.resources.workout_set_label
+import com.olarte.ironprogress.ui.resources.workout_skip
+import com.olarte.ironprogress.ui.resources.workout_substitute
+import com.olarte.ironprogress.ui.resources.workout_substitute_title
+import com.olarte.ironprogress.ui.resources.workout_superset
 import com.olarte.ironprogress.ui.resources.workout_type
 import com.olarte.ironprogress.ui.resources.workout_undo
+import com.olarte.ironprogress.ui.resources.workout_ungroup
 import com.olarte.ironprogress.ui.rest.RestBar
 import com.olarte.ironprogress.ui.rest.RestScreen
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
@@ -121,6 +134,7 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
     val formats = rememberFormats()
     val detail = state.session
     var optionsId by remember { mutableStateOf<WorkoutSetId?>(null) }
+    var exerciseOptionsId by remember { mutableStateOf<com.olarte.ironprogress.domain.session.SessionExerciseId?>(null) }
     val selected = detail?.exercises?.firstOrNull { it.id == state.selectedExerciseId }
     val currentSet = selected?.let { detail.setsOf(it.id).firstOrNull { set -> !set.isCompleted } }
     val block = detail?.blocks?.firstOrNull { it.id == selected?.blockId }
@@ -189,7 +203,18 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
                                 color = colors.text1,
                             )
                         }
+                        val group = detail.groupOf(exercise.id)
+                        if (group.size > 1) {
+                            Text(
+                                stringResource(if (group.size == 2) Res.string.workout_superset else Res.string.workout_circuit),
+                                color = colors.ember,
+                                style = typography.label,
+                            )
+                        }
                         if (expanded) {
+                            EditorAction(stringResource(Res.string.workout_options_short), enabled && state.pendingWrites == 0) {
+                                exerciseOptionsId = exercise.id
+                            }
                             catalog?.muscles?.map { it.muscle.label() }?.takeIf { it.isNotEmpty() }?.let { names ->
                                 Text(names.joinToString(" · "), color = colors.text2, style = typography.body2)
                             }
@@ -267,6 +292,9 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
         detail?.sets?.firstOrNull { it.id == id }?.let { set ->
             SetOptions(set, onIntent) { optionsId = null }
         }
+    }
+    exerciseOptionsId?.let { id ->
+        detail?.let { ExerciseOptions(it, id, onIntent) { exerciseOptionsId = null } }
     }
     if (state.choosingExercise) ExercisePicker(state, onIntent)
     if (state.keyboard != null) WorkoutKeyboardSheet(state, onIntent)
@@ -401,6 +429,49 @@ private fun SetOptions(set: WorkoutSet, onIntent: (WorkoutIntent) -> Unit, onClo
                     note = it
                     onIntent(WorkoutIntent.ChangeNote(set.id, it))
                 }
+                EditorAction(stringResource(Res.string.workout_remove_set)) {
+                    onIntent(WorkoutIntent.RemoveSet(set.id))
+                    onClose()
+                }
+            }
+        },
+        confirmButton = { EditorAction(stringResource(Res.string.workout_close), onClick = onClose) },
+    )
+}
+
+/** Opciones de un ejercicio de la sesión: orden, saltar, cambiar y agrupar (F1-12). */
+@Composable
+private fun ExerciseOptions(
+    detail: com.olarte.ironprogress.domain.session.SessionDetail,
+    id: com.olarte.ironprogress.domain.session.SessionExerciseId,
+    onIntent: (WorkoutIntent) -> Unit,
+    onClose: () -> Unit,
+) {
+    val ordered = detail.exercises.sortedBy { it.sortOrder }
+    val index = ordered.indexOfFirst { it.id == id }
+    val inGroup = ordered.getOrNull(index)?.supersetGroup != null
+    fun act(intent: WorkoutIntent) {
+        onIntent(intent)
+        onClose()
+    }
+    AlertDialog(
+        onDismissRequest = onClose,
+        title = { Text(stringResource(Res.string.workout_exercise_options), style = ForjaTheme.typography.title3) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
+                if (index > 0) EditorAction(stringResource(Res.string.workout_move_up)) { act(WorkoutIntent.MoveExercise(id, -1)) }
+                if (index in 0 until ordered.lastIndex) {
+                    EditorAction(stringResource(Res.string.workout_move_down)) { act(WorkoutIntent.MoveExercise(id, 1)) }
+                }
+                if (index in 0 until ordered.lastIndex) {
+                    EditorAction(stringResource(Res.string.workout_skip)) { act(WorkoutIntent.SkipExercise(id)) }
+                }
+                EditorAction(stringResource(Res.string.workout_substitute)) { act(WorkoutIntent.Substitute(id)) }
+                if (inGroup) {
+                    EditorAction(stringResource(Res.string.workout_ungroup)) { act(WorkoutIntent.ToggleGroup(id)) }
+                } else if (index in 0 until ordered.lastIndex) {
+                    EditorAction(stringResource(Res.string.workout_group)) { act(WorkoutIntent.ToggleGroup(id)) }
+                }
             }
         },
         confirmButton = { EditorAction(stringResource(Res.string.workout_close), onClick = onClose) },
@@ -414,7 +485,9 @@ private fun ExercisePicker(state: WorkoutState, onIntent: (WorkoutIntent) -> Uni
         .sortedBy { it.name.resolve(language) }
     AlertDialog(
         onDismissRequest = { onIntent(WorkoutIntent.ClosePicker) },
-        title = { Text(stringResource(Res.string.workout_add_exercise)) },
+        title = {
+            Text(stringResource(if (state.substitutingId != null) Res.string.workout_substitute_title else Res.string.workout_add_exercise))
+        },
         text = {
             Column {
                 EditorField(stringResource(Res.string.workout_search), state.query) { onIntent(WorkoutIntent.Search(it)) }

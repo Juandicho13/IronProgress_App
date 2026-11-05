@@ -387,6 +387,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-05 | F1-11 · descanso completo y barra | `feat/f1-argon`, `9a92729` | Motor por instantes, ajustes de 15 s, Saltar, minimizar/ampliar y eventos hápticos. 109 pruebas, estilo, APK y frameworks iOS en verde local. Prueba exacta de 20 descansos; falta aceptación visual/háptica en teléfonos. Avisos fuera de app y persistencia del descanso pendientes de sus tickets. Sin push |
 | 2026-11-05 | F1-15 · aviso local de descanso en iPhone | `feat/f1-argon`, commit de F1-15 | Permiso, programación desde el fin absoluto, ajustes y cancelación con cola serial. 115 pruebas sin fallos, estilo, APK Android/Wear y frameworks iOS en verde local. Entrega y sonido con iPhone bloqueado pendientes de prueba física. No incluye Live Activity ni restauración del anillo al matar el proceso. Sin push |
 | 2026-11-05 | F1-19 · bloque funcional | `feat/f1-claude` | AMRAP, EMOM, por tiempo y rondas en una pantalla (7.4), marcador rondas + reps, ritmo, marca anterior y resultado guardado como sesión FUNCTIONAL; 145 pruebas. Falta probar un AMRAP de 12 y un EMOM de 10 en el teléfono |
+| 2026-11-05 | F1-12 · cambios en la sesión | `feat/f1-claude` | Subir, bajar, saltar por ahora, cambiar ejercicio, quitar serie, superseries y circuitos sin descanso hasta el último; 148 pruebas. Falta la sesión real con superserie, uno por tiempo y uno por calorías |
 
 ---
 
