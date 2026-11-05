@@ -1203,7 +1203,7 @@ Desde los 13 años; por debajo no entra nadie por ahora. De 13 a 17, modo joven 
 
 Son 29 en el lienzo de Claude: 15 de la v2 (el entreno de punta a punta, progreso, plan, ajuste del día, tema claro y dos caras del Galaxy Watch4) y 14 del v3 (descanso a pantalla completa, intervalos, adaptación antes y durante, cuatro del Apple Watch, disciplinas, yoga, respiración, AMRAP y la ficha de ejercicio). Todas están descritas en `docs/PANTALLAS.md` con estructura, medidas, estados, textos y toques.
 
-Siguen sin diseño: el PAR-Q+, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, la Live Update y la Now Bar, el ajuste del ciclo menstrual y la tarjeta de movilidad al caminar. Una hormiga que llegue a una pantalla sin diseño se detiene y el jefe se la pide a Juan; nunca se inventa una pantalla.
+Siguen sin diseño: el PAR-Q+, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, el ajuste del ciclo menstrual y la tarjeta de movilidad al caminar. Una hormiga que llegue a una pantalla sin diseño se detiene y el jefe se la pide a Juan; nunca se inventa una pantalla.
 
 ---
 
@@ -2226,7 +2226,7 @@ Decisiones técnicas para el jefe (se confirman con Juan en el ticket que las ne
 - [ ] Valores propuestos de 10.2 y nombres de 10.5 (antes de F1-01).
 - [ ] Series efectivas con porcentaje y exigencia de la sesión (11.10, antes de F2-07 y F4-05).
 - [ ] Tema por defecto antes de F1-25 (sistema u oscuro).
-- [ ] Requisito del servicio tipo health en F1-14 (`HIGH_SAMPLING_RATE_SENSORS` o `ACTIVITY_RECOGNITION`).
+- [x] Requisito del servicio tipo health en F1-14: `HIGH_SAMPLING_RATE_SENSORS` declarado en el manifiesto (permiso normal, sin diálogo). Lo propuso Claude el 5 de noviembre; ver `docs/PANTALLAS.md` 5.8.
 - [ ] Criterio de salida de F0 con F0-12 (archivar ejercicio) u otra pantalla que Juan prefiera.
 - [ ] Voz grabada: quién la graba y en qué idiomas; mientras tanto, la del sistema.
 - [ ] PAR-Q+: confirmar con sus autores las condiciones para una app comercial (antes de F1-26).

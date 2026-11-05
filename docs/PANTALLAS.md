@@ -11,7 +11,7 @@
 2. Progreso, plan y ajuste del día (Progreso, Ejercicio, Plan, Ajuste del día)
 3. Tema claro (Hoy, Descanso y Progreso en claro)
 4. Galaxy Watch4 (descanso y listo)
-5. Tiempo, intervalos y adaptación (descanso a pantalla completa, intervalos, adaptación del día y Apple Watch)
+5. Tiempo, intervalos y adaptación (descanso a pantalla completa, intervalos, adaptación del día, Apple Watch y descanso fuera de la app en Android)
 6. Ajuste durante el entreno (teléfono y Apple Watch)
 7. Disciplinas y ficha de ejercicio (disciplinas, yoga, respiración, AMRAP y ficha)
 8. Presupuesto de toques
@@ -298,6 +298,39 @@ El cronómetro es el borde de la pantalla: un trazo de 12 px que sigue el rectá
 
 ---
 
+### 5.8 Descanso fuera de la app en Android: Live Update y Now Bar (F1-14)
+
+Diseño escrito por Claude el 5 de noviembre de 2026, con la plantilla 15.7 del manual. Es una notificación del sistema, así que Forja no pone colores ni formas: lo que se diseña son los textos, los estados y las acciones.
+
+- **Para qué:** que el descanso siga a la vista con la app cerrada o la pantalla apagada (RF-VIV-04, RF-VIV-08), con el mismo tiempo que la pantalla completa (5.1), porque las dos leen el mismo motor (11.9).
+- **Cuándo aparece:** al empezar un descanso en una sesión en curso, si la app pasa a segundo plano o se apaga la pantalla. Con la app abierta en Entreno no se muestra (ya está 5.1). Se quita al completar la serie siguiente, al terminar la sesión o al descartarla.
+- **Reglas del sistema (para que Android 16 la promueva a la barra de estado, la pantalla bloqueada y la Now Bar de Samsung):** estilo estándar, sin vistas propias, sin `setColorized` ni color de fondo, siempre con título, en curso (`setOngoing(true)`), con `setRequestPromotedOngoing(true)` y el permiso `POST_PROMOTED_NOTIFICATIONS`. Si `NotificationManager.canPostPromotedNotifications()` es falso, sale la misma notificación en curso sin promover. Ícono pequeño monocromo: `timer` de Material Symbols. Canal "Descanso" ("Rest" en inglés).
+- **Estado 1 · Descansando:**
+  - Chip de la barra de estado: la cuenta atrás del sistema (`setWhen` con el instante de fin que da `segmentEndsAtMs`, `setUsesChronometer(true)` y `setChronometerCountDown(true)`). Sin `setShortCriticalText` en este estado, para que el chip muestre el tiempo.
+  - Título: "Descanso · {ejercicio}" ("Rest · {exercise}"), con el nombre en el idioma del teléfono.
+  - Texto: "Sigue: serie {n} de {total} · {peso} × {reps}" ("Next: set {n} of {total} · {weight} × {reps}"), con el formato local de F1-05 (62,5 kg en español, 62.5 kg en inglés). Si la serie siguiente no tiene peso, solo las reps; si es por tiempo, la duración.
+  - Vista expandida: lo mismo, más una segunda línea con "Serie {n − 1} hecha: {peso} × {reps}".
+  - Acciones: **+15 s** y **Saltar**, en ese orden.
+  - Sin sonido ni vibración al aparecer ni al actualizarse (`setOnlyAlertOnce(true)`).
+- **Estado 2 · Listo para la serie** (el motor llegó a 0):
+  - Chip: "Listo" ("Ready") con `setShortCriticalText`.
+  - Título: "A la serie {n} de {total}" ("Time for set {n} of {total}").
+  - Texto: "{ejercicio} · {peso} × {reps}".
+  - Acción: **Completar serie**.
+  - Suena y vibra una vez con el patrón del fin del descanso de Forja (el mismo de 5.1). Si el teléfono está en silencio, solo vibra.
+  - Se queda así hasta que la persona completa la serie, abre la app o pasan 10 minutos. A los 10 minutos deja de estar en curso y se puede descartar.
+- **Toques (cada uno en 1 toque, sin abrir la app):**
+  - **+15 s** suma 15 s al descanso en curso (`TimerEdit.Adjust`) y actualiza el instante de fin.
+  - **Saltar** termina el descanso (`TimerEdit.Skip`) y pasa al estado 2 sin sonido.
+  - **Completar serie** marca como hecha la serie siguiente con los valores que propone la app (los mismos que ya muestra la fila de Entreno) y empieza el descanso que toque. Si esa serie no tiene peso o reps propuestos, el botón no sale y tocar la notificación abre Entreno.
+  - Tocar el cuerpo abre Entreno de esa sesión (`Route.Workout(sessionId)`), con el descanso o la serie a la vista.
+  - Las acciones corren con la app cerrada gracias al arranque sin pantalla (F1-13) y escriben las mismas ediciones del motor que la pantalla, así que al volver a la app se ve lo mismo.
+- **Permisos:** `POST_NOTIFICATIONS` se pide la primera vez que empieza un descanso, con una frase antes del diálogo: "Para ver el descanso con la app cerrada" ("To see your rest with the app closed"). Si la persona dice que no, el descanso sigue funcionando dentro de la app y no se vuelve a pedir en esa sesión. El servicio en primer plano es de tipo `health` (`FOREGROUND_SERVICE_HEALTH`) y cumple su requisito declarando `HIGH_SAMPLING_RATE_SENSORS` en el manifiesto, que no abre ningún diálogo.
+- **Textos:** todos en `values/` y `values-es/`. Sin signos de exclamación ni emoji.
+- **Datos:** la sesión y la serie siguiente salen de `SessionRepository`; el tiempo, de `TimerPlan.stateAt` y `segmentEndsAtMs`.
+
+---
+
 ## 6. Ajuste durante el entreno
 
 ### 6.1 Ajuste durante el entreno, teléfono (`AdaptacionDurante.dc.html`)
@@ -458,4 +491,4 @@ Estos formularios sencillos siguen Forja y se pueden cambiar sin modificar los c
 - Toques: añadir ejercicio abre el selector en un toque y elegirlo requiere otro; Guardar toma un toque.
 - De dónde se abre y a dónde lleva: Plan, Crear rutina o tocar una existente; guardar vuelve a Plan. No inicia una sesión ni modifica sesiones pasadas.
 
-Siguen sin diseño en el lienzo (Etapa 1): el PAR-Q+ al crear la cuenta, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, la Live Update y la Now Bar, el ajuste del ciclo menstrual con su explicación de privacidad y la tarjeta de movilidad al caminar. Hasta que estén, una hormiga que llegue a ellas pide el diseño al jefe y el jefe se lo pide a Juan; no se inventa una pantalla nueva.
+Siguen sin diseño en el lienzo (Etapa 1): el PAR-Q+ al crear la cuenta, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, el ajuste del ciclo menstrual con su explicación de privacidad y la tarjeta de movilidad al caminar. Hasta que estén, una hormiga que llegue a ellas pide el diseño al jefe y el jefe se lo pide a Juan; no se inventa una pantalla nueva.
