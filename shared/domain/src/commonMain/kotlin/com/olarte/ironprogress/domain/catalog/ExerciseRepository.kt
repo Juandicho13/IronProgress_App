@@ -20,4 +20,10 @@ interface ExerciseRepository {
      * por defecto para que los repositorios de prueba no tengan que implementarlo.
      */
     suspend fun findFacts(id: ExerciseId): ExerciseFacts? = null
+
+    /**
+     * Unidad con la que se ve y se escribe el peso de un ejercicio (F1-22); null vuelve a kg. Solo
+     * cambia cómo se ve: los pesos siguen en kg. Por defecto no hace nada, para las pruebas.
+     */
+    suspend fun setPreferredUnit(id: ExerciseId, unit: WeightUnit?) = Unit
 }

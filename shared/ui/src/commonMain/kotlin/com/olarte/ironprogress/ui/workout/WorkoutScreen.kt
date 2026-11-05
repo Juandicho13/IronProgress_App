@@ -53,8 +53,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.Exercise
+import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.routine.BlockFormat
 import com.olarte.ironprogress.domain.routine.SetType
+import com.olarte.ironprogress.domain.session.WeightUnits
 import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.domain.session.WorkoutSetId
 import com.olarte.ironprogress.domain.session.equivalentPreviousSet
@@ -96,6 +98,7 @@ import com.olarte.ironprogress.ui.resources.workout_no_session
 import com.olarte.ironprogress.ui.resources.workout_note
 import com.olarte.ironprogress.ui.resources.workout_options
 import com.olarte.ironprogress.ui.resources.workout_options_short
+import com.olarte.ironprogress.ui.resources.workout_plates
 import com.olarte.ironprogress.ui.resources.workout_previous
 import com.olarte.ironprogress.ui.resources.workout_remove_set
 import com.olarte.ironprogress.ui.resources.workout_saved
@@ -110,6 +113,8 @@ import com.olarte.ironprogress.ui.resources.workout_superset
 import com.olarte.ironprogress.ui.resources.workout_type
 import com.olarte.ironprogress.ui.resources.workout_undo
 import com.olarte.ironprogress.ui.resources.workout_ungroup
+import com.olarte.ironprogress.ui.resources.workout_use_kg
+import com.olarte.ironprogress.ui.resources.workout_use_lb
 import com.olarte.ironprogress.ui.rest.RestBar
 import com.olarte.ironprogress.ui.rest.RestScreen
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
@@ -136,6 +141,7 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
     val detail = state.session
     var optionsId by remember { mutableStateOf<WorkoutSetId?>(null) }
     var exerciseOptionsId by remember { mutableStateOf<com.olarte.ironprogress.domain.session.SessionExerciseId?>(null) }
+    var platesId by remember { mutableStateOf<com.olarte.ironprogress.domain.session.SessionExerciseId?>(null) }
     val selected = detail?.exercises?.firstOrNull { it.id == state.selectedExerciseId }
     val currentSet = selected?.let { detail.setsOf(it.id).firstOrNull { set -> !set.isCompleted } }
     val block = detail?.blocks?.firstOrNull { it.id == selected?.blockId }
@@ -301,8 +307,11 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
         }
     }
     exerciseOptionsId?.let { id ->
-        detail?.let { ExerciseOptions(it, id, onIntent) { exerciseOptionsId = null } }
+        detail?.let {
+            ExerciseOptions(it, id, state.unitOf(id), onIntent, onPlates = { platesId = id }) { exerciseOptionsId = null }
+        }
     }
+    platesId?.let { id -> PlatesDialog(state, id, onIntent) { platesId = null } }
     if (state.choosingExercise) ExercisePicker(state, onIntent)
     if (state.keyboard != null) WorkoutKeyboardSheet(state, onIntent)
 }
@@ -326,6 +335,7 @@ private fun WorkoutSetRow(
     )
     val optionsDescription = stringResource(Res.string.workout_options, set.sortOrder + 1)
     val fields = WorkoutField.entries.filter { it.measure != null && it.measure in exercise?.trackingType?.fields.orEmpty() }
+    val unit = exercise?.preferredUnit ?: WeightUnit.KG
     Column(Modifier.fillMaxWidth().clip(ForjaRadius.shapeM).background(background).padding(ForjaSpacing.esp2)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
             TextButton(
@@ -352,7 +362,7 @@ private fun WorkoutSetRow(
                 Text(stringResource(Res.string.workout_previous), color = colors.text3, style = typography.caption)
                 TextButton(onClick = { onIntent(WorkoutIntent.CopyPrevious(set.id)) }, enabled = enabled && previous != null) {
                     val summary = previous?.let { item ->
-                        fields.mapNotNull { f -> item.value(f)?.let { formats.number(it, 2) } }.joinToString(" × ")
+                        fields.mapNotNull { f -> item.value(f)?.let { formats.shown(f, it, unit) } }.joinToString(" × ")
                     }
                     Text(
                         summary?.takeIf {
@@ -390,10 +400,10 @@ private fun WorkoutSetRow(
                         .semantics { contentDescription = description }
                         .heightIn(min = ForjaMeasures.minTouch).padding(ForjaSpacing.esp2),
                 ) {
-                    Text(field.label(), style = typography.caption, color = colors.text2)
+                    Text(field.labelIn(unit), style = typography.caption, color = colors.text2)
                     Text(
                         set.value(field)?.let {
-                            formats.number(it, 2)
+                            formats.shown(field, it, unit)
                         } ?: stringResource(Res.string.workout_blank),
                         style = typography.figure,
                         color = colors.text1,
@@ -451,7 +461,9 @@ private fun SetOptions(set: WorkoutSet, onIntent: (WorkoutIntent) -> Unit, onClo
 private fun ExerciseOptions(
     detail: com.olarte.ironprogress.domain.session.SessionDetail,
     id: com.olarte.ironprogress.domain.session.SessionExerciseId,
+    unit: WeightUnit,
     onIntent: (WorkoutIntent) -> Unit,
+    onPlates: () -> Unit,
     onClose: () -> Unit,
 ) {
     val ordered = detail.exercises.sortedBy { it.sortOrder }
@@ -474,6 +486,13 @@ private fun ExerciseOptions(
                     EditorAction(stringResource(Res.string.workout_skip)) { act(WorkoutIntent.SkipExercise(id)) }
                 }
                 EditorAction(stringResource(Res.string.workout_substitute)) { act(WorkoutIntent.Substitute(id)) }
+                EditorAction(stringResource(if (unit == WeightUnit.LB) Res.string.workout_use_kg else Res.string.workout_use_lb)) {
+                    act(WorkoutIntent.ToggleUnit(id))
+                }
+                EditorAction(stringResource(Res.string.workout_plates)) {
+                    onPlates()
+                    onClose()
+                }
                 if (inGroup) {
                     EditorAction(stringResource(Res.string.workout_ungroup)) { act(WorkoutIntent.ToggleGroup(id)) }
                 } else if (index in 0 until ordered.lastIndex) {
@@ -531,6 +550,7 @@ private fun WorkoutKeyboardSheet(state: WorkoutState, onIntent: (WorkoutIntent) 
     val formats = rememberFormats()
     val separator = if (formats.number(1.5).contains(',')) "," else "."
     val previous = equivalentPreviousSet(set, detail.setsOf(exercise.id), state.previous[exercise.exerciseId].orEmpty())
+    val unit = state.unitOf(exercise.id)
     ModalBottomSheet(
         onDismissRequest = { onIntent(WorkoutIntent.CloseKeyboard) },
         sheetState = rememberBottomSheetState(
@@ -550,7 +570,8 @@ private fun WorkoutKeyboardSheet(state: WorkoutState, onIntent: (WorkoutIntent) 
                         haptics.segmentTick()
                         onIntent(WorkoutIntent.OpenKeyboard(set.id, field))
                     }) {
-                        Text(field.label(), color = if (field == keyboard.field) colors.ember else colors.text2, style = typography.label)
+                        val color = if (field == keyboard.field) colors.ember else colors.text2
+                        Text(field.labelIn(unit), color = color, style = typography.label)
                     }
                 }
             }
@@ -563,7 +584,7 @@ private fun WorkoutKeyboardSheet(state: WorkoutState, onIntent: (WorkoutIntent) 
             )
             previous?.value(keyboard.field)?.let {
                 Text(
-                    stringResource(Res.string.workout_previous) + ": " + formats.number(it, 2),
+                    stringResource(Res.string.workout_previous) + ": " + formats.shown(keyboard.field, it, unit),
                     color = colors.text2,
                     style = typography.body2,
                 )
@@ -583,7 +604,7 @@ private fun WorkoutKeyboardSheet(state: WorkoutState, onIntent: (WorkoutIntent) 
                     }
                 } else {
                     val step = when (keyboard.field) {
-                        WorkoutField.WEIGHT -> 2.5
+                        WorkoutField.WEIGHT -> if (unit == WeightUnit.LB) 5.0 else 2.5
                         WorkoutField.RPE -> 0.5
                         else -> 1.0
                     }
@@ -642,3 +663,16 @@ private fun WorkoutAction(text: String, enabled: Boolean, onClick: () -> Unit) {
         Text(text, style = ForjaTheme.typography.primaryButton, color = if (enabled) colors.onEmber else colors.text3)
     }
 }
+
+/** Valor de un campo para mostrar: el peso en la unidad del ejercicio (lb con un decimal). */
+private fun com.olarte.ironprogress.ui.format.Formats.shown(field: WorkoutField, value: Double, unit: WeightUnit): String =
+    if (field == WorkoutField.WEIGHT && unit == WeightUnit.LB) {
+        number(WeightUnits.fromKg(value, unit), 1)
+    } else {
+        number(value, 2)
+    }
+
+/** Etiqueta del campo; el peso lleva su unidad, "Peso (lb)" o "Peso (kg)". */
+@Composable
+private fun WorkoutField.labelIn(unit: WeightUnit): String =
+    if (this == WorkoutField.WEIGHT) label() + " (" + unit.symbol() + ")" else label()

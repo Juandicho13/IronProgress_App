@@ -32,6 +32,12 @@ interface CatalogDao {
     @Query("UPDATE exercises SET is_archived = :archived WHERE id = :exerciseId")
     suspend fun setArchived(exerciseId: String, archived: Boolean)
 
+    @Query("UPDATE exercises SET preferred_unit = :unit WHERE id = :exerciseId")
+    suspend fun setPreferredUnit(exerciseId: String, unit: String?)
+
+    @Query("SELECT * FROM exercises WHERE preferred_unit IS NOT NULL AND id IN (:exerciseIds)")
+    suspend fun findWithPreferredUnit(exerciseIds: List<String>): List<ExerciseEntity>
+
     @Query("SELECT id FROM exercises WHERE is_archived = 1 AND id IN (:exerciseIds)")
     suspend fun findArchivedIds(exerciseIds: List<String>): List<String>
 
@@ -94,8 +100,13 @@ interface CatalogDao {
     suspend fun replaceSeedCatalog(exercises: List<ExerciseEntity>, muscles: List<ExerciseMuscleEntity>, version: Int) {
         if (exercises.isNotEmpty()) {
             val archivedIds = findArchivedIds(exercises.map { it.id }).toSet()
+            // La unidad elegida por ejercicio (F1-22) sobrevive a una nueva versión de la semilla.
+            val units = findWithPreferredUnit(exercises.map { it.id }).associate { it.id to it.preferredUnit }
             upsertExercises(
-                exercises.map { if (it.id in archivedIds) it.copy(isArchived = true) else it },
+                exercises.map {
+                    val kept = if (it.id in archivedIds) it.copy(isArchived = true) else it
+                    units[it.id]?.let { unit -> kept.copy(preferredUnit = unit) } ?: kept
+                },
             )
             deleteMusclesForExercises(exercises.map { it.id })
             upsertExerciseMuscles(muscles)

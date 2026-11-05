@@ -3,6 +3,7 @@ package com.olarte.ironprogress.ui.workout
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.SetField
+import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.routine.SetType
 import com.olarte.ironprogress.domain.session.SessionDetail
 import com.olarte.ironprogress.domain.session.SessionExerciseId
@@ -51,7 +52,15 @@ data class WorkoutState(
     /** Si el selector está abierto para cambiar este ejercicio en vez de agregar uno (F1-12). */
     val substitutingId: SessionExerciseId? = null,
     val query: String = "",
-)
+) {
+    /** Unidad con la que se ve y se escribe el peso de un ejercicio de la sesión. */
+    fun unitOf(id: SessionExerciseId?): WeightUnit {
+        val exercise = session?.exercises?.firstOrNull { it.id == id } ?: return WeightUnit.KG
+        return catalog[exercise.exerciseId]?.preferredUnit ?: WeightUnit.KG
+    }
+
+    fun unitOfSet(id: WorkoutSetId): WeightUnit = unitOf(session?.sets?.firstOrNull { it.id == id }?.sessionExerciseId)
+}
 
 sealed interface WorkoutIntent {
     data class AdjustRest(val seconds: Int) : WorkoutIntent
@@ -85,6 +94,12 @@ sealed interface WorkoutIntent {
 
     /** Termina la sesión con el gesto de Deslizar para terminar (F1-21). */
     data object Finish : WorkoutIntent
+
+    /** Cambia entre kg y lb para este ejercicio; los pesos siguen guardados en kg (F1-22). */
+    data class ToggleUnit(val id: SessionExerciseId) : WorkoutIntent
+
+    /** Agrega el calentamiento sugerido antes de las series de trabajo (F1-22). */
+    data class AddWarmup(val id: SessionExerciseId) : WorkoutIntent
 }
 
 sealed interface WorkoutEffect {

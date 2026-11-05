@@ -28,6 +28,8 @@ class FormatsTest {
     @Test
     fun poundsAreOnlyForDisplay() {
         assertEquals("220.5 lb", english.weight(100.0, WeightUnit.LB))
+        // F1-22: 62,5 kg guardados se ven como 137,8 lb al cambiar la unidad del ejercicio.
+        assertEquals("137,8 lb", spanish.weight(62.5, WeightUnit.LB))
         assertEquals("+22 lb", english.signedWeight(10.0, WeightUnit.LB))
         assertEquals("−20 kg", spanish.signedWeight(-20.0))
     }

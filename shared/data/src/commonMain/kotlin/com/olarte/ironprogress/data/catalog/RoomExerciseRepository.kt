@@ -9,6 +9,7 @@ import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseFacts
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
+import com.olarte.ironprogress.domain.catalog.WeightUnit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -54,6 +55,11 @@ class RoomExerciseRepository(private val catalogDao: CatalogDao) : ExerciseRepos
     override suspend fun setArchived(id: ExerciseId, archived: Boolean) {
         ensureSeeded()
         catalogDao.setArchived(id.value, archived)
+    }
+
+    override suspend fun setPreferredUnit(id: ExerciseId, unit: WeightUnit?) {
+        ensureSeeded()
+        catalogDao.setPreferredUnit(id.value, unit?.name)
     }
 
     /**

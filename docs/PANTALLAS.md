@@ -107,6 +107,8 @@ Relojes:
 - **Toques:** copiar anterior 1, completar una serie con valores válidos 1, cambiar reps 3 (campo, número, completar), deshacer 1. El aviso de Deshacer dura 5 s. Minimizar no pierde el registro y el accesorio muestra datos reales.
 - **Navegación:** Hoy o el accesorio abren Entreno. Minimizar vuelve a la pestaña anterior. El teclado y los diálogos se cierran sobre Entreno. El cierre con resumen sigue en F1-21; descanso y ejecución de bloques temporizados siguen en sus tickets. No se muestran pulso, récords ni sugerencias ficticias.
 
+**Alcance implementado en F1-22:** en Opciones del ejercicio, "Usar lb en este ejercicio" (o kg) cambia cómo se ve y se escribe el peso de ese ejercicio: el campo dice "Peso (lb)", el teclado suma de 5 en 5 y todo se guarda en kg. "Discos y calentamiento" abre un diálogo sin diseño propio, con piezas de Forja: el peso de la serie que toca, la barra (20 kg o 45 lb), los discos por lado de mayor a menor, lo que falta si no sale exacto (en oro) y el calentamiento sugerido (barra × 10, 50 % × 5, 70 % × 3 y 85 % × 1), con "Agregar el calentamiento" para meter esas series antes de las de trabajo. Los discos de cada gimnasio llegan con los perfiles de F5-03.
+
 ### 1.4 Descanso en la barra (`Descanso.dc.html`)
 
 - **Para qué:** ver tus series mientras descansas, cuando minimizas el descanso a pantalla completa.

@@ -3,8 +3,10 @@ package com.olarte.ironprogress.ui.workout
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
+import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.common.IdGenerator
 import com.olarte.ironprogress.domain.routine.RoutineRepository
+import com.olarte.ironprogress.domain.routine.SetType
 import com.olarte.ironprogress.domain.session.AddSessionExercise
 import com.olarte.ironprogress.domain.session.CompleteSet
 import com.olarte.ironprogress.domain.session.EndSession
@@ -12,6 +14,7 @@ import com.olarte.ironprogress.domain.session.SessionDetail
 import com.olarte.ironprogress.domain.session.SessionRepository
 import com.olarte.ironprogress.domain.session.SessionStatus
 import com.olarte.ironprogress.domain.session.StartSession
+import com.olarte.ironprogress.domain.session.WeightUnits
 import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.domain.session.WorkoutSetId
 import com.olarte.ironprogress.domain.session.copyMeasurements
@@ -24,6 +27,7 @@ import com.olarte.ironprogress.domain.session.nextInGroupWithoutRest
 import com.olarte.ironprogress.domain.session.skipExercise
 import com.olarte.ironprogress.domain.session.substitute
 import com.olarte.ironprogress.domain.session.ungroup
+import com.olarte.ironprogress.domain.session.warmupSets
 import com.olarte.ironprogress.ui.rest.RestController
 import com.olarte.ironprogress.ui.rest.RestNotifications
 import com.olarte.ironprogress.ui.rest.RestPhase
@@ -249,6 +253,39 @@ class WorkoutViewModel(
                     effectChannel.send(WorkoutEffect.OpenWorkout(session.session.id.value))
                 }
             }
+            is WorkoutIntent.ToggleUnit -> {
+                val exercise = state.value.session?.exercises?.firstOrNull { it.id == intent.id } ?: return
+                val next = if (state.value.unitOf(intent.id) == WeightUnit.LB) null else WeightUnit.LB
+                mutableState.update { it.copy(keyboard = null) }
+                enqueue { exercises.setPreferredUnit(exercise.exerciseId, next) }
+            }
+            is WorkoutIntent.AddWarmup -> enqueue {
+                val detail = active()
+                val sets = detail.setsOf(intent.id)
+                if (sets.any { it.setType == SetType.WARMUP }) return@enqueue
+                val work = sets.firstOrNull { it.setType.countsAsWorking && it.weightKg != null }?.weightKg ?: return@enqueue
+                val unit = state.value.unitOf(intent.id)
+                val steps = warmupSets(
+                    work,
+                    barKg = WeightUnits.toKg(WeightUnits.defaultBar(unit), unit),
+                    stepKg = WeightUnits.toKg(if (unit == WeightUnit.LB) 5.0 else 2.5, unit),
+                )
+                if (steps.isEmpty()) return@enqueue
+                sets.forEach { sessions.saveSet(it.copy(sortOrder = it.sortOrder + steps.size)) }
+                val first = sets.minOfOrNull { it.sortOrder } ?: 0
+                steps.forEachIndexed { index, step ->
+                    sessions.saveSet(
+                        WorkoutSet(
+                            WorkoutSetId(ids.newId()),
+                            intent.id,
+                            first + index,
+                            SetType.WARMUP,
+                            weightKg = step.weightKg,
+                            reps = step.reps,
+                        ),
+                    )
+                }
+            }
             WorkoutIntent.Finish -> {
                 if (state.value.pendingWrites > 0) return
                 enqueue {
@@ -357,7 +394,8 @@ class WorkoutViewModel(
     private fun openKeyboard(id: WorkoutSetId, field: WorkoutField) {
         val set = state.value.session?.sets?.firstOrNull { it.id == id } ?: return
         // Este texto es de edición; el texto visible se formatea con Formats en la pantalla.
-        val text = set.value(field)?.let { if (it % 1.0 == 0.0) it.toLong().toString() else it.toString() }.orEmpty()
+        val shown = set.value(field)?.let { if (field == WorkoutField.WEIGHT) shownWeight(it, state.value.unitOfSet(id)) else it }
+        val text = shown?.let { if (it % 1.0 == 0.0) it.toLong().toString() else it.toString() }.orEmpty()
         mutableState.update { it.copy(keyboard = WorkoutKeyboard(id, field, text), invalidSetId = null) }
     }
 
@@ -386,9 +424,10 @@ class WorkoutViewModel(
     private fun saveKeyboardText(text: String) {
         val keyboard = state.value.keyboard ?: return
         val set = state.value.session?.sets?.firstOrNull { it.id == keyboard.setId } ?: return
-        val valid = set.withInput(keyboard.field, text) != null
+        val stored = storedText(keyboard.field, text, state.value.unitOfSet(keyboard.setId))
+        val valid = set.withInput(keyboard.field, stored) != null
         mutableState.update { it.copy(keyboard = keyboard.copy(text = text, replace = false, invalid = !valid), invalidSetId = null) }
-        if (valid) edit(keyboard.setId) { requireNotNull(it.withInput(keyboard.field, text)) }
+        if (valid) edit(keyboard.setId) { requireNotNull(it.withInput(keyboard.field, stored)) }
     }
 
     private fun complete(id: WorkoutSetId) {
@@ -457,5 +496,16 @@ class WorkoutViewModel(
                 mutableState.update { it.copy(highlightedSetId = null) }
             }
         }
+    }
+
+    /** Peso que se escribe en el teclado: en lb con un decimal, en kg tal cual. */
+    private fun shownWeight(kg: Double, unit: WeightUnit): Double =
+        if (unit == WeightUnit.LB) kotlin.math.round(WeightUnits.fromKg(kg, unit) * 10) / 10 else kg
+
+    /** Lo escrito en lb pasa a kg antes de guardarse; el resto de campos no cambia. */
+    private fun storedText(field: WorkoutField, text: String, unit: WeightUnit): String {
+        if (field != WorkoutField.WEIGHT || unit == WeightUnit.KG || text.isBlank()) return text
+        val number = text.replace(',', '.').toDoubleOrNull() ?: return text
+        return WeightUnits.toKg(number, unit).toString()
     }
 }

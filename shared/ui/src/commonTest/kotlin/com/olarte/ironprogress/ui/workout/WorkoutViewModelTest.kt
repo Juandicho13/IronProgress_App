@@ -123,8 +123,12 @@ class WorkoutViewModelTest {
                 ),
             ),
         )
+    private val catalogFlow = MutableStateFlow(listOf(bench))
     private val catalog = object : ExerciseRepository {
-        override fun observeExercises() = MutableStateFlow(listOf(bench))
+        override fun observeExercises() = catalogFlow
+        override suspend fun setPreferredUnit(id: ExerciseId, unit: com.olarte.ironprogress.domain.catalog.WeightUnit?) {
+            catalogFlow.value = catalogFlow.value.map { if (it.id == id) it.copy(preferredUnit = unit) else it }
+        }
         override suspend fun findExercise(id: ExerciseId) = bench.takeIf { it.id == id }
         override suspend fun saveCustomExercise(exercise: Exercise) = Unit
         override suspend fun setArchived(id: ExerciseId, archived: Boolean) = Unit
@@ -247,6 +251,46 @@ class WorkoutViewModelTest {
             assertEquals(WorkoutEffect.Finished(session.id.value), effects.last())
             assertNull(model.state.value.session)
             assertNull(model.restController.state.value.timer)
+        }
+    }
+
+    @Test
+    fun poundsAreTypedAndShownButKilosAreStored() = runTest {
+        fixture { sessions, _, create ->
+            val model = create()
+            val id = start(model)
+            val exercise = model.state.value.session!!.exercises.single().id
+            model.onIntent(WorkoutIntent.ToggleUnit(exercise))
+            runCurrent()
+            assertEquals(com.olarte.ironprogress.domain.catalog.WeightUnit.LB, model.state.value.unitOf(exercise))
+            type(model, id, WorkoutField.WEIGHT, "137,8")
+            val stored = sessions.data.value.single().sets.single().weightKg!!
+            assertEquals(62.5, stored, 0.01)
+            model.onIntent(WorkoutIntent.CloseKeyboard)
+            model.onIntent(WorkoutIntent.OpenKeyboard(id, WorkoutField.WEIGHT))
+            assertEquals("137.8", model.state.value.keyboard?.text)
+            // Volver a kg no cambia lo guardado.
+            model.onIntent(WorkoutIntent.ToggleUnit(exercise))
+            runCurrent()
+            assertEquals(stored, sessions.data.value.single().sets.single().weightKg)
+        }
+    }
+
+    @Test
+    fun suggestedWarmupGoesBeforeTheWorkingSets() = runTest {
+        fixture { sessions, _, create ->
+            val model = create()
+            val id = start(model)
+            val exercise = model.state.value.session!!.exercises.single().id
+            type(model, id, WorkoutField.WEIGHT, "100")
+            model.onIntent(WorkoutIntent.CloseKeyboard)
+            model.onIntent(WorkoutIntent.AddWarmup(exercise))
+            model.onIntent(WorkoutIntent.AddWarmup(exercise))
+            runCurrent()
+            val sets = sessions.data.value.single().setsOf(exercise)
+            assertEquals(listOf(20.0, 50.0, 70.0, 85.0, 100.0), sets.map { it.weightKg })
+            assertEquals(4, sets.count { it.setType == SetType.WARMUP })
+            assertEquals(id, sets.last().id)
         }
     }
 

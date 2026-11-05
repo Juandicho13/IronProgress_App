@@ -518,4 +518,16 @@
     <string name="month_10">octubre</string>
     <string name="month_11">noviembre</string>
     <string name="month_12">diciembre</string>
+    <string name="workout_use_lb">Usar lb en este ejercicio</string>
+    <string name="workout_use_kg">Usar kg en este ejercicio</string>
+    <string name="workout_plates">Discos y calentamiento</string>
+    <string name="plates_title">Discos y calentamiento</string>
+    <string name="plates_empty">Escribe primero un peso en una serie de trabajo</string>
+    <string name="plates_bar">Barra de %1$s</string>
+    <string name="plates_only_bar">Solo la barra</string>
+    <string name="plates_per_side">Por lado: %1$s</string>
+    <string name="plates_remainder">Faltan %1$s por lado con estos discos</string>
+    <string name="plates_warmup">Calentamiento sugerido</string>
+    <string name="plates_add_warmup">Agregar el calentamiento</string>
+    <string name="plates_close">Cerrar</string>
 </resources>

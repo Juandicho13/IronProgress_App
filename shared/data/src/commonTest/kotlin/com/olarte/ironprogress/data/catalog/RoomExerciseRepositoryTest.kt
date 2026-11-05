@@ -106,6 +106,15 @@ private class FakeCatalogDao : CatalogDao {
     override suspend fun findArchivedIds(exerciseIds: List<String>): List<String> =
         exerciseIds.filter { exercisesById[it]?.isArchived == true }
 
+    override suspend fun setPreferredUnit(exerciseId: String, unit: String?) {
+        val entity = exercisesById[exerciseId] ?: return
+        exercisesById[exerciseId] = entity.copy(preferredUnit = unit)
+        emitCurrentRelations()
+    }
+
+    override suspend fun findWithPreferredUnit(exerciseIds: List<String>): List<ExerciseEntity> =
+        exerciseIds.mapNotNull { exercisesById[it] }.filter { it.preferredUnit != null }
+
     override suspend fun deleteMusclesForExercises(exerciseIds: List<String>) {
         exerciseIds.forEach { musclesByExerciseId.remove(it) }
         emitCurrentRelations()

@@ -518,4 +518,16 @@
     <string name="month_10">October</string>
     <string name="month_11">November</string>
     <string name="month_12">December</string>
+    <string name="workout_use_lb">Use lb for this exercise</string>
+    <string name="workout_use_kg">Use kg for this exercise</string>
+    <string name="workout_plates">Plates and warm-up</string>
+    <string name="plates_title">Plates and warm-up</string>
+    <string name="plates_empty">Write a weight in a working set first</string>
+    <string name="plates_bar">Bar of %1$s</string>
+    <string name="plates_only_bar">Just the bar</string>
+    <string name="plates_per_side">Per side: %1$s</string>
+    <string name="plates_remainder">Missing %1$s per side with these plates</string>
+    <string name="plates_warmup">Suggested warm-up</string>
+    <string name="plates_add_warmup">Add warm-up sets</string>
+    <string name="plates_close">Close</string>
 </resources>

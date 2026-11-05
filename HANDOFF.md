@@ -391,6 +391,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-05 | F1-16 · Live Activity del iPhone | `feat/f1-claude` | Diseño 5.9, puente Kotlin (`WorkoutActivitySync`, se actualiza solo en cambios de fase) y Swift (ActivityKit, App Intents, `ForjaTokens.swift`); 150 pruebas de Kotlin. **El Swift no se compiló:** falta crear la extensión en Xcode y probar en el iPhone |
 | 2026-11-05 | F1-21 · terminar y resumen | `feat/f1-claude` | Deslizar para terminar (1.5) y Resumen (1.6): duración, volumen, series, récords simples, comparación con la sesión anterior y resultado de cada bloque; `summarize` con 4 pruebas y 1 de ViewModel. Falta probar en el teléfono que los números cuadren con una sesión real |
 | 2026-11-05 | F1-23 · historial | `feat/f1-claude` | Historial por calendario y lista desde Progreso; detalle de cada sesión para corregir o borrar series y borrar bloques (`EditPastSet`, `DeletePastEntry`, borrado suave en Room del bloque con sus ejercicios y series); 5 pruebas de dominio y 1 de Room. Falta probar en el teléfono editar una serie de ayer y verla corregida |
+| 2026-11-05 | F1-22 · discos, calentamiento y kg o lb | `feat/f1-claude` | `platesPerSide`, `warmupSets` y `WeightUnits` (4 pruebas); unidad por ejercicio guardada en `exercises.preferred_unit` (sobrevive a la resiembra); teclado en lb que guarda en kg y "Agregar el calentamiento"; 2 pruebas de ViewModel y la de 137,8 lb. Falta probar en el teléfono con una barra real |
 
 ---
 

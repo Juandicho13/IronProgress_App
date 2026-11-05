@@ -271,3 +271,9 @@ Pasos en Xcode para Codex o Juan, en el Mac:
 - `SessionRepository.deleteBlock` tiene una versión por defecto que borra solo las series (para los repositorios en memoria de las pruebas). Room la reemplaza con `SessionDao.deleteBlock`, que marca el bloque, sus ejercicios y sus series en una transacción. 1 prueba de Room.
 - Pantallas en `ui/history/`: `Route.History` (Calendario y Lista) y `Route.HistorySession` (corregir o borrar). Se entra con el botón Historial del título de Progreso.
 - El historial por ejercicio con gráficas (2.2) es de F2-04.
+
+## 22. F1-22 en feat/f1-claude, 5 de noviembre de 2026
+
+- `domain/session/Plates.kt`: `WeightUnits` (conversión, barra y discos por unidad), `platesPerSide` (mayor primero, informa lo que sobra) y `warmupSets` (barra × 10, 50 % × 5, 70 % × 3, 85 % × 1, redondeado al salto). 4 pruebas.
+- `ExerciseRepository.setPreferredUnit` (por defecto no hace nada, para las pruebas). Room actualiza `exercises.preferred_unit` y `replaceSeedCatalog` la conserva como conserva el archivado.
+- Entreno: `WorkoutIntent.ToggleUnit` y `WorkoutIntent.AddWarmup`; `WorkoutState.unitOf`. El teclado muestra y recibe lb con un decimal y guarda kg (`storedText`). `PlatesDialog` en `ui/workout/`. El Resumen y el historial siguen mostrando kg: la unidad por ejercicio en esas pantallas puede llegar con Ajustes (F1-25).
