@@ -11,7 +11,8 @@ import org.koin.dsl.module
 
 /** ViewModels de la interfaz. Los casos de uso los provee sharedAppModule. */
 val uiModule = module {
-    viewModel { WorkoutViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { com.olarte.ironprogress.ui.rest.platformRestNotifications() }
+    viewModel { WorkoutViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { TodayViewModel(get(), get(), get(), get(), get()) }
     viewModel { PlanViewModel(get(), get()) }
     viewModel { (id: String?) -> RoutineEditorViewModel(get(), get(), get(), get(), id) }

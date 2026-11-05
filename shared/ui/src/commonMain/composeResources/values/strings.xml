@@ -281,4 +281,6 @@
     <string name="rest_total">of %1$s</string>
     <string name="rest_next">Next</string>
     <string name="rest_swipe">Swipe down to return to your sets</string>
+    <string name="rest_notification_title">Rest finished</string>
+    <string name="rest_notification_body">Continue your workout.</string>
 </resources>

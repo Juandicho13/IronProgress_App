@@ -140,7 +140,10 @@ class WorkoutViewModelTest {
         override suspend fun deleteFolder(id: FolderId) = Unit
     }
 
-    private suspend fun TestScope.fixture(block: suspend TestScope.(Sessions, FakeClock, () -> WorkoutViewModel) -> Unit) {
+    private suspend fun TestScope.fixture(
+        notifications: com.olarte.ironprogress.ui.rest.RestNotifications = com.olarte.ironprogress.ui.rest.RestNotifications { },
+        block: suspend TestScope.(Sessions, FakeClock, () -> WorkoutViewModel) -> Unit,
+    ) {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val store = ViewModelStore()
         val sessions = Sessions()
@@ -158,6 +161,7 @@ class WorkoutViewModelTest {
                 AddSessionExercise(sessions, ids),
                 ids,
                 clock,
+                notifications,
             )
                 .also { store.put("model-${models++}", it) }
         }
@@ -183,6 +187,42 @@ class WorkoutViewModelTest {
         model.onIntent(WorkoutIntent.OpenKeyboard(id, field))
         text.forEach { model.onIntent(WorkoutIntent.Key(it.toString())) }
         runCurrent()
+    }
+
+    @Test
+    fun notificationsFollowSavedCompletionAdjustmentsAndCancellation() = runTest {
+        val deadlines = mutableListOf<Long?>()
+        fixture(com.olarte.ironprogress.ui.rest.RestNotifications { deadlines += it }) { sessions, clock, create ->
+            val model = create()
+            val id = start(model)
+            assertTrue(deadlines.isEmpty())
+            type(model, id, WorkoutField.WEIGHT, "40")
+            type(model, id, WorkoutField.REPS, "8")
+            sessions.failSave = true
+            model.onIntent(WorkoutIntent.Complete(id))
+            runCurrent()
+            assertTrue(deadlines.isEmpty())
+            sessions.failSave = false
+            model.onIntent(WorkoutIntent.Retry)
+            runCurrent()
+            val end = clock.now().toEpochMilliseconds() + 120000
+            assertEquals(listOf<Long?>(end), deadlines)
+            model.onIntent(WorkoutIntent.MinimizeRest)
+            model.refreshRest()
+            assertEquals(1, deadlines.size)
+            model.onIntent(WorkoutIntent.AdjustRest(15))
+            assertEquals(end + 15000, deadlines.last())
+            model.onIntent(WorkoutIntent.AdjustRest(-15))
+            assertEquals(end, deadlines.last())
+            model.onIntent(WorkoutIntent.Undo)
+            runCurrent()
+            assertNull(deadlines.last())
+            model.onIntent(WorkoutIntent.Complete(id))
+            runCurrent()
+            assertEquals(end, deadlines.last())
+            model.onIntent(WorkoutIntent.SkipRest)
+            assertNull(deadlines.last())
+        }
     }
 
     @Test

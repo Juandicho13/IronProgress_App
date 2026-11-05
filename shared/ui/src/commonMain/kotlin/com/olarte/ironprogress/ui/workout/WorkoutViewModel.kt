@@ -16,6 +16,8 @@ import com.olarte.ironprogress.domain.session.WorkoutSetId
 import com.olarte.ironprogress.domain.session.copyMeasurements
 import com.olarte.ironprogress.domain.session.equivalentPreviousSet
 import com.olarte.ironprogress.domain.session.hasRequiredMeasurements
+import com.olarte.ironprogress.domain.time.segmentEndsAtMs
+import com.olarte.ironprogress.ui.rest.RestNotifications
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -39,6 +41,7 @@ class WorkoutViewModel(
     private val addExercise: AddSessionExercise,
     private val ids: IdGenerator,
     private val clock: Clock,
+    private val restNotifications: RestNotifications,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(WorkoutState())
     val state = mutableState.asStateFlow()
@@ -61,6 +64,7 @@ class WorkoutViewModel(
         val timer = rest.at(now)
         if (timer.isFinished) {
             mutableState.update { it.copy(rest = null, restExpanded = false, restNowMs = now) }
+            restNotifications.replace(null)
             effectChannel.trySend(WorkoutEffect.RestFinished)
         } else {
             mutableState.update { it.copy(restNowMs = now) }
@@ -87,6 +91,7 @@ class WorkoutViewModel(
                 }.collectLatest { (detail, catalog) ->
                     val old = state.value
                     val sameSession = old.session?.session?.id == detail?.session?.id
+                    if (!sameSession && old.rest != null) restNotifications.replace(null)
                     val previous = if (sameSession) old.previous.toMutableMap() else mutableMapOf()
                     detail?.exercises?.forEach {
                         if (it.exerciseId !in previous) previous[it.exerciseId] = sessions.previousSets(it.exerciseId)
@@ -161,8 +166,12 @@ class WorkoutViewModel(
                 val now = clock.now().toEpochMilliseconds()
                 mutableState.update { it.copy(rest = rest.adjust(now, intent.seconds)) }
                 refreshRest()
+                syncRestNotification()
             }
-            WorkoutIntent.SkipRest -> mutableState.update { it.copy(rest = null, restExpanded = false) }
+            WorkoutIntent.SkipRest -> {
+                mutableState.update { it.copy(rest = null, restExpanded = false) }
+                restNotifications.replace(null)
+            }
             WorkoutIntent.ExpandRest -> {
                 refreshRest()
                 mutableState.update { it.copy(restExpanded = it.rest != null) }
@@ -222,7 +231,10 @@ class WorkoutViewModel(
                 undoJob?.cancel()
                 mutableState.update { it.copy(undoSetId = null) }
                 edit(id) { it.copy(completedAt = null) }
-                if (state.value.rest?.setId == id) mutableState.update { it.copy(rest = null, restExpanded = false) }
+                if (state.value.rest?.setId == id) {
+                    mutableState.update { it.copy(rest = null, restExpanded = false) }
+                    restNotifications.replace(null)
+                }
             }
             is WorkoutIntent.ChangeType -> edit(intent.id) { it.copy(setType = intent.type) }
             is WorkoutIntent.ChangeNote -> edit(intent.id) { it.copy(notes = intent.note) }
@@ -274,6 +286,11 @@ class WorkoutViewModel(
         if (valid) edit(keyboard.setId) { requireNotNull(it.withInput(keyboard.field, text)) }
     }
 
+    private fun syncRestNotification() {
+        val rest = state.value.rest
+        restNotifications.replace(rest?.plan?.segmentEndsAtMs(clock.now().toEpochMilliseconds(), rest.startedAtMs, rest.edits))
+    }
+
     private fun complete(id: WorkoutSetId) {
         if (state.value.keyboard?.invalid == true || !completing.add(id)) return
         enqueue {
@@ -316,6 +333,7 @@ class WorkoutViewModel(
                     next?.id ?: exercise.id,
                 )
             }
+            syncRestNotification()
             effectChannel.send(WorkoutEffect.SetCompleted)
             undoJob?.cancel()
             undoJob = viewModelScope.launch {

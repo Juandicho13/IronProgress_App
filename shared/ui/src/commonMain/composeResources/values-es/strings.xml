@@ -281,4 +281,6 @@
     <string name="rest_total">de %1$s</string>
     <string name="rest_next">Siguiente</string>
     <string name="rest_swipe">Desliza hacia abajo para volver a tus series</string>
+    <string name="rest_notification_title">Terminó el descanso</string>
+    <string name="rest_notification_body">Continúa tu entrenamiento.</string>
 </resources>
