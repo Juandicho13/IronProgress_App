@@ -65,7 +65,7 @@ Relojes:
 - **Toques:** Empezar abre Entreno (1 toque). Tocar la tarjeta de recuperación abre el detalle de la adaptación (sección 5.4).
 - **Variante de recuperación baja:** ver 2.4.
 
-**Alcance implementado en F1-09:** Hoy obtiene rutinas, ejercicios y sesiones desde Room. Sin rutinas, muestra una invitación a crear la primera. La tarjeta Siguiente usa la posición dentro de la rotación, las series objetivo y una duración marcada como aproximada. Esta semana cuenta días entrenados y racha según la zona horaria local. Recuperación, metas semanales y cambios de carga esperan datos y motores reales. Una sesión abierta ofrece Continuar, incluso si su rutina ya no existe. La entrada a Entreno conserva el id de sesión, pero el registro de series y el accesorio siguen pendientes de F1-10.
+**Alcance implementado en F1-09:** Hoy obtiene rutinas, ejercicios y sesiones desde Room. Sin rutinas, muestra una invitación a crear la primera. La tarjeta Siguiente usa la posición dentro de la rotación, las series objetivo y una duración marcada como aproximada. Esta semana cuenta días entrenados y racha según la zona horaria local. Recuperación, metas semanales y cambios de carga esperan datos y motores reales. Una sesión abierta ofrece Continuar, incluso si su rutina ya no existe. Desde F1-10, Entreno y el accesorio muestran y guardan las series reales. El cierre con resumen sigue en F1-21.
 
 ### 1.2 Entreno (`Entreno.dc.html`)
 
@@ -97,6 +97,15 @@ Relojes:
   5. Teclas de 60 de alto, radio 20, `surface3`, cifras 26/600: 1 a 9, la coma, 0 y Borrar.
   6. Dos botones: **Siguiente** (pasa al campo siguiente) y **Completar serie** (principal, `ember`).
 - **Vibración:** cada tecla `KEYBOARD_TAP`; cambiar de segmento `SEGMENT_TICK`.
+
+### 1.3.1 Controles de Entreno para F1-10
+
+- **Qué muestra:** Entreno y el teclado de 1.2 y 1.3 usan el catálogo y las series guardadas. La columna Anterior copia las medidas de la serie equivalente, sin copiar su estado de completado. El peso anterior es una referencia, no una recomendación del motor. Sin datos anteriores, el campo queda vacío.
+- **Opciones de serie:** al tocar el número se abre un diálogo Forja con selector del tipo existente y campo de nota. Cada cambio se guarda. RIR y RPE se eligen en el teclado; elegir uno limpia el otro. Las medidas se muestran con formato local, y los campos numéricos nunca abren el teclado del sistema.
+- **Sesión libre:** Hoy ofrece Empezar libre. Entreno vacío muestra Añadir ejercicio, que abre un selector con búsqueda usando las filas y campos del catálogo. Al elegir se agrega una serie editable; Añadir serie permite continuar el registro. Todo usa colores, tipografía, radios y espaciado Forja existentes.
+- **Estados:** cargando, sesión vacía, activa, todas las series registradas, valores incompletos y error de guardado con Reintentar. Un error conserva las escrituras pendientes para reintentarlas en orden y no muestra confirmación de guardado.
+- **Toques:** copiar anterior 1, completar una serie con valores válidos 1, cambiar reps 3 (campo, número, completar), deshacer 1. El aviso de Deshacer dura 5 s. Minimizar no pierde el registro y el accesorio muestra datos reales.
+- **Navegación:** Hoy o el accesorio abren Entreno. Minimizar vuelve a la pestaña anterior. El teclado y los diálogos se cierran sobre Entreno. El cierre con resumen sigue en F1-21; descanso y ejecución de bloques temporizados siguen en sus tickets. No se muestran pulso, récords ni sugerencias ficticias.
 
 ### 1.4 Descanso en la barra (`Descanso.dc.html`)
 

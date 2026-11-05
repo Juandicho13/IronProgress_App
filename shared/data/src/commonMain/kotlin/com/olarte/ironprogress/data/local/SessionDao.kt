@@ -2,6 +2,7 @@ package com.olarte.ironprogress.data.local
 
 import androidx.room3.Dao
 import androidx.room3.Query
+import androidx.room3.Transaction
 import androidx.room3.Upsert
 import kotlinx.coroutines.flow.Flow
 
@@ -57,6 +58,44 @@ interface SessionDao {
             "ORDER BY s.completed_at DESC LIMIT :limit",
     )
     suspend fun recentSetsOfExercise(exerciseId: String, limit: Int): List<WorkoutSetEntity>
+
+    @Query("SELECT id FROM workout_sessions WHERE status = 'IN_PROGRESS' AND deleted_at IS NULL LIMIT 1")
+    suspend fun activeSessionId(): String?
+
+    @Transaction
+    suspend fun createSession(
+        session: WorkoutSessionEntity,
+        blocks: List<WorkoutBlockEntity>,
+        exercises: List<SessionExerciseEntity>,
+        sets: List<WorkoutSetEntity>,
+    ): String {
+        activeSessionId()?.let { return it }
+        upsertSession(session)
+        blocks.forEach { upsertBlock(it) }
+        exercises.forEach { upsertExercise(it) }
+        sets.forEach { upsertSet(it) }
+        return session.id
+    }
+
+    @Transaction
+    suspend fun appendExercise(block: WorkoutBlockEntity, exercise: SessionExerciseEntity, sets: List<WorkoutSetEntity>) {
+        check(activeSessionId() == exercise.sessionId) { "La sesión ya no está activa" }
+        upsertBlock(block)
+        upsertExercise(exercise)
+        sets.forEach { upsertSet(it) }
+    }
+
+    @Query(
+        "SELECT * FROM workout_sets WHERE session_exercise_id = (" +
+            "SELECT e.id FROM session_exercises e JOIN workout_sessions w ON w.id = e.session_id " +
+            "WHERE e.exercise_id = :exerciseId AND w.status = 'FINISHED' " +
+            "AND e.deleted_at IS NULL AND w.deleted_at IS NULL " +
+            "AND EXISTS (SELECT 1 FROM workout_sets s WHERE s.session_exercise_id = e.id " +
+            "AND s.completed_at IS NOT NULL AND s.deleted_at IS NULL) " +
+            "ORDER BY w.ended_at DESC, e.sort_order DESC LIMIT 1) " +
+            "AND completed_at IS NOT NULL AND deleted_at IS NULL ORDER BY sort_order ASC",
+    )
+    suspend fun previousSets(exerciseId: String): List<WorkoutSetEntity>
 
     @Upsert
     suspend fun upsertSession(session: WorkoutSessionEntity)

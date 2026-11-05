@@ -39,22 +39,27 @@ class StartSession(private val repository: SessionRepository, private val ids: I
                     notes = planned.notes,
                 )
                 exercises += exercise
-                routine.setsOf(planned.id).forEach { template ->
+                val previous = repository.previousSets(planned.exerciseId)
+                val templates = routine.setsOf(planned.id)
+                templates.forEach { template ->
+                    val index = templates.filter { it.setType == template.setType }.indexOf(template)
+                    val last = previous.filter { it.setType == template.setType }.getOrNull(index)
                     sets += WorkoutSet(
                         id = WorkoutSetId(ids.newId()),
                         sessionExerciseId = exercise.id,
                         sortOrder = template.sortOrder,
                         setType = template.setType,
+                        weightKg = last?.weightKg,
+                        reps = last?.reps ?: template.repsMin ?: template.repsMax,
+                        rir = template.targetRir,
+                        durationSeconds = last?.durationSeconds,
+                        distanceMeters = last?.distanceMeters,
                     )
                 }
             }
         }
 
-        repository.saveSession(session)
-        blocks.forEach { repository.saveBlock(it) }
-        exercises.forEach { repository.saveExercise(it) }
-        sets.forEach { repository.saveSet(it) }
-        return SessionDetail(session, blocks, exercises, sets)
+        return repository.createSession(SessionDetail(session, blocks, exercises, sets))
     }
 }
 

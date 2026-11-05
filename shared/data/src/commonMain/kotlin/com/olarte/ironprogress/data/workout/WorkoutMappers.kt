@@ -247,6 +247,7 @@ internal fun WorkoutSetEntity.toDomain() = WorkoutSet(
     suggestion = suggestion,
     endHeartRate = endHeartRate,
     recoverySeconds = recoverySeconds,
+    notes = notes,
 )
 
 internal fun WorkoutSet.toEntity(createdAt: Long, updatedAt: Long) = WorkoutSetEntity(
@@ -270,6 +271,7 @@ internal fun WorkoutSet.toEntity(createdAt: Long, updatedAt: Long) = WorkoutSetE
     suggestion = suggestion,
     endHeartRate = endHeartRate,
     recoverySeconds = recoverySeconds,
+    notes = notes,
     createdAt = createdAt,
     updatedAt = updatedAt,
 )

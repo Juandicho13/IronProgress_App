@@ -1,14 +1,6 @@
 package com.olarte.ironprogress.ui
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -31,7 +22,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -46,11 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -66,8 +53,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.olarte.ironprogress.ui.catalog.CatalogScreen
 import com.olarte.ironprogress.ui.catalog.CatalogViewModel
-import com.olarte.ironprogress.ui.components.ActiveSessionBannerState
-import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaIsland
 import com.olarte.ironprogress.ui.components.ForjaTab
 import com.olarte.ironprogress.ui.components.LocalForjaHazeState
@@ -78,16 +63,17 @@ import com.olarte.ironprogress.ui.resources.nav_plan
 import com.olarte.ironprogress.ui.resources.nav_progress
 import com.olarte.ironprogress.ui.resources.nav_search_exercises
 import com.olarte.ironprogress.ui.resources.nav_today
-import com.olarte.ironprogress.ui.resources.session_ready
-import com.olarte.ironprogress.ui.resources.session_rest
-import com.olarte.ironprogress.ui.resources.session_set_of
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
+import com.olarte.ironprogress.ui.workout.WorkoutEffect
+import com.olarte.ironprogress.ui.workout.WorkoutIntent
+import com.olarte.ironprogress.ui.workout.WorkoutRoute
+import com.olarte.ironprogress.ui.workout.WorkoutViewModel
+import com.olarte.ironprogress.ui.workout.workoutBanner
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -103,6 +89,8 @@ fun IronProgressApp() {
         parametersOf(languageCode)
     }
     val catalogState by viewModel.state.collectAsStateWithLifecycle()
+    val workoutViewModel = koinViewModel<WorkoutViewModel>()
+    val workoutState by workoutViewModel.state.collectAsStateWithLifecycle()
 
     // Pila de Navigation 3: la raíz es una pestaña y encima pueden ir Catálogo o Entreno.
     // Sobrevive a girar el teléfono y al cierre del sistema (se guarda con navConfiguration).
@@ -119,14 +107,6 @@ fun IronProgressApp() {
     val isWorkoutScreenOpen = currentDestination is Route.Workout
 
     var isIslandMinimized by rememberSaveable { mutableStateOf(false) }
-
-    // Estado de la sesion de entreno interactiva
-    var startedSessionId by rememberSaveable { mutableStateOf<String?>(null) }
-    var currentSetNumber by rememberSaveable { mutableIntStateOf(2) }
-    var recentlyCompletedSetNumber by rememberSaveable { mutableIntStateOf(-1) }
-    var isResting by rememberSaveable { mutableStateOf(false) }
-    var restSecondsRemaining by rememberSaveable { mutableIntStateOf(85) }
-    var showUndoNotice by rememberSaveable { mutableStateOf(false) }
 
     val catalogListState = rememberLazyListState()
     val todayListState = rememberLazyListState()
@@ -162,37 +142,15 @@ fun IronProgressApp() {
     ForjaTheme {
         val haptics = ForjaTheme.haptics
 
-        // Cuenta regresiva en vivo con hapticos en los ultimos 3 s y al terminar
-        LaunchedEffect(isResting, restSecondsRemaining) {
-            if (isResting && restSecondsRemaining > 0) {
-                delay(1_000L)
-                val nextValue = restSecondsRemaining - 1
-                restSecondsRemaining = nextValue
-                when {
-                    nextValue in 1..3 -> haptics.restCountdownTick()
-                    nextValue == 0 -> {
-                        haptics.restFinished()
-                        isResting = false
+        LaunchedEffect(workoutViewModel) {
+            workoutViewModel.effects.collect { effect ->
+                when (effect) {
+                    is WorkoutEffect.OpenWorkout -> {
+                        backStack.removeAll { it is Route.Workout }
+                        backStack.add(Route.Workout(effect.sessionId))
                     }
+                    WorkoutEffect.SetCompleted -> haptics.setCompleted()
                 }
-            } else if (isResting && restSecondsRemaining <= 0) {
-                isResting = false
-            }
-        }
-
-        // El fondo brasa-velo de la serie recien completada dura 900 ms y luego se asienta
-        LaunchedEffect(recentlyCompletedSetNumber) {
-            if (recentlyCompletedSetNumber > 0) {
-                delay(900L)
-                recentlyCompletedSetNumber = -1
-            }
-        }
-
-        // El aviso de Deshacer permanece visible durante 5 segundos
-        LaunchedEffect(showUndoNotice, currentSetNumber) {
-            if (showUndoNotice) {
-                delay(5_000L)
-                showUndoNotice = false
             }
         }
 
@@ -219,48 +177,12 @@ fun IronProgressApp() {
                 ),
                 entryProvider = entryProvider {
                     entry<Route.Workout> {
-                        ForjaWorkoutScreen(
-                            currentSetNumber = currentSetNumber,
-                            recentlyCompletedSetNumber = recentlyCompletedSetNumber,
-                            isResting = isResting,
-                            restSecondsRemaining = restSecondsRemaining,
-                            showUndoNotice = showUndoNotice,
-                            onMinimizeToIsland = {
+                        CompositionLocalProvider(LocalForjaHazeState provides hazeState) {
+                            WorkoutRoute(workoutViewModel, onMinimize = {
                                 backStack.removeAll { it is Route.Workout }
-                                if (backStack.isEmpty()) {
-                                    backStack.add(Route.Today)
-                                }
-                            },
-                            onCompleteSet = {
-                                if (currentSetNumber <= 4) {
-                                    haptics.setCompleted()
-                                    recentlyCompletedSetNumber = currentSetNumber
-                                    currentSetNumber += 1
-                                    isResting = true
-                                    restSecondsRemaining = 85
-                                    showUndoNotice = true
-                                }
-                            },
-                            onUndoSet = {
-                                if (currentSetNumber > 2) {
-                                    currentSetNumber -= 1
-                                }
-                                recentlyCompletedSetNumber = -1
-                                isResting = false
-                                showUndoNotice = false
-                            },
-                            onAdjustRest = { delta ->
-                                haptics.segmentTick()
-                                restSecondsRemaining = (restSecondsRemaining + delta).coerceAtLeast(0)
-                                if (restSecondsRemaining == 0) {
-                                    isResting = false
-                                }
-                            },
-                            onSkipRest = {
-                                isResting = false
-                                showUndoNotice = false
-                            },
-                        )
+                                if (backStack.isEmpty()) backStack.add(Route.Today)
+                            })
+                        }
                     }
 
                     entry<Route.ExerciseEditor> { route ->
@@ -283,8 +205,11 @@ fun IronProgressApp() {
                     entry<Route.Today> {
                         com.olarte.ironprogress.ui.today.TodayRoute(
                             listState = todayListState,
+                            onStartFree = {
+                                backStack.add(Route.Workout())
+                                workoutViewModel.onIntent(WorkoutIntent.StartFree)
+                            },
                             onOpenWorkout = { sessionId ->
-                                startedSessionId = sessionId
                                 backStack.removeAll { it is Route.Workout }
                                 backStack.add(Route.Workout(sessionId))
                             },
@@ -318,23 +243,7 @@ fun IronProgressApp() {
             )
 
             if (!isWorkoutScreenOpen && currentDestination !is Route.ExerciseEditor && currentDestination !is Route.RoutineEditor) {
-                val activeBanner = if (startedSessionId != null) {
-                    val minutes = restSecondsRemaining / 60
-                    val seconds = (restSecondsRemaining % 60).toString().padStart(2, '0')
-                    ActiveSessionBannerState(
-                        exerciseName = "Press banca",
-                        setSummary = stringResource(Res.string.session_set_of, currentSetNumber.coerceAtMost(4), 4),
-                        statusText = if (isResting) {
-                            stringResource(Res.string.session_rest, "$minutes:$seconds", 128)
-                        } else {
-                            stringResource(Res.string.session_ready, "62,5 kg × 10")
-                        },
-                        progress = if (isResting) restSecondsRemaining / 90f else 1f,
-                        isReady = !isResting,
-                    )
-                } else {
-                    null
-                }
+                val activeBanner = workoutBanner(workoutState)
 
                 CompositionLocalProvider(LocalForjaHazeState provides hazeState) {
                     ForjaIsland(
@@ -348,9 +257,9 @@ fun IronProgressApp() {
                         activeSession = activeBanner,
                         onOpenActiveSession = {
                             backStack.removeAll { it is Route.Workout }
-                            backStack.add(Route.Workout(startedSessionId))
+                            backStack.add(Route.Workout(workoutState.session?.session?.id?.value))
                         },
-                        onSkipRest = { isResting = false },
+                        onSkipRest = {},
                         onTabSelected = { tab ->
                             if (isIslandMinimized) {
                                 isIslandMinimized = false
@@ -982,587 +891,4 @@ private fun CapsulePart(width: Dp, height: Dp, color: Color) {
             .clip(CircleShape)
             .background(color),
     )
-}
-
-/**
- * Pantalla "Entreno" del sistema Forja (paginas 35 y 36 del diseno):
- * Filas de serie con calentamiento, record en oro-velo, destello en brasa-velo durante 900 ms
- * y Barra del entreno que se transforma en el descanso.
- */
-@Composable
-private fun ForjaWorkoutScreen(
-    currentSetNumber: Int,
-    recentlyCompletedSetNumber: Int,
-    isResting: Boolean,
-    restSecondsRemaining: Int,
-    showUndoNotice: Boolean,
-    onMinimizeToIsland: () -> Unit,
-    onCompleteSet: () -> Unit,
-    onUndoSet: () -> Unit,
-    onAdjustRest: (Int) -> Unit,
-    onSkipRest: () -> Unit,
-) {
-    val motion = ForjaTheme.motion
-    val colors = ForjaTheme.colors
-    val typography = ForjaTheme.typography
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background),
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .padding(horizontal = ForjaSpacing.esp5),
-            verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-            contentPadding = PaddingValues(top = ForjaSpacing.esp2, bottom = 164.dp),
-        ) {
-            // Encabezado del entreno con minimizar a la isla
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(ForjaMeasures.minTouch)
-                                .clip(CircleShape)
-                                .clickable(onClick = onMinimizeToIsland),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = "⌄",
-                                style = typography.title2,
-                                color = colors.text1,
-                            )
-                        }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Empuje A",
-                                style = typography.title3,
-                                color = colors.text1,
-                            )
-                            Text(
-                                text = "18:42",
-                                style = typography.caption,
-                                color = colors.text2,
-                            )
-                        }
-                        Box(
-                            modifier = Modifier.size(ForjaMeasures.minTouch),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = "•••",
-                                style = typography.label,
-                                color = colors.text2,
-                            )
-                        }
-                    }
-
-                    // Progreso de los 5 ejercicios de la sesion
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        for (index in 0 until 5) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(4.dp)
-                                    .clip(CircleShape)
-                                    .background(if (index == 0) colors.ember else colors.surface3),
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Tarjeta del ejercicio activo: Press banca con barra
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(ForjaRadius.shapeL)
-                        .background(colors.surface1)
-                        .padding(ForjaSpacing.esp4),
-                    verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(
-                            text = "Press banca con barra",
-                            style = typography.title2,
-                            color = colors.text1,
-                        )
-                        Text(
-                            text = "Pecho · Tríceps · Hombros",
-                            style = typography.body2,
-                            color = colors.text2,
-                        )
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        Icon(
-                            painter = ForjaIcons.NorthEast,
-                            contentDescription = null,
-                            tint = colors.emberInk,
-                            modifier = Modifier.size(16.dp),
-                        )
-                        Text(
-                            text = "+2,5 kg porque hiciste 3 × 12 con RIR 2",
-                            style = typography.body2,
-                            color = colors.text1,
-                        )
-                    }
-
-                    // Encabezado de columnas de la Fila de serie
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        Text(
-                            text = "#",
-                            style = typography.caption,
-                            color = colors.text2,
-                            modifier = Modifier.width(28.dp),
-                        )
-                        Text(
-                            text = "ANTERIOR",
-                            style = typography.caption,
-                            color = colors.text2,
-                            modifier = Modifier.weight(1f),
-                        )
-                        Text(
-                            text = "KG",
-                            style = typography.caption,
-                            color = colors.text2,
-                            modifier = Modifier.width(76.dp),
-                        )
-                        Text(
-                            text = "REPS",
-                            style = typography.caption,
-                            color = colors.text2,
-                            modifier = Modifier.width(60.dp),
-                        )
-                        Spacer(modifier = Modifier.width(48.dp))
-                    }
-
-                    // Serie C de calentamiento
-                    WorkoutSetRow(
-                        badge = "C",
-                        previous = "40 × 10",
-                        weight = "40",
-                        reps = "10",
-                        isWarmup = true,
-                        isRecord = false,
-                        isRecentlyCompleted = false,
-                        isCompleted = true,
-                        isCurrent = false,
-                        onComplete = {},
-                    )
-
-                    // Serie 1: Record en oro-velo
-                    WorkoutSetRow(
-                        badge = "★",
-                        previous = "60 × 12",
-                        weight = "62,5",
-                        reps = "11",
-                        isWarmup = false,
-                        isRecord = true,
-                        isRecentlyCompleted = false,
-                        isCompleted = true,
-                        isCurrent = false,
-                        onComplete = {},
-                    )
-
-                    // Series 2, 3 y 4
-                    val targetReps = listOf(2 to "60 × 12", 3 to "60 × 12", 4 to "60 × 11")
-                    targetReps.forEach { (setNum, prev) ->
-                        WorkoutSetRow(
-                            badge = setNum.toString(),
-                            previous = prev,
-                            weight = "62,5",
-                            reps = "10",
-                            isWarmup = false,
-                            isRecord = false,
-                            isRecentlyCompleted = setNum == recentlyCompletedSetNumber,
-                            isCompleted = setNum < currentSetNumber,
-                            isCurrent = setNum == currentSetNumber,
-                            onComplete = onCompleteSet,
-                        )
-                    }
-
-                    Text(
-                        text = "+ Añadir serie",
-                        style = typography.label,
-                        color = colors.emberInk,
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(top = ForjaSpacing.esp1),
-                    )
-                }
-            }
-
-            // Siguientes ejercicios plegados
-            item {
-                FoldedExerciseCard(order = "2", name = "Press militar con barra", summary = "4 series · 40 kg × 6-10")
-            }
-            item {
-                FoldedExerciseCard(order = "3", name = "Cruce de poleas", summary = "4 series · 15 kg × 12-15")
-            }
-        }
-
-        // Aviso de Deshacer y Barra del entreno en la zona del pulgar
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(
-                    start = ForjaSpacing.esp5,
-                    end = ForjaSpacing.esp5,
-                    bottom = ForjaMeasures.islandMargin,
-                ),
-            verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
-        ) {
-            if (showUndoNotice) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(ForjaMeasures.secondaryButtonHeight)
-                        .clip(CircleShape)
-                        .background(colors.glass)
-                        .border(1.dp, colors.glassBorder, CircleShape)
-                        .padding(horizontal = ForjaSpacing.esp4),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "Serie ${(currentSetNumber - 1).coerceAtLeast(2)} guardada",
-                        style = typography.body2,
-                        color = colors.text1,
-                    )
-                    Text(
-                        text = "Deshacer",
-                        style = typography.label,
-                        color = colors.emberInk,
-                        modifier = Modifier.clickable(onClick = onUndoSet),
-                    )
-                }
-            }
-
-            // La Barra del entreno: se transforma con resorte entre Completar serie y el Descanso
-            AnimatedContent(
-                targetState = isResting,
-                transitionSpec = {
-                    fadeIn(motion.effectFast()) togetherWith
-                        fadeOut(motion.effectFast()) using
-                        SizeTransform(
-                            clip = false,
-                            sizeAnimationSpec = { _, _ -> motion.spatial() },
-                        )
-                },
-                label = "WorkoutBarMorph",
-            ) { resting ->
-                if (resting) {
-                    val minutes = restSecondsRemaining / 60
-                    val seconds = (restSecondsRemaining % 60).toString().padStart(2, '0')
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(ForjaMeasures.islandHeight)
-                            .shadow(16.dp, CircleShape)
-                            .clip(CircleShape)
-                            .background(colors.glass)
-                            .border(1.dp, colors.glassBorder, CircleShape)
-                            .padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(ForjaMeasures.secondaryButtonHeight)
-                                .clip(CircleShape)
-                                .background(colors.surface3)
-                                .clickable { onAdjustRest(-15) },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = "−15",
-                                style = typography.smallFigure,
-                                color = colors.text1,
-                            )
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-                        ) {
-                            Canvas(modifier = Modifier.size(ForjaMeasures.restRingSize)) {
-                                val strokeWidthPx = 4.dp.toPx()
-                                drawArc(
-                                    color = colors.surface3,
-                                    startAngle = 0f,
-                                    sweepAngle = 360f,
-                                    useCenter = false,
-                                    style = Stroke(width = strokeWidthPx),
-                                )
-                                drawArc(
-                                    color = colors.ice,
-                                    startAngle = -90f,
-                                    sweepAngle = 360f * (restSecondsRemaining / 90f).coerceIn(0f, 1f),
-                                    useCenter = false,
-                                    style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round),
-                                )
-                            }
-                            Column {
-                                Text(
-                                    text = "$minutes:$seconds",
-                                    style = typography.figure,
-                                    color = colors.text1,
-                                )
-                                Text(
-                                    text = "♥ 139",
-                                    style = typography.caption,
-                                    color = colors.iceInk,
-                                )
-                            }
-                        }
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
-                            Box(
-                                modifier = Modifier
-                                    .size(ForjaMeasures.secondaryButtonHeight)
-                                    .clip(CircleShape)
-                                    .background(colors.surface3)
-                                    .clickable { onAdjustRest(15) },
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = "+15",
-                                    style = typography.smallFigure,
-                                    color = colors.text1,
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .size(ForjaMeasures.secondaryButtonHeight)
-                                    .clip(CircleShape)
-                                    .background(colors.surface3)
-                                    .clickable(onClick = onSkipRest),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = "›|",
-                                    style = typography.smallFigure,
-                                    color = colors.text1,
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(ForjaMeasures.islandHeight)
-                            .shadow(16.dp, CircleShape)
-                            .clip(CircleShape)
-                            .background(colors.ember)
-                            .clickable(onClick = onCompleteSet),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            painter = ForjaIcons.Check,
-                            contentDescription = null,
-                            tint = colors.onEmber,
-                            modifier = Modifier.size(22.dp),
-                        )
-                        Spacer(modifier = Modifier.width(ForjaSpacing.esp3))
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Completar serie ${currentSetNumber.coerceAtMost(4)}",
-                                style = typography.primaryButton,
-                                color = colors.onEmber,
-                            )
-                            Text(
-                                text = "62,5 kg × 10",
-                                style = typography.smallFigure,
-                                color = colors.onEmber,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun WorkoutSetRow(
-    badge: String,
-    previous: String,
-    weight: String,
-    reps: String,
-    isWarmup: Boolean,
-    isRecord: Boolean,
-    isRecentlyCompleted: Boolean,
-    isCompleted: Boolean,
-    isCurrent: Boolean,
-    onComplete: () -> Unit,
-) {
-    val colors = ForjaTheme.colors
-    val typography = ForjaTheme.typography
-
-    val targetBackground = when {
-        isRecord -> colors.goldVeil
-        isRecentlyCompleted -> colors.emberVeil
-        isCurrent -> colors.surface2
-        else -> Color.Transparent
-    }
-    val rowBackground by animateColorAsState(
-        targetValue = targetBackground,
-        animationSpec = ForjaTheme.motion.effect(),
-        label = "SetRowBackground",
-    )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(ForjaMeasures.setRowHeight)
-            .clip(ForjaRadius.shapeM)
-            .background(rowBackground)
-            .then(
-                if (isCurrent) {
-                    Modifier.border(1.dp, colors.line, ForjaRadius.shapeM)
-                } else {
-                    Modifier
-                },
-            )
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Text(
-            text = badge,
-            style = typography.smallFigure,
-            color = when {
-                isWarmup -> colors.iceInk
-                isRecord -> colors.goldInk
-                isRecentlyCompleted -> colors.emberInk
-                else -> colors.text2
-            },
-            modifier = Modifier.width(28.dp),
-        )
-
-        Text(
-            text = previous,
-            style = typography.smallFigure,
-            color = colors.text3,
-            modifier = Modifier.weight(1f),
-        )
-
-        Box(
-            modifier = Modifier
-                .width(76.dp)
-                .height(44.dp)
-                .clip(ForjaRadius.shapeS)
-                .background(if (isCompleted) Color.Transparent else colors.surface3),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = weight,
-                style = typography.figure,
-                color = if (isCompleted && !isRecord && !isRecentlyCompleted) colors.text2 else colors.text1,
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .width(60.dp)
-                .height(44.dp)
-                .clip(ForjaRadius.shapeS)
-                .background(if (isCompleted) Color.Transparent else colors.surface3),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = reps,
-                style = typography.figure,
-                color = if (isCompleted && !isRecord && !isRecentlyCompleted) colors.text2 else colors.text1,
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(if (isCompleted) colors.ember else colors.surface3)
-                .clickable(enabled = !isCompleted, onClick = onComplete),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                painter = ForjaIcons.Check,
-                contentDescription = "Completar serie",
-                tint = if (isCompleted) colors.onEmber else colors.text2,
-                modifier = Modifier.size(20.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun FoldedExerciseCard(order: String, name: String, summary: String) {
-    val colors = ForjaTheme.colors
-    val typography = ForjaTheme.typography
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(ForjaRadius.shapeL)
-            .background(colors.surface1)
-            .padding(ForjaSpacing.esp4),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-    ) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(colors.surface3),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = order,
-                style = typography.label,
-                color = colors.text2,
-            )
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = name,
-                style = typography.title3,
-                color = colors.text1,
-            )
-            Text(
-                text = summary,
-                style = typography.body2,
-                color = colors.text2,
-            )
-        }
-        Text(
-            text = "⌄",
-            style = typography.title3,
-            color = colors.text2,
-        )
-    }
 }

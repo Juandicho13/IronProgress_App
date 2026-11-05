@@ -84,6 +84,7 @@ import com.olarte.ironprogress.ui.resources.today_week_count
 import com.olarte.ironprogress.ui.resources.today_week_streak
 import com.olarte.ironprogress.ui.resources.today_week_title
 import com.olarte.ironprogress.ui.resources.today_workout_count
+import com.olarte.ironprogress.ui.resources.workout_start_free
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
@@ -94,7 +95,12 @@ import org.koin.compose.viewmodel.koinViewModel
 
 /** Punto de entrada de la pantalla Hoy conectado a Koin y Navigation 3. */
 @Composable
-fun TodayRoute(listState: LazyListState = rememberLazyListState(), onOpenWorkout: (String) -> Unit, onCreateRoutine: () -> Unit) {
+fun TodayRoute(
+    listState: LazyListState = rememberLazyListState(),
+    onOpenWorkout: (String) -> Unit,
+    onCreateRoutine: () -> Unit,
+    onStartFree: () -> Unit,
+) {
     val viewModel = koinViewModel<TodayViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -113,6 +119,7 @@ fun TodayRoute(listState: LazyListState = rememberLazyListState(), onOpenWorkout
         listState = listState,
         onIntent = viewModel::onIntent,
         onCreateRoutine = onCreateRoutine,
+        onStartFree = onStartFree,
     )
 }
 
@@ -123,6 +130,7 @@ fun TodayScreen(
     listState: LazyListState = rememberLazyListState(),
     onIntent: (TodayIntent) -> Unit,
     onCreateRoutine: () -> Unit,
+    onStartFree: () -> Unit,
 ) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
@@ -201,6 +209,9 @@ fun TodayScreen(
         }
 
         if (!state.loading) {
+            if (state.activeSessionId == null) {
+                item { EditorAction(stringResource(Res.string.workout_start_free), !state.starting, onStartFree) }
+            }
             if (state.activeSessionId != null && state.nextRoutine?.isActiveSession != true) {
                 item {
                     TodayPrimaryButton(stringResource(Res.string.today_continue), !state.starting, true) {
