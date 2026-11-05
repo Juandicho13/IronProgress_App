@@ -281,6 +281,20 @@
     <string name="rest_total">de %1$s</string>
     <string name="rest_next">Siguiente</string>
     <string name="rest_swipe">Desliza hacia abajo para volver a tus series</string>
+    <!-- Notificación de descanso y Live Update (F1-14) -->
+    <string name="rest_notification_channel">Descanso</string>
+    <string name="rest_notification_resting_title">Descanso · %1$s</string>
+    <string name="rest_notification_next_set_with_target">Sigue: serie %1$d de %2$d · %3$s</string>
+    <string name="rest_notification_next_set_only">Sigue: serie %1$d de %2$d</string>
+    <string name="rest_notification_completed_set_line">Serie %1$d hecha: %2$s</string>
+    <string name="rest_notification_action_skip">Saltar</string>
+    <string name="rest_notification_ready_chip">Listo</string>
+    <string name="rest_notification_ready_title">A la serie %1$d de %2$d</string>
+    <string name="rest_notification_ready_text_with_target">%1$s · %2$s</string>
+    <string name="rest_notification_reps_unit">reps</string>
+    <string name="rest_notification_permission_rationale">Para ver el descanso con la app cerrada</string>
+    <string name="rest_notification_permission_continue">Continuar</string>
+    <string name="rest_notification_permission_not_now">Ahora no</string>
     <!-- Ficha de ejercicio (F1-06) -->
     <string name="detail_title">Ejercicio</string>
     <string name="detail_muscles">Músculos</string>

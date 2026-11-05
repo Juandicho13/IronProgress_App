@@ -4,6 +4,13 @@
     <!-- Vibración de Forja: patrón del fin del descanso con Vibrator. -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- Descanso con la app cerrada y promoción a Live Update / Now Bar (F1-14). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
+
     <application
         android:name=".IronProgressApplication"
         android:allowBackup="true"
@@ -14,6 +21,7 @@
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity
             android:exported="true"
+            android:launchMode="singleTop"
             android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,6 +29,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".session.RestForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="health" />
     </application>
 
 </manifest>

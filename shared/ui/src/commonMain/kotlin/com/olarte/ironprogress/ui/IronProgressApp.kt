@@ -143,8 +143,19 @@ fun IronProgressApp() {
     ForjaTheme {
         val haptics = ForjaTheme.haptics
 
+        com.olarte.ironprogress.ui.rest.RestNotificationBridge(
+            restController = workoutViewModel.restController,
+            isWorkoutScreenOpen = isWorkoutScreenOpen,
+        )
+
         LaunchedEffect(workoutViewModel, workoutState.rest != null) {
             if (workoutState.rest != null) while (true) withFrameNanos { workoutViewModel.refreshRest() }
+        }
+        LaunchedEffect(workoutViewModel.restController) {
+            workoutViewModel.restController.openWorkoutRequests.collect { sessionId ->
+                backStack.removeAll { it is Route.Workout }
+                backStack.add(Route.Workout(sessionId))
+            }
         }
         LaunchedEffect(workoutViewModel) {
             workoutViewModel.effects.collect { effect ->

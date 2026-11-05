@@ -33,7 +33,7 @@ kotlin {
             api(project(":shared:domain"))
             implementation(project(":shared:data"))
             implementation(project(":shared:health"))
-            implementation(project(":shared:ui"))
+            api(project(":shared:ui"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
             implementation(libs.androidx.room3.runtime)

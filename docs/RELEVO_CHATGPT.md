@@ -192,3 +192,9 @@ Lo hizo Claude en paralelo con F1-10 (ChatGPT), en una rama aparte que sale del 
 - Ficha de ejercicio (PANTALLAS 7.5) en `ui/catalog/ExerciseDetailScreen.kt`, ruta `Route.ExerciseDetail`. Se abre tocando una tarjeta del catálogo. Quedan fuera por ahora la figura (llega con las figuras de F1-20), "Historial" (F1-23) y "Añadir a un entreno".
 - Verificado en Linux: 114 pruebas, los dos APK y ktlintCheck. Falta verla en los teléfonos.
 
+## 13b. F1-14 en feat/f1-claude, 5 de noviembre de 2026
+
+- Lo escribió Argon (Gemini) en `build/claude-wt`; no pudo correr Gradle en su entorno. Claude lo compiló, corrigió un smart cast en `RestNotificationHelper.kt` y el estilo, y verificó 119 pruebas, los dos APK y ktlintCheck.
+- Piezas: `androidApp/.../session/RestForegroundService.kt` (servicio `health`), `androidApp/.../notifications/RestNotificationHelper.kt` (estados 1 y 2 de PANTALLAS 5.8), `shared/ui/.../rest/RestController.kt` y `RestNotificationBridge` (primer o segundo plano y permiso), manifiesto con `FOREGROUND_SERVICE_HEALTH` y `HIGH_SAMPLING_RATE_SENSORS`.
+- Falta probar en el S25 Ultra: que la notificación salga en la Now Bar, los botones +15 s, Saltar y Completar serie con la app cerrada, y el sonido al terminar.
+

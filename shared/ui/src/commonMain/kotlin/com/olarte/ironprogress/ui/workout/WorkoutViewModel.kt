@@ -16,6 +16,9 @@ import com.olarte.ironprogress.domain.session.WorkoutSetId
 import com.olarte.ironprogress.domain.session.copyMeasurements
 import com.olarte.ironprogress.domain.session.equivalentPreviousSet
 import com.olarte.ironprogress.domain.session.hasRequiredMeasurements
+import com.olarte.ironprogress.ui.rest.RestController
+import com.olarte.ironprogress.ui.rest.RestPhase
+import com.olarte.ironprogress.ui.rest.RestTimer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -39,12 +42,14 @@ class WorkoutViewModel(
     private val addExercise: AddSessionExercise,
     private val ids: IdGenerator,
     private val clock: Clock,
+    val restController: RestController = RestController(),
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(WorkoutState())
     val state = mutableState.asStateFlow()
     private val effectChannel = Channel<WorkoutEffect>(Channel.BUFFERED)
     val effects = effectChannel.receiveAsFlow()
     private var observation: Job? = null
+    private var restObservation: Job? = null
     private var writer: Job? = null
     private val writes = ArrayDeque<suspend () -> Unit>()
     private val completing = mutableSetOf<WorkoutSetId>()
@@ -61,6 +66,7 @@ class WorkoutViewModel(
         val timer = rest.at(now)
         if (timer.isFinished) {
             mutableState.update { it.copy(rest = null, restExpanded = false, restNowMs = now) }
+            restController.onRestCountdownFinished(now)
             effectChannel.trySend(WorkoutEffect.RestFinished)
         } else {
             mutableState.update { it.copy(restNowMs = now) }
@@ -74,9 +80,40 @@ class WorkoutViewModel(
 
     init {
         observe()
+        observeSharedRest()
     }
 
     fun elapsedSeconds(): Long = state.value.session?.session?.let { (clock.now() - it.startedAt).inWholeSeconds.coerceAtLeast(0) } ?: 0
+
+    private fun observeSharedRest() {
+        restObservation?.cancel()
+        restObservation = viewModelScope.launch {
+            restController.state.collect { restState ->
+                val now = clock.now().toEpochMilliseconds()
+                val activeTimer = if (restState.phase == RestPhase.RESTING) {
+                    restState.timer?.takeIf { !it.at(now).isFinished }
+                } else {
+                    null
+                }
+                val previousTimer = mutableState.value.rest
+                if (activeTimer != previousTimer) {
+                    lastRestFrameMs = now
+                    val isNewRest = activeTimer != null && previousTimer?.setId != activeTimer.setId
+                    mutableState.update { current ->
+                        current.copy(
+                            rest = activeTimer,
+                            restNowMs = now,
+                            restExpanded = when {
+                                activeTimer == null -> false
+                                isNewRest -> true
+                                else -> current.restExpanded
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
 
     private fun observe() {
         observation?.cancel()
@@ -87,14 +124,20 @@ class WorkoutViewModel(
                 }.collectLatest { (detail, catalog) ->
                     val old = state.value
                     val sameSession = old.session?.session?.id == detail?.session?.id
+                    if (detail == null) {
+                        restController.clearRest()
+                    }
                     val previous = if (sameSession) old.previous.toMutableMap() else mutableMapOf()
                     detail?.exercises?.forEach {
                         if (it.exerciseId !in previous) previous[it.exerciseId] = sessions.previousSets(it.exerciseId)
                     }
                     val name = detail?.session?.routineId?.let { routines.findRoutine(it)?.routine?.name }
                     mutableState.update {
-                        val selected = it.selectedExerciseId?.takeIf { id -> detail?.exercises?.any { it.id == id } == true }
+                        val selected = it.selectedExerciseId?.takeIf { id ->
+                            detail?.exercises?.any { ex -> ex.id == id && detail.setsOf(ex.id).any { s -> !s.isCompleted } } == true
+                        }
                             ?: detail?.exercises?.firstOrNull { item -> detail.setsOf(item.id).any { !it.isCompleted } }?.id
+                            ?: it.selectedExerciseId?.takeIf { id -> detail?.exercises?.any { ex -> ex.id == id } == true }
                             ?: detail?.exercises?.firstOrNull()?.id
                         it.copy(
                             loading = false,
@@ -159,10 +202,16 @@ class WorkoutViewModel(
                 refreshRest()
                 val rest = state.value.rest ?: return
                 val now = clock.now().toEpochMilliseconds()
-                mutableState.update { it.copy(rest = rest.adjust(now, intent.seconds)) }
+                val adjusted = rest.adjust(now, intent.seconds)
+                mutableState.update { it.copy(rest = adjusted) }
+                restController.updateTimer(adjusted, now)
                 refreshRest()
             }
-            WorkoutIntent.SkipRest -> mutableState.update { it.copy(rest = null, restExpanded = false) }
+            WorkoutIntent.SkipRest -> {
+                val now = clock.now().toEpochMilliseconds()
+                mutableState.update { it.copy(rest = null, restExpanded = false) }
+                restController.skipFromUi(now)
+            }
             WorkoutIntent.ExpandRest -> {
                 refreshRest()
                 mutableState.update { it.copy(restExpanded = it.rest != null) }
@@ -222,7 +271,10 @@ class WorkoutViewModel(
                 undoJob?.cancel()
                 mutableState.update { it.copy(undoSetId = null) }
                 edit(id) { it.copy(completedAt = null) }
-                if (state.value.rest?.setId == id) mutableState.update { it.copy(rest = null, restExpanded = false) }
+                if (state.value.rest?.setId == id) {
+                    mutableState.update { it.copy(rest = null, restExpanded = false) }
+                    restController.clearIfSet(id)
+                }
             }
             is WorkoutIntent.ChangeType -> edit(intent.id) { it.copy(setType = intent.type) }
             is WorkoutIntent.ChangeNote -> edit(intent.id) { it.copy(notes = intent.note) }
@@ -301,7 +353,12 @@ class WorkoutViewModel(
             val next = detail.exercises.firstOrNull { item -> detail.setsOf(item.id).any { !it.isCompleted && it.id != id } }
             val started = requireNotNull(completed.completedAt).toEpochMilliseconds()
             lastRestFrameMs = started
-            val rest = if (restSeconds > 0) com.olarte.ironprogress.ui.rest.RestTimer(id, started, restSeconds) else null
+            val rest = if (restSeconds > 0) RestTimer(id, started, restSeconds) else null
+            if (rest != null) {
+                restController.startRest(detail.session.id, rest)
+            } else {
+                restController.clearRest()
+            }
             undoExpiresAt = clock.now().toEpochMilliseconds() + 5_000
             mutableState.update {
                 it.copy(
