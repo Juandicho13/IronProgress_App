@@ -7,9 +7,11 @@ import androidx.room3.ForeignKey
 import androidx.room3.Index
 import androidx.room3.PrimaryKey
 import androidx.room3.Relation
+import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.catalog.Equipment
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.catalog.ExerciseLevel
 import com.olarte.ironprogress.domain.catalog.ExerciseMuscle
 import com.olarte.ironprogress.domain.catalog.LocalizedText
 import com.olarte.ironprogress.domain.catalog.MovementPattern
@@ -51,6 +53,13 @@ data class ExerciseEntity(
     val isCustom: Boolean,
     @ColumnInfo(name = "is_archived")
     val isArchived: Boolean,
+    @ColumnInfo(name = "discipline", defaultValue = "STRENGTH")
+    val discipline: String = "STRENGTH",
+    @ColumnInfo(name = "level")
+    val level: String? = null,
+    /** Lista de textos en JSON. */
+    @ColumnInfo(name = "aliases", defaultValue = "[]")
+    val aliases: String = "[]",
 )
 
 /**
@@ -82,6 +91,9 @@ data class ExerciseMuscleEntity(
     val role: String,
     @ColumnInfo(name = "sort_order")
     val sortOrder: Int,
+    /** Porcentaje del trabajo de este músculo (los de un ejercicio suman 100); null hasta F1-06. */
+    @ColumnInfo(name = "work_share")
+    val workShare: Int? = null,
 )
 
 /**
@@ -117,31 +129,34 @@ data class ExerciseWithMusclesRelation(
 /**
  * Convierte la lectura de Room al modelo de dominio [Exercise].
  */
-internal fun ExerciseWithMusclesRelation.toDomain(): Exercise =
-    Exercise(
-        id = ExerciseId(exercise.id),
-        name = LocalizedText(
-            es = exercise.nameEs,
-            en = exercise.nameEn,
-        ),
-        trackingType = TrackingType.valueOf(exercise.trackingType),
-        equipment = Equipment.valueOf(exercise.equipment),
-        pattern = MovementPattern.valueOf(exercise.movementPattern),
-        muscles = muscles
-            .sortedBy { it.sortOrder }
-            .map { muscleEntity ->
-                ExerciseMuscle(
-                    muscle = requireNotNull(Muscle.fromId(muscleEntity.muscleId)) {
-                        "Músculo desconocido en la base: ${muscleEntity.muscleId}"
-                    },
-                    role = MuscleRole.valueOf(muscleEntity.role),
-                )
-            },
-        unilateral = exercise.isUnilateral,
-        preferredUnit = exercise.preferredUnit?.let { WeightUnit.valueOf(it) },
-        isCustom = exercise.isCustom,
-        isArchived = exercise.isArchived,
-    )
+internal fun ExerciseWithMusclesRelation.toDomain(): Exercise = Exercise(
+    id = ExerciseId(exercise.id),
+    name = LocalizedText(
+        es = exercise.nameEs,
+        en = exercise.nameEn,
+    ),
+    trackingType = TrackingType.valueOf(exercise.trackingType),
+    equipment = Equipment.valueOf(exercise.equipment),
+    pattern = MovementPattern.valueOf(exercise.movementPattern),
+    muscles = muscles
+        .sortedBy { it.sortOrder }
+        .map { muscleEntity ->
+            ExerciseMuscle(
+                muscle = requireNotNull(Muscle.fromId(muscleEntity.muscleId)) {
+                    "Músculo desconocido en la base: ${muscleEntity.muscleId}"
+                },
+                role = MuscleRole.valueOf(muscleEntity.role),
+                workShare = muscleEntity.workShare,
+            )
+        },
+    unilateral = exercise.isUnilateral,
+    preferredUnit = exercise.preferredUnit?.let { WeightUnit.valueOf(it) },
+    isCustom = exercise.isCustom,
+    isArchived = exercise.isArchived,
+    discipline = Discipline.valueOf(exercise.discipline),
+    level = exercise.level?.let { ExerciseLevel.valueOf(it) },
+    aliases = RoomJson.decodeFromString(exercise.aliases),
+)
 
 /**
  * Convierte un [Exercise] del dominio en su fila principal y sus filas de músculos.
@@ -158,6 +173,9 @@ internal fun Exercise.toEntities(): Pair<ExerciseEntity, List<ExerciseMuscleEnti
         preferredUnit = preferredUnit?.name,
         isCustom = isCustom,
         isArchived = isArchived,
+        discipline = discipline.name,
+        level = level?.name,
+        aliases = RoomJson.encodeToString(aliases),
     )
     val muscleEntities = muscles.mapIndexed { index, item ->
         ExerciseMuscleEntity(
@@ -165,6 +183,7 @@ internal fun Exercise.toEntities(): Pair<ExerciseEntity, List<ExerciseMuscleEnti
             muscleId = item.muscle.id,
             role = item.role.name,
             sortOrder = index,
+            workShare = item.workShare,
         )
     }
     return exerciseEntity to muscleEntities

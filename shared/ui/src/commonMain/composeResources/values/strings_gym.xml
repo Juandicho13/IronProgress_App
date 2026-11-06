@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rest_skip_short">Skip</string>
+    <string name="workout_other_exercises">Other exercises</string>
+    <string name="workout_sets_progress">%1$d of %2$d sets</string>
+    <string name="workout_timed_start">Start %1$s</string>
+    <string name="workout_timed_stop">Stop</string>
+    <string name="workout_edit_set">Edit set %1$d</string>
+    <string name="workout_set_of">Set %1$d of %2$d</string>
+    <string name="workout_previous_value">Previous: %1$s</string>
+    <plurals name="workout_sets_left">
+        <item quantity="one">%1$d more set</item>
+        <item quantity="other">%1$d more sets</item>
+    </plurals>
+    <string name="workout_mode_title">How you do it</string>
+    <string name="workout_mode_apply">Apply</string>
+    <string name="workout_mode_less">Less time</string>
+    <string name="workout_mode_more">More time</string>
+    <string name="workout_mode_rest">Sets with rest</string>
+    <string name="workout_mode_rest_hint">A countdown starts after each set</string>
+    <string name="workout_mode_no_rest">Sets without rest</string>
+    <string name="workout_mode_no_rest_hint">The next set comes right away</string>
+    <string name="workout_mode_timed">For time</string>
+    <string name="workout_mode_timed_hint">Each set is a countdown</string>
+    <string name="workout_mode_superset">Superset with the next one</string>
+    <string name="workout_mode_superset_hint">Rest comes after both exercises</string>
+    <string name="workout_mode_rest_seconds">Rest</string>
+    <string name="workout_mode_timed_seconds">Each set</string>
+    <string name="workout_mode_summary_rest">Rest %1$s</string>
+    <string name="workout_mode_summary_no_rest">No rest</string>
+    <string name="workout_mode_summary_timed">For time · %1$s</string>
+    <string name="workout_mode_summary_superset">Superset</string>
+    <string name="workout_mode_summary_circuit">Circuit</string>
+    <string name="plan_next_routine">Up next · %1$s</string>
+    <plurals name="summary_working_sets">
+        <item quantity="one">%1$d working set</item>
+        <item quantity="other">%1$d working sets</item>
+    </plurals>
+</resources>

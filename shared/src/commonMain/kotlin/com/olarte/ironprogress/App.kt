@@ -1,26 +1,15 @@
 package com.olarte.ironprogress
 
 import androidx.compose.runtime.Composable
-import com.olarte.ironprogress.di.rememberPlatformModule
-import com.olarte.ironprogress.di.sharedAppModule
-import com.olarte.ironprogress.domain.catalog.ExerciseRepository
 import com.olarte.ironprogress.ui.IronProgressApp
-import org.koin.compose.KoinApplication
-import org.koin.compose.koinInject
+import com.olarte.ironprogress.ui.settings.SettingsGate
 
 /**
- * Punto de entrada compartido de la interfaz.
- * Inicializa Koin con Room 3 e inyecta los repositorios en [IronProgressApp].
+ * Punto de entrada compartido de la interfaz. Koin ya arrancó antes (IronProgressKoin.start) y
+ * Compose lo usa sin envolverlo en KoinApplication ni KoinContext: en Koin 4.1 eso sobra.
  */
 @Composable
 fun App() {
-    val platformModule = rememberPlatformModule()
-    KoinApplication(
-        application = {
-            modules(platformModule, sharedAppModule)
-        },
-    ) {
-        val exerciseRepository: ExerciseRepository = koinInject()
-        IronProgressApp(exerciseRepository = exerciseRepository)
-    }
+    // Idioma, tema y bienvenida (F1-25) envuelven toda la app.
+    SettingsGate { IronProgressApp() }
 }

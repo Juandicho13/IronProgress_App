@@ -7,9 +7,15 @@
 
     <application
         android:allowBackup="true"
-        android:label="IronProgress"
+        android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
+
+        <!-- false: el reloj necesita la app del teléfono instalada para recibir rutinas. -->
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="false" />
+
         <activity
             android:name=".WearMainActivity"
             android:exported="true"

@@ -4,16 +4,38 @@ import androidx.compose.runtime.Composable
 import com.olarte.ironprogress.domain.catalog.Equipment
 import com.olarte.ironprogress.domain.catalog.Muscle
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.equipment_air_bike
 import com.olarte.ironprogress.ui.resources.equipment_band
 import com.olarte.ironprogress.ui.resources.equipment_barbell
+import com.olarte.ironprogress.ui.resources.equipment_bike
 import com.olarte.ironprogress.ui.resources.equipment_bodyweight
 import com.olarte.ironprogress.ui.resources.equipment_cable
 import com.olarte.ironprogress.ui.resources.equipment_dumbbell
 import com.olarte.ironprogress.ui.resources.equipment_ez_bar
+import com.olarte.ironprogress.ui.resources.equipment_foam_roller
+import com.olarte.ironprogress.ui.resources.equipment_hangboard
+import com.olarte.ironprogress.ui.resources.equipment_heavy_bag
+import com.olarte.ironprogress.ui.resources.equipment_jump_rope
 import com.olarte.ironprogress.ui.resources.equipment_kettlebell
 import com.olarte.ironprogress.ui.resources.equipment_machine
+import com.olarte.ironprogress.ui.resources.equipment_mat
+import com.olarte.ironprogress.ui.resources.equipment_medicine_ball
 import com.olarte.ironprogress.ui.resources.equipment_other
+import com.olarte.ironprogress.ui.resources.equipment_parallel_bars
+import com.olarte.ironprogress.ui.resources.equipment_plyo_box
+import com.olarte.ironprogress.ui.resources.equipment_pull_up_bar
+import com.olarte.ironprogress.ui.resources.equipment_reformer
+import com.olarte.ironprogress.ui.resources.equipment_rings
+import com.olarte.ironprogress.ui.resources.equipment_rower
+import com.olarte.ironprogress.ui.resources.equipment_sandbag
+import com.olarte.ironprogress.ui.resources.equipment_ski_erg
+import com.olarte.ironprogress.ui.resources.equipment_sled
 import com.olarte.ironprogress.ui.resources.equipment_smith_machine
+import com.olarte.ironprogress.ui.resources.equipment_suspension_trainer
+import com.olarte.ironprogress.ui.resources.equipment_trap_bar
+import com.olarte.ironprogress.ui.resources.equipment_treadmill
+import com.olarte.ironprogress.ui.resources.equipment_yoga_block
+import com.olarte.ironprogress.ui.resources.equipment_yoga_strap
 import com.olarte.ironprogress.ui.resources.muscle_abs
 import com.olarte.ironprogress.ui.resources.muscle_biceps
 import com.olarte.ironprogress.ui.resources.muscle_calves
@@ -59,6 +81,28 @@ fun Equipment.labelRes(): StringResource = when (this) {
     Equipment.BAND -> Res.string.equipment_band
     Equipment.BODYWEIGHT -> Res.string.equipment_bodyweight
     Equipment.OTHER -> Res.string.equipment_other
+    Equipment.TRAP_BAR -> Res.string.equipment_trap_bar
+    Equipment.MEDICINE_BALL -> Res.string.equipment_medicine_ball
+    Equipment.SANDBAG -> Res.string.equipment_sandbag
+    Equipment.SLED -> Res.string.equipment_sled
+    Equipment.PLYO_BOX -> Res.string.equipment_plyo_box
+    Equipment.JUMP_ROPE -> Res.string.equipment_jump_rope
+    Equipment.RINGS -> Res.string.equipment_rings
+    Equipment.PULL_UP_BAR -> Res.string.equipment_pull_up_bar
+    Equipment.PARALLEL_BARS -> Res.string.equipment_parallel_bars
+    Equipment.SUSPENSION_TRAINER -> Res.string.equipment_suspension_trainer
+    Equipment.FOAM_ROLLER -> Res.string.equipment_foam_roller
+    Equipment.MAT -> Res.string.equipment_mat
+    Equipment.YOGA_BLOCK -> Res.string.equipment_yoga_block
+    Equipment.YOGA_STRAP -> Res.string.equipment_yoga_strap
+    Equipment.REFORMER -> Res.string.equipment_reformer
+    Equipment.ROWER -> Res.string.equipment_rower
+    Equipment.BIKE -> Res.string.equipment_bike
+    Equipment.TREADMILL -> Res.string.equipment_treadmill
+    Equipment.SKI_ERG -> Res.string.equipment_ski_erg
+    Equipment.AIR_BIKE -> Res.string.equipment_air_bike
+    Equipment.HEAVY_BAG -> Res.string.equipment_heavy_bag
+    Equipment.HANGBOARD -> Res.string.equipment_hangboard
 }
 
 @Composable

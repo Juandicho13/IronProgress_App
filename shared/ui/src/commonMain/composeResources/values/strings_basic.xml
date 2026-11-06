@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_section_training">Training</string>
+    <string name="settings_pro">Pro mode</string>
+    <string name="settings_pro_hint">Shows RIR and RPE to log how hard each set felt. Off, you only log weight and reps.</string>
+    <string name="workout_exercise_of">Exercise %1$d of %2$d</string>
+    <string name="workout_exercises">Exercises</string>
+    <string name="workout_current">Now</string>
+    <string name="workout_cancel">Cancel workout</string>
+    <string name="workout_cancel_title">Cancel this workout?</string>
+    <string name="workout_cancel_body">Nothing will be saved.</string>
+    <string name="workout_cancel_confirm">Cancel workout</string>
+    <string name="workout_cancel_keep">Keep training</string>
+    <string name="workout_menu">Workout options</string>
+    <string name="workout_effort_info">What are RIR and RPE</string>
+    <string name="workout_effort_title">How hard was it</string>
+    <string name="workout_rir_explain">RIR: reps in reserve. How many more reps you could have done. 2 means you had 2 left.</string>
+    <string name="workout_rpe_explain">RPE: effort from 1 to 10. 10 is your limit, 8 means you could do about 2 more.</string>
+    <string name="workout_effort_example">Example: 60 kg for 8 reps and you could do 2 more is RIR 2, RPE 8.</string>
+    <string name="workout_effort_ok">Got it</string>
+    <string name="workout_done_editing">Done</string>
+    <string name="rest_edit_next">Tap to change the next set</string>
+    <string name="rest_reps_label">reps</string>
+</resources>

@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,21 +41,36 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import com.olarte.ironprogress.domain.catalog.Discipline
+import com.olarte.ironprogress.domain.catalog.Equipment
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.Muscle
+import com.olarte.ironprogress.ui.components.EditorAction
+import com.olarte.ironprogress.ui.components.EditorChoice
+import com.olarte.ironprogress.ui.components.ForjaButtonStyle
+import com.olarte.ironprogress.ui.components.ForjaHeaderTop
+import com.olarte.ironprogress.ui.components.ForjaIconButton
 import com.olarte.ironprogress.ui.components.ForjaIcons
+import com.olarte.ironprogress.ui.components.ForjaLargeTitle
 import com.olarte.ironprogress.ui.label
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.catalog_archive
 import com.olarte.ironprogress.ui.resources.catalog_clear_search
 import com.olarte.ironprogress.ui.resources.catalog_empty_body
 import com.olarte.ironprogress.ui.resources.catalog_empty_title
 import com.olarte.ironprogress.ui.resources.catalog_exercise_count
 import com.olarte.ironprogress.ui.resources.catalog_filter_all
+import com.olarte.ironprogress.ui.resources.catalog_filter_archived
+import com.olarte.ironprogress.ui.resources.catalog_restore
 import com.olarte.ironprogress.ui.resources.catalog_search_placeholder
 import com.olarte.ironprogress.ui.resources.catalog_secondary_prefix
 import com.olarte.ironprogress.ui.resources.catalog_title
+import com.olarte.ironprogress.ui.resources.editor_all
+import com.olarte.ironprogress.ui.resources.editor_create
+import com.olarte.ironprogress.ui.resources.editor_discipline
+import com.olarte.ironprogress.ui.resources.editor_edit
+import com.olarte.ironprogress.ui.resources.editor_equipment
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
-import com.olarte.ironprogress.ui.theme.ForjaMotion
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
@@ -69,11 +84,14 @@ fun CatalogScreen(
     onIntent: (CatalogIntent) -> Unit,
     listState: LazyListState = rememberLazyListState(),
     modifier: Modifier = Modifier,
+    onEdit: (String?) -> Unit = {},
+    onOpen: (String) -> Unit = {},
 ) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val searchFieldState = rememberTextFieldState(initialText = state.searchText)
     val searchInteraction = remember { MutableInteractionSource() }
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val isSearchFocused by searchInteraction.collectIsFocusedAsState()
 
     LaunchedEffect(searchFieldState, onIntent) {
@@ -88,18 +106,30 @@ fun CatalogScreen(
             .fillMaxSize()
             .background(colors.background)
             .statusBarsPadding()
-            .padding(horizontal = ForjaSpacing.esp5),
+            .padding(horizontal = ForjaSpacing.esp5)
+            .padding(top = ForjaHeaderTop),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
     ) {
-        Spacer(modifier = Modifier.height(ForjaSpacing.esp2))
-
-        // Un solo titulo grande por pantalla (titulo-1)
-        Text(
-            text = stringResource(Res.string.catalog_title),
-            style = typography.title1,
-            color = colors.text1,
-        )
-
+        // Un solo titulo grande por pantalla (titulo-1), con + para crear un ejercicio propio.
+        ForjaLargeTitle(stringResource(Res.string.catalog_title)) {
+            ForjaIconButton(ForjaIcons.Add, stringResource(Res.string.editor_create)) { onEdit(null) }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
+            EditorChoice(
+                stringResource(Res.string.editor_equipment),
+                state.equipment,
+                listOf(null) + Equipment.entries,
+                { it?.label() ?: stringResource(Res.string.editor_all) },
+                compact = true,
+            ) { onIntent(CatalogIntent.EquipmentSelected(it)) }
+            EditorChoice(
+                stringResource(Res.string.editor_discipline),
+                state.discipline,
+                listOf(null) + Discipline.entries,
+                { it?.editorLabel() ?: stringResource(Res.string.editor_all) },
+                compact = true,
+            ) { onIntent(CatalogIntent.DisciplineSelected(it)) }
+        }
         // Campo de busqueda Forja en superficie-3 con radio-m y foco en brasa
         Box(
             modifier = Modifier
@@ -123,7 +153,7 @@ fun CatalogScreen(
                 horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
             ) {
                 Icon(
-                    imageVector = ForjaIcons.Search,
+                    painter = ForjaIcons.Search,
                     contentDescription = null,
                     tint = if (isSearchFocused) colors.emberInk else colors.text2,
                     modifier = Modifier.size(ForjaMeasures.inlineIconSize),
@@ -143,6 +173,11 @@ fun CatalogScreen(
                         textStyle = typography.body.copy(color = colors.text1),
                         cursorBrush = SolidColor(colors.ember),
                         interactionSource = searchInteraction,
+                        lineLimits = androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            imeAction = androidx.compose.ui.text.input.ImeAction.Search,
+                        ),
+                        onKeyboardAction = { focusManager.clearFocus() },
                     )
                 }
 
@@ -170,6 +205,13 @@ fun CatalogScreen(
                     label = stringResource(Res.string.catalog_filter_all),
                     selected = state.selectedMuscle == null,
                     onClick = { onIntent(CatalogIntent.MuscleSelected(null)) },
+                )
+            }
+            item(key = "archived") {
+                ForjaFilterChip(
+                    label = stringResource(Res.string.catalog_filter_archived),
+                    selected = state.showArchived,
+                    onClick = { onIntent(CatalogIntent.ArchivedFilterToggled) },
                 )
             }
             items(
@@ -235,6 +277,11 @@ fun CatalogScreen(
                     ForjaExerciseCard(
                         exercise = exercise,
                         languageCode = languageCode,
+                        onEdit = { onEdit(exercise.id.value) },
+                        onOpen = { onOpen(exercise.id.value) },
+                        onArchiveToggle = {
+                            onIntent(CatalogIntent.ArchiveToggled(exercise.id, !exercise.isArchived))
+                        },
                     )
                 }
             }
@@ -243,18 +290,15 @@ fun CatalogScreen(
 }
 
 @Composable
-private fun ForjaFilterChip(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
+private fun ForjaFilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = ForjaMotion.spatialFast(),
+        animationSpec = motion.spatialFast(),
         label = "ChipScale",
     )
 
@@ -293,6 +337,9 @@ private fun ForjaFilterChip(
 private fun ForjaExerciseCard(
     exercise: Exercise,
     languageCode: String,
+    onArchiveToggle: () -> Unit,
+    onEdit: () -> Unit,
+    onOpen: () -> Unit = {},
 ) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
@@ -305,14 +352,31 @@ private fun ForjaExerciseCard(
             .fillMaxWidth()
             .clip(ForjaRadius.shapeL)
             .background(colors.surface1)
+            .clickable(onClick = onOpen)
             .padding(ForjaSpacing.esp4),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1),
     ) {
-        Text(
-            text = exercise.name.resolve(languageCode),
-            style = typography.title3,
-            color = colors.text1,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = exercise.name.resolve(languageCode),
+                style = typography.title3,
+                color = colors.text1,
+                modifier = Modifier.weight(1f),
+            )
+            // Archivar oculta el ejercicio de la búsqueda; Restaurar lo devuelve (F0-12).
+            Text(
+                text = stringResource(
+                    if (exercise.isArchived) Res.string.catalog_restore else Res.string.catalog_archive,
+                ),
+                style = typography.label,
+                color = if (exercise.isArchived) colors.emberInk else colors.text2,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable(onClick = onArchiveToggle)
+                    .defaultMinSize(minHeight = ForjaMeasures.minTouch)
+                    .padding(horizontal = ForjaSpacing.esp2, vertical = ForjaSpacing.esp3),
+            )
+        }
         Text(
             text = if (primaryLabels.isNotEmpty()) {
                 "$primaryLabels · $equipmentLabel"
@@ -322,6 +386,7 @@ private fun ForjaExerciseCard(
             style = typography.body2,
             color = colors.text2,
         )
+        if (exercise.isCustom) EditorAction(stringResource(Res.string.editor_edit), style = ForjaButtonStyle.TEXT, onClick = onEdit)
         if (secondaryLabels.isNotEmpty()) {
             Text(
                 text = stringResource(Res.string.catalog_secondary_prefix, secondaryLabels),

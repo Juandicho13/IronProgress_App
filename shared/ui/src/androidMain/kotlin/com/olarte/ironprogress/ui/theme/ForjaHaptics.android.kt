@@ -25,10 +25,7 @@ actual fun rememberForjaHaptics(enabled: Boolean): ForjaHaptics {
     }
 }
 
-private class AndroidForjaHaptics(
-    private val view: View,
-    private val context: Context,
-) : ForjaHaptics {
+private class AndroidForjaHaptics(private val view: View, private val context: Context) : ForjaHaptics {
 
     private val vibrator: Vibrator? by lazy {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

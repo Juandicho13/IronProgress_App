@@ -6,15 +6,25 @@ import com.olarte.ironprogress.domain.catalog.ExerciseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-class SeedExerciseRepository(
-    initialExercises: List<Exercise> = SeedCatalog.exercises,
-) : ExerciseRepository {
+class SeedExerciseRepository(initialExercises: List<Exercise> = SeedCatalog.exercises) : ExerciseRepository {
 
     private val exercises = MutableStateFlow(initialExercises)
 
     override fun observeExercises(): Flow<List<Exercise>> = exercises.asStateFlow()
 
-    override suspend fun findExercise(id: ExerciseId): Exercise? =
-        exercises.value.firstOrNull { it.id == id }
+    override suspend fun findExercise(id: ExerciseId): Exercise? = exercises.value.firstOrNull { it.id == id }
+
+    override suspend fun saveCustomExercise(exercise: Exercise) {
+        require(exercise.isCustom)
+        exercises.update { list ->
+            require(list.none { it.id == exercise.id && !it.isCustom })
+            list.filterNot { it.id == exercise.id } + exercise
+        }
+    }
+
+    override suspend fun setArchived(id: ExerciseId, archived: Boolean) {
+        exercises.update { list -> list.map { if (it.id == id) it.copy(isArchived = archived) else it } }
+    }
 }

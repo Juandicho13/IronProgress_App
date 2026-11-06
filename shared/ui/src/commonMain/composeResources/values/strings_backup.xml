@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copia de seguridad y exportación (F1-24). -->
+<resources>
+    <string name="backup_section">Backup</string>
+    <string name="backup_hint">Save everything to a file to move it to another phone. Restoring replaces what is on this one.</string>
+    <string name="backup_create">Save backup</string>
+    <string name="backup_restore">Restore backup</string>
+    <string name="backup_csv">Export sets to CSV</string>
+    <string name="backup_confirm_title">Restore this backup</string>
+    <string name="backup_confirm_body">Your routines, sessions, sets and own exercises are replaced by the ones in the backup. This cannot be undone.</string>
+    <string name="backup_restore_confirm">Restore</string>
+    <string name="backup_cancel">Cancel</string>
+    <string name="backup_msg_saved">File saved.</string>
+    <string name="backup_msg_save_failed">The file could not be saved. Try again.</string>
+    <string name="backup_msg_restored">Backup restored.</string>
+    <string name="backup_msg_not_backup">That file is not an IronProgress backup or it is damaged. Nothing changed.</string>
+    <string name="backup_msg_too_new">The backup comes from a newer version of the app. Update it and try again.</string>
+    <string name="backup_msg_read_failed">The file could not be read.</string>
+</resources>

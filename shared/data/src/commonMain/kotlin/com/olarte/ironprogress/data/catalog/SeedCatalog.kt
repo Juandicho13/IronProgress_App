@@ -1,5 +1,6 @@
 package com.olarte.ironprogress.data.catalog
 
+import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.catalog.Equipment
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
@@ -12,7 +13,7 @@ import com.olarte.ironprogress.domain.catalog.TrackingType
 
 internal object SeedCatalog {
 
-    const val VERSION: Int = 1
+    const val VERSION: Int = 2
 
     val exercises: List<Exercise> = listOf(
         // PECHO (8)
@@ -737,14 +738,18 @@ internal object SeedCatalog {
         primary: List<Muscle>,
         secondary: List<Muscle> = emptyList(),
         unilateral: Boolean = false,
-    ): Exercise = Exercise(
-        id = ExerciseId(id),
-        name = LocalizedText(es = es, en = en),
-        trackingType = trackingType,
-        equipment = equipment,
-        pattern = pattern,
-        muscles = primary.map { ExerciseMuscle(it, MuscleRole.PRIMARY) } +
-            secondary.map { ExerciseMuscle(it, MuscleRole.SECONDARY) },
-        unilateral = unilateral,
-    )
+    ): Exercise {
+        val shares = SeedCatalogFacts.workShares[id].orEmpty()
+        return Exercise(
+            id = ExerciseId(id),
+            name = LocalizedText(es = es, en = en),
+            trackingType = trackingType,
+            equipment = equipment,
+            pattern = pattern,
+            muscles = primary.map { ExerciseMuscle(it, MuscleRole.PRIMARY, shares[it]) } +
+                secondary.map { ExerciseMuscle(it, MuscleRole.SECONDARY, shares[it]) },
+            unilateral = unilateral,
+            discipline = if (pattern == MovementPattern.CARDIO) Discipline.CARDIO else Discipline.STRENGTH,
+        )
+    }
 }

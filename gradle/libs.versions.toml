@@ -2,7 +2,7 @@
 koin = "4.1.0"
 agp = "9.1.1"
 android-compileSdk = "37"
-android-minSdk = "24"
+android-minSdk = "28"
 android-targetSdk = "37"
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.8.0"
@@ -20,6 +20,18 @@ material3 = "1.12.0-alpha03"
 room3 = "3.0.3"
 # Room 3.0.3 trae SQLite 2.7.1 y Gradle alinea todo androidx.sqlite a esa versión.
 sqlite = "2.7.1"
+navigation3 = "1.1.2"
+haze = "2.0.1"
+ktlint-gradle = "14.2.0"
+kover = "0.9.9"
+wear-compose = "1.7.1"
+datastore = "1.2.0"
+turbine = "1.2.1"
+robolectric = "4.16"
+robolectric-androidAll = "15-robolectric-13954326-i7"
+androidx-compose-uiTest = "1.10.0"
+wear-minSdk = "30"
+wear-targetSdk = "35"
 
 [libraries]
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -37,6 +49,7 @@ androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", vers
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
+androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
@@ -49,6 +62,21 @@ androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref 
 androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room3" }
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 androidx-sqlite-bundled-jvm = { module = "androidx.sqlite:sqlite-bundled-jvm", version.ref = "sqlite" }
+androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+androidx-lifecycle-viewmodelNavigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+haze-core = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
+haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
+androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
+wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wear-compose" }
+wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
+
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+robolectric-androidAll = { module = "org.robolectric:android-all-instrumented", version.ref = "robolectric-androidAll" }
+compose-uiTest = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "composeMultiplatform" }
+androidx-compose-uiTestJunit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-compose-uiTest" }
+androidx-compose-uiTestManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-compose-uiTest" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -58,3 +86,6 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room3 = { id = "androidx.room3", version.ref = "room3" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

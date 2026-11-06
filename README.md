@@ -1,31 +1,57 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# IronProgress
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+App de entrenamiento para Android e iOS, con apps para Galaxy Watch (Wear OS) y, más adelante, Apple Watch. Te dice qué hacer hoy y por qué, registra una serie en un toque, se adapta a cómo llegas y funciona sin conexión. Nombre provisional: el definitivo se decide antes de publicar.
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
+Hecha con Kotlin Multiplatform y Compose Multiplatform, con el sistema de diseño Forja.
 
-### Running the apps
+## Documentos
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+| Archivo | Qué tiene |
+| --- | --- |
+| `HANDOFF.md` | Manual del proyecto: reglas, estado, arquitectura, motores, Forja, tickets y comandos |
+| `docs/PLAN_V3.md` | El plan v3 completo, por etapas |
+| `docs/PANTALLAS.md` | Las pantallas diseñadas, descritas para construirlas |
+| `docs/RELEVO_CHATGPT.md` | El estado más reciente y el siguiente paso |
 
-- Android app: `./gradlew :androidApp:assembleDebug`
-- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+## Módulos
 
-### Running tests
+| Módulo | Qué es |
+| --- | --- |
+| `androidApp` | App del teléfono Android |
+| `iosApp` | Contenedor de Xcode para el iPhone |
+| `wearApp` | App del Galaxy Watch (Wear Compose) |
+| `shared` | Paraguas: inyección con Koin y framework iOS `Shared` |
+| `shared:domain` | Kotlin puro: modelos, casos de uso y motores |
+| `shared:data` | Room 3, repositorios y catálogo semilla |
+| `shared:health` | Health Connect y HealthKit (por venir) |
+| `shared:ui` | Pantallas Compose, Forja, navegación y textos en español e inglés |
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+## Requisitos
 
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
+- JDK 21, Android Studio con el plugin Kotlin Multiplatform y Xcode para iOS.
+- `local.properties` con `sdk.dir` apuntando al SDK de Android.
 
----
+## Correr
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+```
+./gradlew :androidApp:installDebug
+./gradlew :wearApp:installDebug
+```
+
+iPhone: abrir `iosApp/iosApp.xcodeproj` en Xcode, elegir el Team en Signing & Capabilities y darle Run. Pasos completos de los tres equipos en la sección 14 de `HANDOFF.md`.
+
+## Probar
+
+```
+./gradlew ktlintCheck
+./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest :shared:ui:testAndroidHostTest :shared:testAndroidHostTest
+./gradlew :androidApp:assembleDebug :wearApp:assembleDebug
+./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
+```
+
+El CI de GitHub corre lo mismo en cada push a `main`, `feat/**` y `fix/**`, y en cada PR.
+
+## Licencias de terceros
+
+- Fuente Archivo: SIL Open Font License 1.1 (`licenses/Archivo-OFL.txt`).
+- Íconos Material Symbols: Apache 2.0 (`licenses/MaterialSymbols-LICENSE.txt`).

@@ -7,6 +7,8 @@ import com.olarte.ironprogress.domain.catalog.Equipment
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.ExerciseMuscle
+import com.olarte.ironprogress.domain.catalog.Joint
+import com.olarte.ironprogress.domain.catalog.JointImpact
 import com.olarte.ironprogress.domain.catalog.LocalizedText
 import com.olarte.ironprogress.domain.catalog.MovementPattern
 import com.olarte.ironprogress.domain.catalog.Muscle
@@ -43,6 +45,39 @@ class CatalogDatabaseTest {
     @AfterTest
     fun closeDatabase() {
         database.close()
+    }
+
+    @Test
+    fun customExerciseSurvivesEditingArchivingAndReseeding() = runTest {
+        val repository = RoomExerciseRepository(dao)
+        val save = com.olarte.ironprogress.domain.catalog.SaveCustomExercise(
+            repository,
+            com.olarte.ironprogress.domain.common.UuidV7IdGenerator,
+        )
+        val custom = save(SeedCatalog.exercises.first().copy(name = LocalizedText("Mi ejercicio", "My exercise")))
+        assertTrue(custom.isCustom)
+        assertEquals('7', custom.id.value[14])
+        repository.setArchived(custom.id, true)
+        val edited = save(custom.copy(muscles = listOf(ExerciseMuscle(Muscle.BICEPS, MuscleRole.PRIMARY))), custom.id)
+        assertTrue(edited.isArchived)
+        assertEquals(edited, repository.findExercise(custom.id))
+        repository.setArchived(custom.id, false)
+        for (language in listOf("es", "en")) {
+            for (text in listOf("mi ejercicio", "my exercise")) {
+                assertEquals(
+                    custom.id,
+                    com.olarte.ironprogress.domain.catalog.ExerciseSearch.filter(
+                        repository.observeExercises().first(),
+                        com.olarte.ironprogress.domain.catalog.ExerciseQuery(text = text),
+                        language,
+                    ).single().id,
+                )
+            }
+        }
+        dao.upsertMetadata(CatalogMetadataEntity(CatalogMetadataEntity.KEY_SEED_CATALOG_VERSION, intValue = 0))
+        RoomExerciseRepository(dao).ensureSeeded()
+        assertEquals(edited.copy(isArchived = false), repository.findExercise(custom.id))
+        kotlin.test.assertFailsWith<IllegalArgumentException> { save(custom, SeedCatalog.exercises.first().id) }
     }
 
     @Test
@@ -110,5 +145,51 @@ class CatalogDatabaseTest {
 
         assertEquals(SeedCatalog.exercises.size + 1, exercises.size)
         assertEquals(custom, repository.findExercise(custom.id))
+    }
+
+    @Test
+    fun archivingPersistsInTheDatabase() = runTest {
+        val repository = RoomExerciseRepository(dao)
+        val bench = SeedCatalog.exercises.first()
+
+        repository.setArchived(bench.id, archived = true)
+
+        assertTrue(assertNotNull(RoomExerciseRepository(dao).findExercise(bench.id)).isArchived)
+    }
+
+    @Test
+    fun reseedingWithAHigherVersionKeepsWhatThePersonArchived() = runTest {
+        val repository = RoomExerciseRepository(dao)
+        val bench = SeedCatalog.exercises.first()
+        repository.setArchived(bench.id, archived = true)
+
+        val pairs = SeedCatalog.exercises.map { it.toEntities() }
+        dao.replaceSeedCatalog(
+            exercises = pairs.map { it.first },
+            muscles = pairs.flatMap { it.second },
+            version = SeedCatalog.VERSION + 1,
+        )
+
+        assertTrue(assertNotNull(dao.findExerciseWithMuscles(bench.id.value)).exercise.isArchived)
+        assertEquals(
+            SeedCatalog.VERSION + 1,
+            dao.getMetadataInt(CatalogMetadataEntity.KEY_SEED_CATALOG_VERSION),
+        )
+    }
+
+    @Test
+    fun seedingVersion2StoresDemandLadderSourceAndShares() = runTest {
+        val repository = RoomExerciseRepository(dao)
+
+        val facts = repository.findFacts(ExerciseId("pull-up"))
+        val pullUp = repository.findExercise(ExerciseId("pull-up"))
+
+        assertNotNull(facts)
+        assertEquals(4, facts.demand?.overall)
+        assertEquals(JointImpact.HIGH, facts.demand?.impactOn(Joint.SHOULDER))
+        assertEquals(ExerciseId("assisted-pull-up"), facts.progression?.easier)
+        assertEquals("IronProgress", facts.source?.source)
+        assertEquals(100, pullUp?.muscles?.sumOf { it.workShare ?: 0 })
+        assertEquals(null, repository.findFacts(ExerciseId("no-existe")))
     }
 }

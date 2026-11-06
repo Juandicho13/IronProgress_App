@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_audio">Audio durante el entreno</string>
+    <string name="audio_keep">Mantener volumen</string>
+    <string name="audio_keep_hint">La música sigue igual mientras la app habla.</string>
+    <string name="audio_duck">Bajar volumen</string>
+    <string name="audio_duck_hint">La música baja mientras la app habla y vuelve sola.</string>
+    <string name="audio_pause">Pausar música</string>
+    <string name="audio_pause_hint">La música se pausa mientras la app habla y sigue sola.</string>
+    <string name="audio_none">Sin voz</string>
+    <string name="audio_none_hint">La app no habla: solo vibra y muestra los avisos en pantalla.</string>
+    <string name="guided_summary_title">Sesión terminada</string>
+    <string name="guided_summary_minutes">Tiempo</string>
+    <string name="guided_summary_cycles">Ciclos</string>
+    <string name="guided_summary_pattern">Patrón</string>
+    <string name="guided_summary_rounds">Rondas</string>
+    <string name="guided_summary_poses">Posturas</string>
+    <string name="guided_summary_done">Listo</string>
+</resources>

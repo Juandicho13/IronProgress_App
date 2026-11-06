@@ -2,10 +2,15 @@ package com.olarte.ironprogress.data.catalog
 
 import com.olarte.ironprogress.data.local.CatalogDao
 import com.olarte.ironprogress.data.local.CatalogMetadataEntity
+import com.olarte.ironprogress.data.local.ExerciseDemandEntity
 import com.olarte.ironprogress.data.local.ExerciseEntity
 import com.olarte.ironprogress.data.local.ExerciseMuscleEntity
+import com.olarte.ironprogress.data.local.ExerciseProgressionEntity
+import com.olarte.ironprogress.data.local.ExerciseSourceEntity
 import com.olarte.ironprogress.data.local.ExerciseWithMusclesRelation
 import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.catalog.ExerciseQuery
+import com.olarte.ironprogress.domain.catalog.ExerciseSearch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -14,6 +19,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Verifica la lógica de [RoomExerciseRepository] con un DAO falso en memoria, sin SQLite.
@@ -42,6 +48,21 @@ class RoomExerciseRepositoryTest {
         assertEquals(firstSeed.unilateral, loaded.unilateral)
         assertNull(loaded.preferredUnit)
     }
+
+    @Test
+    fun archivingHidesTheExerciseFromSearchAndRestoringBringsItBack() = runTest {
+        val repository = RoomExerciseRepository(catalogDao = FakeCatalogDao())
+        val bench = SeedCatalog.exercises.first()
+
+        repository.setArchived(bench.id, archived = true)
+        val visible = ExerciseSearch.filter(repository.observeExercises().first(), ExerciseQuery(), "es")
+        assertTrue(visible.none { it.id == bench.id })
+        assertEquals(true, repository.findExercise(bench.id)?.isArchived)
+
+        repository.setArchived(bench.id, archived = false)
+        val restored = ExerciseSearch.filter(repository.observeExercises().first(), ExerciseQuery(), "es")
+        assertTrue(restored.any { it.id == bench.id })
+    }
 }
 
 private class FakeCatalogDao : CatalogDao {
@@ -50,8 +71,7 @@ private class FakeCatalogDao : CatalogDao {
     private val metadataByKey = mutableMapOf<String, Int>()
     private val relationsFlow = MutableStateFlow<List<ExerciseWithMusclesRelation>>(emptyList())
 
-    override fun observeAllExercisesWithMuscles(): Flow<List<ExerciseWithMusclesRelation>> =
-        relationsFlow
+    override fun observeAllExercisesWithMuscles(): Flow<List<ExerciseWithMusclesRelation>> = relationsFlow
 
     override suspend fun findExerciseWithMuscles(exerciseId: String): ExerciseWithMusclesRelation? {
         val entity = exercisesById[exerciseId] ?: return null
@@ -77,6 +97,24 @@ private class FakeCatalogDao : CatalogDao {
         emitCurrentRelations()
     }
 
+    override suspend fun setArchived(exerciseId: String, archived: Boolean) {
+        val entity = exercisesById[exerciseId] ?: return
+        exercisesById[exerciseId] = entity.copy(isArchived = archived)
+        emitCurrentRelations()
+    }
+
+    override suspend fun findArchivedIds(exerciseIds: List<String>): List<String> =
+        exerciseIds.filter { exercisesById[it]?.isArchived == true }
+
+    override suspend fun setPreferredUnit(exerciseId: String, unit: String?) {
+        val entity = exercisesById[exerciseId] ?: return
+        exercisesById[exerciseId] = entity.copy(preferredUnit = unit)
+        emitCurrentRelations()
+    }
+
+    override suspend fun findWithPreferredUnit(exerciseIds: List<String>): List<ExerciseEntity> =
+        exerciseIds.mapNotNull { exercisesById[it] }.filter { it.preferredUnit != null }
+
     override suspend fun deleteMusclesForExercises(exerciseIds: List<String>) {
         exerciseIds.forEach { musclesByExerciseId.remove(it) }
         emitCurrentRelations()
@@ -90,6 +128,28 @@ private class FakeCatalogDao : CatalogDao {
         }
         emitCurrentRelations()
     }
+
+    private val demands = mutableMapOf<String, ExerciseDemandEntity>()
+    private val sources = mutableMapOf<String, ExerciseSourceEntity>()
+    private val progressions = mutableMapOf<String, ExerciseProgressionEntity>()
+
+    override suspend fun upsertDemands(demands: List<ExerciseDemandEntity>) {
+        demands.forEach { this.demands[it.exerciseId] = it }
+    }
+
+    override suspend fun upsertSources(sources: List<ExerciseSourceEntity>) {
+        sources.forEach { this.sources[it.exerciseId] = it }
+    }
+
+    override suspend fun upsertProgressions(progressions: List<ExerciseProgressionEntity>) {
+        progressions.forEach { this.progressions[it.exerciseId] = it }
+    }
+
+    override suspend fun findDemand(exerciseId: String) = demands[exerciseId]
+
+    override suspend fun findSource(exerciseId: String) = sources[exerciseId]
+
+    override suspend fun findProgression(exerciseId: String) = progressions[exerciseId]
 
     private fun emitCurrentRelations() {
         relationsFlow.value = exercisesById.values

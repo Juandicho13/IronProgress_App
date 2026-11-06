@@ -11,7 +11,7 @@
 2. Progreso, plan y ajuste del día (Progreso, Ejercicio, Plan, Ajuste del día)
 3. Tema claro (Hoy, Descanso y Progreso en claro)
 4. Galaxy Watch4 (descanso y listo)
-5. Tiempo, intervalos y adaptación (descanso a pantalla completa, intervalos, adaptación del día y Apple Watch)
+5. Tiempo, intervalos y adaptación (descanso a pantalla completa, intervalos, adaptación del día, Apple Watch y descanso fuera de la app en Android)
 6. Ajuste durante el entreno (teléfono y Apple Watch)
 7. Disciplinas y ficha de ejercicio (disciplinas, yoga, respiración, AMRAP y ficha)
 8. Presupuesto de toques
@@ -39,7 +39,9 @@
 | Íconos | Material Symbols Rounded, peso 400, 24 dp (20 en línea con texto), relleno solo en el elemento elegido. Usados: `local_fire_department`, `calendar_month`, `monitoring`, `search`, `account_circle`, `keyboard_arrow_down`, `chevron_left`, `chevron_right`, `arrow_back`, `arrow_forward`, `north_east`, `more_horiz`, `play_arrow`, `pause`, `skip_next`, `check`, `close`, `add`, `remove`, `timer`, `replay`, `edit`, `info`, `ios_share`, `trophy`, `bedtime`, `ecg_heart`, `monitor_heart`, `watch`, `volume_up`, `volume_off`, `trending_down`, `trending_up`, `fitness_center`, `sports_gymnastics`, `self_improvement`, `accessibility_new`, `spa`, `air`, `directions_run`, `sports_mma`, `touch_double` |
 | Colores con significado | `ember` (brasa) es esfuerzo y acción; `ice` (hielo) es descanso, recuperación y calma; `gold` (oro) son récords y avisos de recuperación baja; `danger` solo errores. Un color nunca va solo: siempre con texto o ícono |
 | Movimiento | Resortes de Forja (`ForjaTheme.motion`). Con Reducir movimiento, todo pasa a fundidos cortos. Toda animación se puede interrumpir |
-| Accesibilidad | Áreas táctiles de 48 o más, `contentDescription` en cada ícono que actúa, contraste AA, texto escalable. Los cronómetros no se leen en voz alta cada segundo: se anuncian los cambios de fase |
+| Accesibilidad | Áreas táctiles de 48 o más, `contentDescription` en cada ícono que actúa, contraste AA, texto escalable. Los cronómetros no se leen en voz alta cada segundo: se anuncian los cambios de fase. **Alcance implementado en F1-27:** las etiquetas de fase son región viva educada (`Modifier.timerPhase()` en `ui/a11y`): Trabajo o Descanso en Intervalos, el título del descanso, el minuto del EMOM, la postura del flujo y Inhala o Exhala en Respiración. Las cifras que cambian cada segundo quedan fuera de toda región viva: se leen al tocarlas. Los títulos de pantalla y de las barras superiores están marcados como encabezado, y los botones de solo ícono llevan descripción. Texto grande: los diseños usan alturas mínimas y no fijas, pero falta revisarlos en el teléfono con el tamaño de letra al máximo |
+| Piezas de formulario | Desde el pulido del 5 de noviembre: botón principal en brasa uno por pantalla; secundarios en `surface3`, tonales en `emberVeil` con texto `emberInk` y de texto en `emberInk`; filas de lista de 56 con chevron para navegar; diálogos `surface1` con los botones en fila (borrar o descartar en `danger`); hojas inferiores `surface1` con asa; campos con fondo `background`, borde `line` y brasa al enfocar |
+| Transiciones | Cambiar de pestaña o abrir una pantalla es un fundido de 200 ms sobre un fondo opaco, sin deslizar; volver apaga la pantalla de arriba. Con Reducir movimiento, 100 ms |
 | Textos | Tuteo y verbos, números con formato local ("62,5 kg", "8.420 kg"), separador " · ", sin raya, sin signos de exclamación y sin emoji. La regla vale también para las frases de la voz, porque salen escritas en el subtítulo |
 
 Relojes:
@@ -58,6 +60,8 @@ Relojes:
 - **Para qué:** ver cómo llegas y empezar el entreno que toca en un toque.
 - **Estructura, de arriba abajo (desde 76 dp):**
   1. Cabecera: `caption` con la fecha ("Miércoles 23 de septiembre") y `title1` "Hoy"; a la derecha, botón de 48 en `surface3` con `account_circle` ("Perfil y ajustes").
+
+**Alcance implementado (quinta ronda):** Hoy, Plan, Progreso y Ejercicios usan la misma cabecera (`ForjaLargeTitle`): línea de arriba siempre reservada (la fecha en Hoy, vacía en las demás), acción de 48 a la derecha y 12 de la barra de estado, así el título queda a la misma altura al cambiar de pestaña. La fecha usa el esqueleto día, mes corto y año del idioma ("5 nov 2026").
   2. Tarjeta **Recuperación** en `iceVeil`: ícono `watch` en hielo y etiqueta "Recuperación"; `title3` "Lista para entrenar completo"; una fila con `bedtime` "7 h 42 min de sueño" y `ecg_heart` "52 lpm en reposo" (cifras en `text1`, resto en `text2`, 14/20).
   3. Tarjeta **Esta semana**: `title3` a la izquierda y "2 de 5 · racha de 6 semanas" a la derecha (`text2`). Siete círculos de 36: día hecho en `ember` con `check`; hoy con borde de 2 en `ember` y la letra; día planeado en `surface3` con la letra; día de descanso solo con la letra en `text3`. Cada círculo dice su estado para lectores de pantalla ("Lunes: entrenaste").
   4. Tarjeta **Siguiente**: `caption` "Siguiente · Semana 3 de 6", `title2` "Empuje A", "5 ejercicios · 55 min · Gimnasio"; lista de ejercicios con separador `line` y, a la derecha, lo que cambia hoy: en `ember` con `north_east` cuando sube ("62,5 kg", "+1 rep") y en `text2` cuando se mantiene ("40 kg", "+10 kg", "25 kg"); botón principal **Empezar** con `play_arrow`.
@@ -65,7 +69,11 @@ Relojes:
 - **Toques:** Empezar abre Entreno (1 toque). Tocar la tarjeta de recuperación abre el detalle de la adaptación (sección 5.4).
 - **Variante de recuperación baja:** ver 2.4.
 
+**Alcance implementado en F1-09:** Hoy obtiene rutinas, ejercicios y sesiones desde Room. Sin rutinas, muestra una invitación a crear la primera. La tarjeta Siguiente usa la posición dentro de la rotación, las series objetivo y una duración marcada como aproximada. Esta semana cuenta días entrenados y racha según la zona horaria local. Recuperación, metas semanales y cambios de carga esperan datos y motores reales. Una sesión abierta ofrece Continuar, incluso si su rutina ya no existe. Desde F1-10, Entreno y el accesorio muestran y guardan las series reales. El cierre con resumen sigue en F1-21.
+
 ### 1.2 Entreno (`Entreno.dc.html`)
+
+**Alcance implementado (segunda ronda, pedido de Juan tras entrenar):** una serie a la vez. Arriba las series hechas del ejercicio en filas cortas que se tocan para corregir; en el centro la serie actual ("Serie 2 de 4", el anterior para copiar, números grandes y RIR y RPE como chips opcionales); abajo "Faltan N series" y Añadir serie. Los otros ejercicios van en filas debajo. Bajo el nombre, un chip con el modo del ejercicio (con descanso, sin descanso, por tiempo o superserie) que abre la hoja "Cómo lo haces". Por tiempo, el botón principal es "Empezar 0:30" y la serie se completa sola al llegar a 0.
 
 - **Para qué:** registrar series. Completar la serie sugerida toma 1 toque.
 - **Estructura:**
@@ -84,6 +92,8 @@ Relojes:
   - El descanso termina antes si el pulso baja del umbral R + 0,5 × (P - R) y ya pasó la mitad del tiempo; nunca después del tiempo + 60 s (`HANDOFF.md` 11.7).
 - **Toques:** tocar el campo de kg o de reps abre el Teclado (1.3); completar 1; otras reps 3 (reps, número, completar).
 
+**Alcance de la tercera ronda (5 nov 2026):** arriba, "Ejercicio 2 de 3" y una barra por ejercicio que se toca para ir a él; el ejercicio lleva su número y la lista "Ejercicios" sale numerada en el orden de la rutina con el de ahora resaltado. Sin modo Pro solo se ven peso y reps; con él, RIR y RPE y un ícono que explica qué son. Cada serie arranca rellena con la anterior o con la última vez, así completar es un toque. Deslizar para terminar aparece cuando ya hay una serie hecha; el menú ⋮ de arriba tiene Cancelar entreno con confirmación.
+
 ### 1.3 Teclado numérico (`Teclado.dc.html`)
 
 - **Para qué:** cambiar peso, reps o RIR sin el teclado del sistema.
@@ -96,7 +106,22 @@ Relojes:
   6. Dos botones: **Siguiente** (pasa al campo siguiente) y **Completar serie** (principal, `ember`).
 - **Vibración:** cada tecla `KEYBOARD_TAP`; cambiar de segmento `SEGMENT_TICK`.
 
+**Alcance de la tercera ronda:** pestañas de campo en control segmentado, el valor en el centro con -paso y +paso simétricos a los lados, teclas a todo el ancho y abajo Siguiente y Completar serie del mismo tamaño (Listo si se corrige una serie hecha o se edita en el descanso). RPE va de 1 a 10 en medios y RIR de 0 a 10 entero: lo que se saldría del rango no se puede escribir.
+
+### 1.3.1 Controles de Entreno para F1-10
+
+- **Qué muestra:** Entreno y el teclado de 1.2 y 1.3 usan el catálogo y las series guardadas. La columna Anterior copia las medidas de la serie equivalente, sin copiar su estado de completado. El peso anterior es una referencia, no una recomendación del motor. Sin datos anteriores, el campo queda vacío.
+- **Opciones de serie:** al tocar el número se abre un diálogo Forja con selector del tipo existente y campo de nota. Cada cambio se guarda. RIR y RPE se eligen en el teclado; elegir uno limpia el otro. Las medidas se muestran con formato local, y los campos numéricos nunca abren el teclado del sistema.
+- **Sesión libre:** Hoy ofrece Empezar libre. Entreno vacío muestra Añadir ejercicio, que abre un selector con búsqueda usando las filas y campos del catálogo. Al elegir se agrega una serie editable; Añadir serie permite continuar el registro. Todo usa colores, tipografía, radios y espaciado Forja existentes.
+- **Estados:** cargando, sesión vacía, activa, todas las series registradas, valores incompletos y error de guardado con Reintentar. Un error conserva las escrituras pendientes para reintentarlas en orden y no muestra confirmación de guardado.
+- **Toques:** copiar anterior 1, completar una serie con valores válidos 1, cambiar reps 3 (campo, número, completar), deshacer 1. El aviso de Deshacer dura 5 s. Minimizar no pierde el registro y el accesorio muestra datos reales.
+- **Navegación:** Hoy o el accesorio abren Entreno. Minimizar vuelve a la pestaña anterior. El teclado y los diálogos se cierran sobre Entreno. El cierre con resumen sigue en F1-21; descanso y ejecución de bloques temporizados siguen en sus tickets. No se muestran pulso, récords ni sugerencias ficticias.
+
+**Alcance implementado en F1-22:** en Opciones del ejercicio, "Usar lb en este ejercicio" (o kg) cambia cómo se ve y se escribe el peso de ese ejercicio: el campo dice "Peso (lb)", el teclado suma de 5 en 5 y todo se guarda en kg. "Discos y calentamiento" abre un diálogo sin diseño propio, con piezas de Forja: el peso de la serie que toca, la barra (20 kg o 45 lb), los discos por lado de mayor a menor, lo que falta si no sale exacto (en oro) y el calentamiento sugerido (barra × 10, 50 % × 5, 70 % × 3 y 85 % × 1), con "Agregar el calentamiento" para meter esas series antes de las de trabajo. Los discos de cada gimnasio llegan con los perfiles de F5-03.
+
 ### 1.4 Descanso en la barra (`Descanso.dc.html`)
+
+**Alcance implementado (segunda ronda):** el descanso a pantalla completa ya no repite el anillo pequeño; -15 s, Saltar y +15 s van en una sola fila del mismo alto y volver a las series está en la barra de arriba. La barra minimizada al pie de Entreno conserva su anillo pequeño con el tiempo.
 
 - **Para qué:** ver tus series mientras descansas, cuando minimizas el descanso a pantalla completa.
 - **Estructura:**
@@ -125,6 +150,8 @@ Relojes:
   6. Botón principal **Guardar**.
 - **Toques:** dar el feedback 1 (todo viene en "Justo"); guardar 1.
 
+**Alcance implementado en F1-21:** Deslizar para terminar va al final de la lista de Entreno y solo se activa con una serie hecha; con lector de pantalla es un botón. El Resumen muestra la rutina y la fecha, los récords simples (más peso que nunca, o el mismo peso máximo con más reps; la primera vez de un ejercicio no cuenta), duración y volumen comparados con la sesión anterior de la misma rutina (o de la misma disciplina en un entreno libre), cada ejercicio con sus series y el resultado de cada bloque con tiempo. El botón principal es Listo. Compartir llega con F5-07 y el feedback por músculo y las molestias con F2-06.
+
 ---
 
 ## 2. Progreso, plan y ajuste del día
@@ -136,6 +163,10 @@ Relojes:
   2. Tarjeta **Series por músculo**, "Últimos 7 días · 17 al 23 sep": una fila por músculo (columnas 86 / 1fr / 52) con la barra de series en `ember`, la banda del rango objetivo (10 a 20) en `surface3` detrás y el número a la derecha; si está por debajo, la palabra "bajo" en `text3`. Eje 0, 10 y 20. Pie: "Rango objetivo: 10 a 20 series".
 - **Reglas:** las series cuentan los últimos 7 días, no la semana de calendario; el primario suma 1 y el secundario 0,5.
 
+**Alcance actual de Progreso:** Músculos muestra las series reales de los últimos 7 días (primario 1, secundario 0,5) con la banda de 10 a 20; sin entrenos, "Aún no hay entrenos". El mapa de recuperación espera a F2-08 y Cuerpo al seguimiento del cuerpo; no se muestran datos de ejemplo.
+
+**Alcance implementado en F1-23:** el botón Historial de Progreso abre el historial, sin diseño propio en el lienzo y hecho con las piezas de Forja (tarjetas surface1, chips, botones de 48). Arriba, Calendario o Lista. El calendario muestra el mes de lunes a domingo, con los días entrenados en emberVeil y el día elegido en ember; debajo, las sesiones de ese día. La lista trae todas las sesiones terminadas, de la más nueva a la más vieja, con fecha, rutina, duración, volumen y series. Tocar una sesión abre su detalle: tocar una serie la corrige (peso y reps) o la borra, y cada bloque con tiempo se puede borrar. Las sesiones descartadas no salen.
+
 ### 2.2 Ejercicio, historial (`Ejercicio.dc.html`)
 
 - **Estructura:** barra superior con `arrow_back`, el nombre ("Press banca con barra") y opciones.
@@ -146,6 +177,8 @@ Relojes:
 - **Nota:** la ficha con músculos y exigencia es otra pantalla (7.5); desde la ficha se llega aquí con "Historial".
 
 ### 2.3 Plan con un entreno en curso (`Plan.dc.html`)
+
+**Alcance implementado (segunda ronda, 5 de noviembre):** arriba la semana en 7 círculos con los días entrenados, como en Hoy; la rutina que toca según la rotación lleva "Toca hoy" y un ícono de reproducir. La tarjeta de programa y la biblioteca llegan con F5.
 
 - **Estructura:** `title1` "Plan" con botón `add` "Crear rutina".
   1. Tarjeta del **programa**: "Programa", `title2` "Hipertrofia 6 semanas", "Semana 3 de 6 · descarga en la semana 6"; barra de 6 segmentos de 6 dp (hechas en `ember`, la actual a medias, la de descarga en hielo) y la semana en 7 círculos como en Hoy.
@@ -200,6 +233,8 @@ Las mismas tres pantallas en claro, con los tokens de la columna clara de Forja:
 - **Estado listo:** al llegar a 0 (o antes por pulso) el anillo pasa a `ember` lleno, el centro dice "Listo" en `ember` con "62,5 × 10" y "kg · serie 3 de 4", y la barra muestra **Completar serie 3** (principal).
 - **Fuera de la app:** al salir o apagar la pantalla, el mismo descanso sigue en la Live Activity (iPhone), la Live Update (Android) y los relojes, todos leyendo el mismo motor de tiempo (RF-VIV-08, RNF-17).
 - **Movimiento:** el anillo avanza con una transición de 400 ms; el cambio de hielo a brasa es un fundido de 300 ms; deslizar hacia abajo encoge la pantalla hasta la barra de descanso (1.4) siguiendo al dedo.
+
+**Alcance F1-11:** pantalla y barra usan el mismo motor por instantes y muestran únicamente datos disponibles. Sin sensor no se muestra pulso ni umbral; sin motor de progresión no se anuncian cambios de carga. El descanso en segundo plano se recalcula al volver; persistencia tras matar el proceso y avisos fuera de la app corresponden a F1-13 a F1-16. La aceptación visual y háptica en teléfonos sigue pendiente.
 
 ### 5.2 Intervalos a tu medida (`IntervalosCrear.dc.html`)
 
@@ -285,6 +320,54 @@ El cronómetro es el borde de la pantalla: un trazo de 12 px que sigue el rectá
 
 ---
 
+### 5.8 Descanso fuera de la app en Android: Live Update y Now Bar (F1-14)
+
+Diseño escrito por Claude el 5 de noviembre de 2026, con la plantilla 15.7 del manual. Es una notificación del sistema, así que Forja no pone colores ni formas: lo que se diseña son los textos, los estados y las acciones.
+
+- **Para qué:** que el descanso siga a la vista con la app cerrada o la pantalla apagada (RF-VIV-04, RF-VIV-08), con el mismo tiempo que la pantalla completa (5.1), porque las dos leen el mismo motor (11.9).
+- **Cuándo aparece:** al empezar un descanso en una sesión en curso, si la app pasa a segundo plano o se apaga la pantalla. Con la app abierta en Entreno no se muestra (ya está 5.1). Se quita al completar la serie siguiente, al terminar la sesión o al descartarla.
+- **Reglas del sistema (para que Android 16 la promueva a la barra de estado, la pantalla bloqueada y la Now Bar de Samsung):** estilo estándar, sin vistas propias, sin `setColorized` ni color de fondo, siempre con título, en curso (`setOngoing(true)`), con `setRequestPromotedOngoing(true)` y el permiso `POST_PROMOTED_NOTIFICATIONS`. Si `NotificationManager.canPostPromotedNotifications()` es falso, sale la misma notificación en curso sin promover. Ícono pequeño monocromo: `timer` de Material Symbols. Canal "Descanso" ("Rest" en inglés).
+- **Estado 1 · Descansando:**
+  - Chip de la barra de estado: la cuenta atrás del sistema (`setWhen` con el instante de fin que da `segmentEndsAtMs`, `setUsesChronometer(true)` y `setChronometerCountDown(true)`). Sin `setShortCriticalText` en este estado, para que el chip muestre el tiempo.
+  - Título: "Descanso · {ejercicio}" ("Rest · {exercise}"), con el nombre en el idioma del teléfono.
+  - Texto: "Sigue: serie {n} de {total} · {peso} × {reps}" ("Next: set {n} of {total} · {weight} × {reps}"), con el formato local de F1-05 (62,5 kg en español, 62.5 kg en inglés). Si la serie siguiente no tiene peso, solo las reps; si es por tiempo, la duración.
+  - Vista expandida: lo mismo, más una segunda línea con "Serie {n − 1} hecha: {peso} × {reps}".
+  - Acciones: **+15 s** y **Saltar**, en ese orden.
+  - Sin sonido ni vibración al aparecer ni al actualizarse (`setOnlyAlertOnce(true)`).
+- **Estado 2 · Listo para la serie** (el motor llegó a 0):
+  - Chip: "Listo" ("Ready") con `setShortCriticalText`.
+  - Título: "A la serie {n} de {total}" ("Time for set {n} of {total}").
+  - Texto: "{ejercicio} · {peso} × {reps}".
+  - Acción: **Completar serie**.
+  - Suena y vibra una vez con el patrón del fin del descanso de Forja (el mismo de 5.1). Si el teléfono está en silencio, solo vibra.
+  - Se queda así hasta que la persona completa la serie, abre la app o pasan 10 minutos. A los 10 minutos deja de estar en curso y se puede descartar.
+- **Toques (cada uno en 1 toque, sin abrir la app):**
+  - **+15 s** suma 15 s al descanso en curso (`TimerEdit.Adjust`) y actualiza el instante de fin.
+  - **Saltar** termina el descanso (`TimerEdit.Skip`) y pasa al estado 2 sin sonido.
+  - **Completar serie** marca como hecha la serie siguiente con los valores que propone la app (los mismos que ya muestra la fila de Entreno) y empieza el descanso que toque. Si esa serie no tiene peso o reps propuestos, el botón no sale y tocar la notificación abre Entreno.
+  - Tocar el cuerpo abre Entreno de esa sesión (`Route.Workout(sessionId)`), con el descanso o la serie a la vista.
+  - Las acciones corren con la app cerrada gracias al arranque sin pantalla (F1-13) y escriben las mismas ediciones del motor que la pantalla, así que al volver a la app se ve lo mismo.
+- **Permisos:** `POST_NOTIFICATIONS` se pide la primera vez que empieza un descanso, con una frase antes del diálogo: "Para ver el descanso con la app cerrada" ("To see your rest with the app closed"). Si la persona dice que no, el descanso sigue funcionando dentro de la app y no se vuelve a pedir en esa sesión. El servicio en primer plano es de tipo `health` (`FOREGROUND_SERVICE_HEALTH`) y cumple su requisito declarando `HIGH_SAMPLING_RATE_SENSORS` en el manifiesto, que no abre ningún diálogo.
+- **Textos:** todos en `values/` y `values-es/`. Sin signos de exclamación ni emoji.
+- **Datos:** la sesión y la serie siguiente salen de `SessionRepository`; el tiempo, de `TimerPlan.stateAt` y `segmentEndsAtMs`.
+
+### 5.9 Live Activity del entreno en iPhone (F1-16)
+
+**Alcance implementado (segunda ronda):** anillo azul que se vacía (`ProgressView(timerInterval:)`) en la compacta, la mínima, la expandida y la pantalla bloqueada; en las dos últimas con la cuenta atrás dentro. En Listo, check verde. El anillo va dentro de la isla: ActivityKit no permite dibujar alrededor de ella.
+
+Diseño escrito por Claude el 5 de noviembre de 2026 con las reglas de `HANDOFF.md` 12.10. Fondo negro siempre, brasa y hielo en sus tonos oscuros y cifras tabulares.
+
+- **Para qué:** ver y manejar el descanso desde la isla, la pantalla bloqueada y StandBy sin abrir la app (RF-VIV-01, RF-VIV-02).
+- **Cuándo aparece:** con un descanso en curso o en Listo y la app fuera de la vista. Se va al completar la serie dentro de la app, al terminar o al descartar la sesión. Lee lo mismo que la Live Update de Android (5.8): título, detalle y hora de fin.
+- **Compacta:** a la izquierda, un anillo de hielo que se vacía; a la derecha, "1:12" en hielo. En Listo, anillo en brasa y "Listo" en brasa.
+- **Mínima:** solo el anillo.
+- **Expandida:** anillo de 44 a la izquierda, "Descanso · Press banca" y "Sigue: serie 3 de 4 · 62,5 kg × 10" al centro, la cuenta atrás grande a la derecha. Abajo, los botones **-15 s**, **+15 s** y **Saltar** (este en hielo). En Listo: "A la serie 3 de 4" y un solo botón, **Completar serie**, en brasa.
+- **Pantalla bloqueada y StandBy:** tarjeta negra con el anillo de 40, título y detalle, la cuenta atrás de 34 a la derecha y los mismos botones abajo. En StandBy el sistema la muestra al 200 %.
+- **Toques:** cada botón actúa en un toque sin abrir la app (App Intents, `LiveActivityIntent`). Tocar la tarjeta abre la app en Entreno.
+- **Reglas:** el contador lo dibuja el sistema con `Text(timerInterval:)`; la app solo actualiza en los cambios de fase (en una sesión de 60 min, unas decenas de veces). Sin pulso por ahora: llega con Salud en F4. Horizontal en iOS 27: queda para cuando exista ese SDK.
+
+---
+
 ## 6. Ajuste durante el entreno
 
 ### 6.1 Ajuste durante el entreno, teléfono (`AdaptacionDurante.dc.html`)
@@ -349,6 +432,10 @@ El borde de la pantalla sigue siendo el descanso (hielo, 0:48 en la cabecera, la
 
 ### 7.3 Respiración guiada (`Respiracion.dc.html`)
 
+**Alcance implementado (cuarta ronda):** sin aviso ni pregunta de seguridad para ningún patrón (decisión de Juan): Empezar arranca directo. La figura ocupa el alto libre, centrada. En la cuadrada un punto da una vuelta completa al borde en cada ciclo (arriba inhala, derecha retén, abajo exhala, izquierda retén) y deja pintado el recorrido, como un anillo que se llena; en la relajante y la coherente el círculo crece y baja con suavizado y un anillo fino alrededor se llena en cada ciclo. Todo se dibuja en cada cuadro a partir del tiempo del ciclo, así no se detiene en los cambios de fase. Debajo, "Ciclo 2 de 19" centrado; abajo, pausa redonda de 56 y **Terminar**. Al terminar sale un resumen con tiempo, ciclos y patrón y **Listo** a todo el ancho (igual en los flujos, con tiempo, rondas y posturas).
+
+**Alcance implementado (segunda ronda):** patrones en un control segmentado de ancho completo, minutos y figura centrados, recorrido de la cuadrada por el borde redondeado y sin el aviso de seguridad en la pantalla (la pregunta antes de la Relajante 4-7-8 se mantiene).
+
 - **Estructura:**
   1. Barra superior: minimizar, "Respiración guiada" con "Quedan 4:27" y el botón de la voz. Brillo radial de hielo al fondo.
   2. Chips de patrón: **Cuadrada 4-4-4-4**, **Relajante 4-7-8** y **Coherente 5-5** (elegido en `iceVeil` con borde hielo).
@@ -361,6 +448,8 @@ El borde de la pantalla sigue siendo el descanso (hielo, 0:48 en la cabecera, la
   6. "Al terminar se guarda en Salud y en Health Connect como sesión de respiración."
   7. Barra inferior: pausa, **Terminar** (al terminar, "Guardado en Salud") y `more_horiz`.
 - **Guardado:** HealthKit `mindfulSession`; Health Connect `MindfulnessSessionRecord` de tipo respiración (si el teléfono lo soporta). Patrones con retención larga o hiperventilación muestran el aviso antes de empezar.
+
+**Alcance implementado en F1-20 (7.1 a 7.3):** Disciplinas se abre desde Plan con "Nuevo entreno". Fuerza y Calistenia abren un entreno libre; Funcional, el bloque funcional; HIIT, Cardio y Combate, Intervalos a tu medida; Yoga, Pilates y Movilidad, un flujo de ejemplo cada una (Saludo al sol A de 5 rondas, Pilates de suelo y Movilidad para calentar), y Respiración, la respiración guiada. "Ver todas" no sale hasta el catálogo de F5. Las figuras son dibujos propios para 12 posturas en `ui/discipline/PoseFigures.kt` (coordenadas hechas por Claude a partir de las reglas, no las del lienzo: Juan las revisa en el teléfono). En Respiración no se muestra la caja de Pulso hasta que haya reloj (F4) y se guarda en el historial; Salud y Health Connect llegan en F4. Con la Relajante 4-7-8 el aviso de seguridad sale como pregunta antes de empezar. En el flujo, la voz nombra cada postura y el teléfono vibra al cambiar; en la respiración, dice cada fase.
 
 ### 7.4 Funcional · AMRAP (`WodAmrap.dc.html`)
 
@@ -417,4 +506,41 @@ Cambiar de pestaña y hacer scroll nunca vibran.
 
 ## 9. Qué falta por diseñar
 
-Siguen sin diseño en el lienzo (Etapa 1): el PAR-Q+ al crear la cuenta, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, la Live Activity en sus cuatro vistas, la Live Update y la Now Bar. Hasta que estén, una hormiga que llegue a ellas pide el diseño al jefe y el jefe se lo pide a Juan; no se inventa una pantalla nueva.
+### Diseños autorizados por Juan el 4 de noviembre de 2026
+
+Estos formularios sencillos siguen Forja y se pueden cambiar sin modificar los casos de uso.
+
+**Crear y editar ejercicio propio (F1-07)**
+
+- Qué tiene que mostrar: título Crear ejercicio o Editar ejercicio, nombres en español e inglés, equipo, disciplina, patrón, tipo de registro, músculos primarios y secundarios y opción unilateral. Guardar es la acción principal. Archivar y restaurar siguen disponibles en el catálogo. No se editan ejercicios de la semilla.
+- Estructura: formulario vertical desplazable, tarjetas surface1, campos surface3, márgenes y separaciones de ForjaSpacing, tipografía Forja; botón Guardar en ember y Volver secundario. Selectores sencillos con etiquetas traducidas, áreas táctiles de al menos 48 dp. Sin campos de exigencia de F1-06.
+- Estados: nuevo vacío, cargando, edición con datos, validación de nombres y músculos, guardando, error de lectura o guardado con reintento. Mientras guarda no se envían duplicados. Salir con cambios pide descartar o seguir editando.
+- Toques: desde Buscar, Crear ejercicio abre en un toque; Guardar toma un toque con los campos válidos. Editar se abre desde una fila propia del catálogo.
+- De dónde se abre y a dónde lleva: Buscar abre el formulario y Guardar vuelve a Buscar, donde el ejercicio aparece con su nombre local. Los filtros de equipo y disciplina acompañan los filtros existentes.
+
+**Carpetas y lista de rutinas (F1-08)**
+
+- Qué tiene que mostrar: Plan con carpetas y rutinas reales, crear carpeta y rutina, cambiar nombre, duplicar y borrar rutina, mover a carpeta y ordenar por arrastre. Sin inventar programas ni métricas calculadas.
+- Estructura: título Plan y tarjetas de rutinas agrupadas por carpeta con los tokens de 2.3; cada fila muestra nombre y cantidad de ejercicios. Formularios cortos de nombre en una hoja o diálogo; acciones secundarias separadas del botón principal.
+- Estados: lista vacía con Crear rutina, cargando, contenido, error con reintento y confirmación antes de borrar. Borrar carpeta conserva las rutinas sin carpeta.
+- Toques: crear abre el editor en un toque; duplicar y borrar se eligen en las acciones de cada rutina; ordenar con pulsación larga y arrastre, con alternativa accesible de subir o bajar.
+- De dónde se abre y a dónde lleva: pestaña Plan; tocar rutina abre su editor; volver conserva la lista.
+
+**Editor de rutina por bloques (F1-08)**
+
+- Qué tiene que mostrar: nombre, carpeta, notas y bloques de series; en cada bloque, ejercicios ordenables, series objetivo con rango de reps, RIR y descanso, y notas del ejercicio. Añadir o quitar bloques, ejercicios y series. Los otros formatos conservan sus datos y se editan en F1-18 a F1-20.
+- Estructura: formulario vertical con título Editar rutina, tarjetas surface1 por bloque y ejercicio, campos surface3, tipografía y espaciado Forja, Guardar en ember. El selector de ejercicios permite buscar por nombre y elegir en un toque. Arrastre desde el asa del ejercicio y botones accesibles de subir o bajar.
+- Estados: rutina nueva, cargando, contenido, campos inválidos, guardando, error con reintento, confirmación de descarte al salir con cambios. Guardar solo se habilita con nombre y rangos válidos; el borrador no altera lo persistido antes de guardar.
+- Toques: añadir ejercicio abre el selector en un toque y elegirlo requiere otro; Guardar toma un toque.
+- De dónde se abre y a dónde lleva: Plan, Crear rutina o tocar una existente; guardar vuelve a Plan. No inicia una sesión ni modifica sesiones pasadas.
+
+**Bienvenida y Ajustes (F1-25, hechos con estas reglas por Claude para que Juan los revise)**
+
+- Bienvenida (cuarta ronda, paso a paso al estilo de Kelo): portada con la marca, un título grande y **Empezar**; después una pregunta por pantalla (objetivo, experiencia, días por semana con un número grande, unidades, disciplinas con varias opciones, modo Básico o Pro y audio durante el entreno) con barra fina de progreso arriba, atrás y **Omitir** en las opcionales (modo y audio). Cada opción es una tarjeta grande con ícono, título y una línea; elegida, borde y fondo ember. **Continuar** fijo abajo, apagado hasta responder. Entre pasos, desliz corto con fundido (solo fundido con Reducir movimiento). Al final, "Todo listo" con el resumen de lo elegido, **Crear mi primera rutina** (abre el editor) e **Ir a Hoy**.
+- Ajustes: "Audio durante el entreno" reemplaza el interruptor de Voz y abre una hoja con Mantener volumen (por defecto), Bajar volumen, Pausar música y Sin voz.
+- (Versión anterior, reemplazada) Bienvenida: una sola página desplazable con título "Bienvenido a IronProgress", cinco tarjetas surface1 (objetivo, experiencia, unidades, días por semana con − y +, disciplinas que haces con varias opciones) y **Empezar** en ember. Sale solo la primera vez; las respuestas se cambian después en Ajustes cuando llegue esa sección.
+- Ajustes: se abre con el botón redondo `account_circle` a la derecha del título de Hoy. Barra superior con `chevron_left` y "Ajustes"; secciones App (idioma y tema con chips), Sonido y vibración (interruptores de sonido, vibración y voz) y Privacidad (Ocultar peso corporal y calorías). Todo se guarda al tocar, sin botón de guardar. Cambiar el idioma vuelve a dibujar la app en el idioma nuevo y la deja en Hoy.
+- Copia de seguridad (F1-24): sección al final de Ajustes con Guardar copia, Restaurar copia y Exportar series a CSV, en botones secundarios. Guardar abre el selector del sistema con el nombre `ironprogress-AAAA-MM-DD.json`. Restaurar pide confirmación ("No se puede deshacer", acción en `danger`) y avisa con un texto si el archivo no sirve; nada cambia en ese caso.
+- Con Ocultar encendido, las calorías de una serie salen como "Oculto" en Entreno, en la serie anterior, en el accesorio y en la Live Update; el dato se guarda igual.
+
+Siguen sin diseño en el lienzo (Etapa 1): el PAR-Q+ al crear la cuenta, el modo joven y el permiso de los padres, molestias y lesiones, preparación en detalle, el Galaxy Watch con la rutina y los intervalos, intervalos en el Apple Watch, el ajuste del ciclo menstrual con su explicación de privacidad y la tarjeta de movilidad al caminar. Hasta que estén, una hormiga que llegue a ellas pide el diseño al jefe y el jefe se lo pide a Juan; no se inventa una pantalla nueva.

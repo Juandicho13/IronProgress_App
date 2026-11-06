@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Disciplinas, flujo y respiración (F1-20). -->
+<resources>
+    <string name="disc_bar">New workout</string>
+    <string name="disc_title">What will you train?</string>
+    <string name="disc_subtitle">They all use the same timer and are saved in your history.</string>
+    <string name="disc_open">New workout of any discipline</string>
+    <string name="disc_strength_detail">Sets with weight</string>
+    <string name="disc_functional_detail">EMOM, AMRAP, for time</string>
+    <string name="disc_hiit">HIIT and intervals</string>
+    <string name="disc_hiit_detail">Your times, with voice</string>
+    <string name="disc_calisthenics_detail">Bodyweight</string>
+    <string name="disc_yoga_detail">Pose by pose flows</string>
+    <string name="disc_pilates_detail">Mat and reformer</string>
+    <string name="disc_mobility_detail">Stretch and warm up</string>
+    <string name="disc_breathing_detail">Guided patterns</string>
+    <string name="disc_cardio_detail">Run, bike or row</string>
+    <string name="disc_combat_detail">Rounds with voice</string>
+    <string name="flow_round">Round %1$d of %2$d</string>
+    <string name="flow_breath_of">Breath %1$d of %2$d</string>
+    <string name="flow_seconds_left">%1$s left</string>
+    <string name="flow_inhale">Inhale</string>
+    <string name="flow_exhale">Exhale</string>
+    <string name="flow_next">Next</string>
+    <string name="flow_next_round">%1$s · round %2$d</string>
+    <string name="flow_next_breaths">%1$s · %2$d breaths</string>
+    <string name="flow_next_one_breath">%1$s · 1 breath</string>
+    <string name="flow_last">Last pose</string>
+    <string name="flow_note">The voice names each pose and the phone vibrates on every change.</string>
+    <string name="flow_left">left side</string>
+    <string name="flow_right">right side</string>
+    <string name="flow_pause">Pause</string>
+    <string name="flow_resume">Resume</string>
+    <string name="flow_skip">Next pose</string>
+    <string name="flow_close">Close</string>
+    <string name="flow_voice_on">Voice on</string>
+    <string name="flow_voice_off">Voice off</string>
+    <string name="flow_saved">Saved in your history.</string>
+    <string name="flow_failed">It could not be saved. Your data is still here.</string>
+    <string name="flow_done">You finished</string>
+    <string name="breath_title">Guided breathing</string>
+    <string name="breath_left">%1$s left</string>
+    <string name="breath_box">Box 4-4-4-4</string>
+    <string name="breath_relax">Relaxing 4-7-8</string>
+    <string name="breath_coherent">Coherent 5-5</string>
+    <string name="breath_inhale">Inhale</string>
+    <string name="breath_hold">Hold</string>
+    <string name="breath_exhale">Exhale</string>
+    <string name="breath_cycle_of">Cycle %1$d of %2$d</string>
+    <string name="breath_cycle">Cycle</string>
+    <string name="breath_minutes">Minutes</string>
+    <string name="breath_saves">When you finish it is saved in your history as a breathing session.</string>
+    <string name="breath_start">Start</string>
+    <string name="breath_finish">Finish</string>
+</resources>

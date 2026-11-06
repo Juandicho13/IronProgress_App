@@ -4,12 +4,14 @@ import android.content.Context
 import androidx.room3.Room
 
 /**
- * Abre la base de IronProgress en la carpeta de bases de datos de la app.
+ * Abre la base de IronProgress en la carpeta de bases de datos de la app, con una copia antes
+ * de migrar si la versión instalada es vieja.
  * Llámala una sola vez (con Koin será un single) y comparte la instancia.
  */
 fun createIronProgressDatabase(context: Context): IronProgressDatabase {
     val appContext = context.applicationContext
     val databaseFile = appContext.getDatabasePath(IronProgressDatabase.DATABASE_NAME)
+    backupBeforeMigration(databaseFile.absolutePath)
     return Room.databaseBuilder<IronProgressDatabase>(
         context = appContext,
         name = databaseFile.absolutePath,

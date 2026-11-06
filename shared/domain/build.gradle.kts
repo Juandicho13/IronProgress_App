@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 // Android, iOS ni la base de datos.
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.androidMultiplatformLibrary)
 }
 
@@ -24,6 +25,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(libs.kotlinx.serialization.core)
             api(libs.kotlinx.coroutines.core)
         }
         commonTest.dependencies {

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pulido de las pantallas de F1 (Plan, editor, Progreso, Ajustes). -->
+<resources>
+    <string name="ui_close">Cerrar</string>
+    <string name="ui_cancel">Cancelar</string>
+    <string name="ui_more">Más acciones</string>
+    <string name="plan_add_menu">Crear</string>
+    <string name="plan_routines">Rutinas</string>
+    <string name="plan_train">Entrenar</string>
+    <string name="plan_empty_body">Ármala una vez y Hoy te propondrá la que sigue en la rotación.</string>
+    <string name="plan_rename">Cambiar nombre</string>
+    <string name="plan_delete_body">No se puede deshacer.</string>
+    <string name="plan_disciplines">Disciplinas</string>
+    <string name="plan_disciplines_hint">Yoga, pilates, movilidad y respiración</string>
+    <string name="plan_wod_title">Bloque funcional</string>
+    <string name="plan_wod_hint">AMRAP, EMOM, por tiempo y rondas</string>
+    <string name="plan_intervals_hint">Trabajo y descanso con voz</string>
+    <string name="plan_routine_actions">Rutina</string>
+    <string name="plan_folder_actions">Carpeta</string>
+    <string name="routine_new">Nueva rutina</string>
+    <string name="routine_details">Datos</string>
+    <string name="routine_remove_block">Quitar bloque</string>
+    <string name="routine_remove_exercise">Quitar ejercicio</string>
+    <string name="routine_remove_set">Quitar serie %1$d</string>
+    <string name="routine_col_set">Serie</string>
+    <string name="routine_col_min">Mín</string>
+    <string name="routine_col_max">Máx</string>
+    <string name="routine_col_rir">RIR</string>
+    <string name="routine_rest_short">Descanso (s)</string>
+    <string name="routine_no_results">Ningún ejercicio coincide</string>
+    <string name="progress_seg_exercises">Ejercicios</string>
+    <string name="progress_seg_muscles">Músculos</string>
+    <string name="progress_seg_body">Cuerpo</string>
+    <string name="progress_empty_title">Aún no hay entrenos</string>
+    <string name="progress_empty_body">Termina una sesión y aquí verás tus series por músculo.</string>
+    <string name="progress_sets_title">Series por músculo</string>
+    <string name="progress_last7">Últimos 7 días · %1$s al %2$s</string>
+    <string name="progress_target">Rango objetivo: 10 a 20 series</string>
+    <string name="progress_low">bajo</string>
+    <string name="progress_body_title">Cuerpo</string>
+    <string name="progress_body_body">El peso corporal, las medidas y las fotos llegan con el seguimiento del cuerpo.</string>
+    <string name="settings_backup_row">Copia de seguridad y exportar</string>
+    <string name="settings_backup_hint">Guardar, restaurar o exportar a CSV</string>
+    <!-- Idioma en el que se resolvieron los textos: las fechas y los números lo siguen. -->
+    <string name="resolved_language">es</string>
+</resources>

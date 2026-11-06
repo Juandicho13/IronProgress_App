@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">IronProgress</string>
+    <string name="workout_free">Free workout</string>
+    <string name="workout_complete">Complete set</string>
+    <string name="rest_more">+15 s</string>
+    <string name="rest_notification_channel">Rest</string>
+    <string name="rest_notification_resting_title">Rest · %1$s</string>
+    <string name="rest_notification_next_set_with_target">Next: set %1$d of %2$d · %3$s</string>
+    <string name="rest_notification_next_set_only">Next: set %1$d of %2$d</string>
+    <string name="rest_notification_completed_set_line">Set %1$d done: %2$s</string>
+    <string name="rest_notification_action_skip">Skip</string>
+    <string name="rest_notification_ready_chip">Ready</string>
+    <string name="rest_notification_ready_title">Time for set %1$d of %2$d</string>
+    <string name="rest_notification_ready_text_with_target">%1$s · %2$s</string>
+    <string name="rest_notification_reps_unit">reps</string>
 </resources>

@@ -15,6 +15,7 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
+        withHostTest {}
     }
 
     listOf(
@@ -32,12 +33,17 @@ kotlin {
             api(project(":shared:domain"))
             implementation(project(":shared:data"))
             implementation(project(":shared:health"))
-            implementation(project(":shared:ui"))
-            implementation(compose.runtime)
-            implementation(compose.ui)
+            api(project(":shared:ui"))
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.ui)
             implementation(libs.androidx.room3.runtime)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+        }
+        getByName("androidHostTest").dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            runtimeOnly(libs.androidx.sqlite.bundled.jvm)
         }
     }
 }

@@ -42,11 +42,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
-import com.olarte.ironprogress.ui.theme.ForjaMotion
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
 
@@ -85,6 +84,7 @@ fun ForjaIsland(
     onSearchClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
 
     Box(
@@ -121,8 +121,8 @@ fun ForjaIsland(
             // Accesorio de sesion: aparece 8 dp encima de la isla cuando hay un entreno en curso
             AnimatedVisibility(
                 visible = activeSession != null,
-                enter = fadeIn(ForjaMotion.effectFast()) + slideInVertically(ForjaMotion.spatial()) { it / 2 },
-                exit = fadeOut(ForjaMotion.effectFast()) + slideOutVertically(ForjaMotion.spatial()) { it / 2 },
+                enter = fadeIn(motion.effectFast()) + slideInVertically(motion.spatial()) { it / 2 },
+                exit = fadeOut(motion.effectFast()) + slideOutVertically(motion.spatial()) { it / 2 },
             ) {
                 if (activeSession != null) {
                     ForjaSessionAccessory(
@@ -142,12 +142,12 @@ fun ForjaIsland(
                 AnimatedContent(
                     targetState = isMinimized,
                     transitionSpec = {
-                        fadeIn(animationSpec = ForjaMotion.effectFast()) togetherWith
-                                fadeOut(animationSpec = ForjaMotion.effectFast()) using
-                                SizeTransform(
-                                    clip = false,
-                                    sizeAnimationSpec = { _, _ -> ForjaMotion.spatial() },
-                                )
+                        fadeIn(animationSpec = motion.effectFast()) togetherWith
+                            fadeOut(animationSpec = motion.effectFast()) using
+                            SizeTransform(
+                                clip = false,
+                                sizeAnimationSpec = { _, _ -> motion.spatial() },
+                            )
                     },
                     modifier = Modifier.weight(1f, fill = !isMinimized),
                     label = "ForjaIslandMorph",
@@ -158,13 +158,13 @@ fun ForjaIsland(
                                 .size(ForjaMeasures.islandHeight)
                                 .shadow(16.dp, CircleShape)
                                 .clip(CircleShape)
-                                .background(colors.glass)
+                                .forjaGlass()
                                 .border(1.dp, colors.glassBorder, CircleShape)
                                 .clickable { onTabSelected(selectedTab) },
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                imageVector = selectedTab.icon(filled = true),
+                                painter = selectedTab.icon(filled = true),
                                 contentDescription = null,
                                 tint = colors.emberInk,
                                 modifier = Modifier.size(ForjaMeasures.iconSize),
@@ -177,7 +177,7 @@ fun ForjaIsland(
                                 .height(ForjaMeasures.islandHeight)
                                 .shadow(16.dp, CircleShape)
                                 .clip(CircleShape)
-                                .background(colors.glass)
+                                .forjaGlass()
                                 .border(1.dp, colors.glassBorder, CircleShape)
                                 .padding(4.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -208,7 +208,7 @@ fun ForjaIsland(
                 val searchPressed by searchInteraction.collectIsPressedAsState()
                 val searchScale by animateFloatAsState(
                     targetValue = if (searchPressed) 0.95f else 1f,
-                    animationSpec = ForjaMotion.spatialFast(),
+                    animationSpec = motion.spatialFast(),
                     label = "SearchButtonScale",
                 )
 
@@ -221,7 +221,7 @@ fun ForjaIsland(
                         .size(ForjaMeasures.islandHeight)
                         .shadow(16.dp, CircleShape)
                         .clip(CircleShape)
-                        .background(if (isSearchActive) colors.emberVeil else colors.glass)
+                        .forjaGlass(tint = if (isSearchActive) colors.emberVeil else colors.glass)
                         .border(
                             width = 1.dp,
                             color = if (isSearchActive) colors.emberInk else colors.glassBorder,
@@ -235,7 +235,7 @@ fun ForjaIsland(
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        imageVector = ForjaIcons.Search,
+                        painter = ForjaIcons.Search,
                         contentDescription = searchContentDescription,
                         tint = if (isSearchActive) colors.emberInk else colors.text1,
                         modifier = Modifier.size(ForjaMeasures.iconSize),
@@ -250,11 +250,7 @@ fun ForjaIsland(
  * Capsula de vidrio de 56 dp que mantiene visible el entreno en curso cuando sales de el.
  */
 @Composable
-private fun ForjaSessionAccessory(
-    state: ActiveSessionBannerState,
-    onClick: () -> Unit,
-    onSkipRest: () -> Unit,
-) {
+private fun ForjaSessionAccessory(state: ActiveSessionBannerState, onClick: () -> Unit, onSkipRest: () -> Unit) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val ringColor = if (state.isReady) colors.ember else colors.ice
@@ -266,7 +262,7 @@ private fun ForjaSessionAccessory(
             .height(ForjaMeasures.accessoryHeight)
             .shadow(16.dp, CircleShape)
             .clip(CircleShape)
-            .background(colors.glass)
+            .forjaGlass()
             .border(1.dp, colors.glassBorder, CircleShape)
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp),
@@ -334,20 +330,15 @@ private fun ForjaSessionAccessory(
 }
 
 @Composable
-private fun IslandTabItem(
-    tab: ForjaTab,
-    label: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+private fun IslandTabItem(tab: ForjaTab, label: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val motion = ForjaTheme.motion
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.97f else 1f,
-        animationSpec = ForjaMotion.spatialFast(),
+        animationSpec = motion.spatialFast(),
         label = "TabScale",
     )
 
@@ -373,7 +364,7 @@ private fun IslandTabItem(
             verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp0_5),
         ) {
             Icon(
-                imageVector = tab.icon(filled = isSelected),
+                painter = tab.icon(filled = isSelected),
                 contentDescription = label,
                 tint = if (isSelected) colors.emberInk else colors.text2,
                 modifier = Modifier.size(ForjaMeasures.iconSize),
@@ -389,7 +380,8 @@ private fun IslandTabItem(
     }
 }
 
-private fun ForjaTab.icon(filled: Boolean): ImageVector = when (this) {
+@Composable
+private fun ForjaTab.icon(filled: Boolean): Painter = when (this) {
     ForjaTab.TODAY -> if (filled) ForjaIcons.FireFilled else ForjaIcons.FireOutline
     ForjaTab.PLAN -> if (filled) ForjaIcons.CalendarFilled else ForjaIcons.CalendarOutline
     ForjaTab.PROGRESS -> if (filled) ForjaIcons.MonitoringFilled else ForjaIcons.MonitoringOutline
