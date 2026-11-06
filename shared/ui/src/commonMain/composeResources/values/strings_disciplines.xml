@@ -46,13 +46,10 @@
     <string name="breath_inhale">Inhale</string>
     <string name="breath_hold">Hold</string>
     <string name="breath_exhale">Exhale</string>
+    <string name="breath_cycle_of">Cycle %1$d of %2$d</string>
     <string name="breath_cycle">Cycle</string>
     <string name="breath_minutes">Minutes</string>
-    <string name="breath_warning">Sitting or lying down; never in water, driving or standing. If you feel dizzy, go back to normal breathing.</string>
     <string name="breath_saves">When you finish it is saved in your history as a breathing session.</string>
     <string name="breath_start">Start</string>
     <string name="breath_finish">Finish</string>
-    <string name="breath_confirm_title">Before you start</string>
-    <string name="breath_confirm_ok">Got it, start</string>
-    <string name="breath_confirm_cancel">Cancel</string>
 </resources>

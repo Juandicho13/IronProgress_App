@@ -3,8 +3,11 @@ package com.olarte.ironprogress.ui.settings
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.settings.AppSettings
@@ -16,6 +19,12 @@ import org.koin.compose.viewmodel.koinViewModel
 
 /** Ajustes vigentes para cualquier pantalla: tema, vibración, voz y ocultar peso corporal y calorías. */
 val LocalAppSettings = staticCompositionLocalOf { AppSettings() }
+
+/**
+ * A dónde ir justo después de la bienvenida ("Crear mi primera rutina" o "Ir a Hoy"). La app lo
+ * lee una vez y lo limpia.
+ */
+val LocalOnboardingExit = staticCompositionLocalOf<MutableState<OnboardingExit?>> { mutableStateOf(null) }
 
 /** Lo usa Ajustes para cambiar un valor sin pedir su propio ViewModel. */
 val LocalSettingsIntents = staticCompositionLocalOf<(SettingsIntent) -> Unit> { {} }
@@ -36,6 +45,7 @@ fun AppSettings.darkTheme(): Boolean = when (theme) {
 fun SettingsGate(content: @Composable () -> Unit) {
     val model = koinViewModel<SettingsViewModel>()
     val state by model.state.collectAsStateWithLifecycle()
+    val exit = remember { mutableStateOf<OnboardingExit?>(null) }
     if (state.loading) return
     val settings = state.settings
     CompositionLocalProvider(appLocaleProvider(settings.language.tag)) {
@@ -44,12 +54,16 @@ fun SettingsGate(content: @Composable () -> Unit) {
                 LocalAppSettings provides settings,
                 LocalSettingsIntents provides model::onIntent,
                 LocalAppLanguageTag provides (settings.language.tag ?: systemLanguageTag()),
+                LocalOnboardingExit provides exit,
             ) {
                 if (settings.onboardingDone) {
                     content()
                 } else {
                     ForjaTheme(darkTheme = settings.darkTheme(), hapticsEnabled = settings.vibration) {
-                        OnboardingScreen { model.onIntent(SettingsIntent.FinishOnboarding(it)) }
+                        OnboardingScreen { result ->
+                            exit.value = result.exit
+                            model.onIntent(SettingsIntent.FinishOnboarding(result.profile, result.proMode, result.audio))
+                        }
                     }
                 }
             }

@@ -7,6 +7,7 @@ import com.olarte.ironprogress.domain.settings.CompleteOnboarding
 import com.olarte.ironprogress.domain.settings.ThemeMode
 import com.olarte.ironprogress.domain.settings.TrainingProfile
 import com.olarte.ironprogress.domain.settings.WeightUnit
+import com.olarte.ironprogress.domain.settings.WorkoutAudio
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import java.io.File
@@ -44,5 +45,17 @@ class DataStoreSettingsRepositoryTest {
         assertTrue(saved.onboardingDone)
         assertEquals(4, saved.profile?.daysPerWeek)
         assertEquals(setOf(Discipline.YOGA), saved.profile?.disciplines)
+    }
+
+    @Test
+    fun keepsAudioAndProModeFromOnboarding() = runTest {
+        val path = tempPath()
+        val repo = DataStoreSettingsRepository.create(path)
+        CompleteOnboarding(repo)(TrainingProfile(), proMode = true, audio = WorkoutAudio.PAUSE_MUSIC)
+
+        val saved = repo.settings.first()
+        assertTrue(saved.proMode)
+        assertEquals(WorkoutAudio.PAUSE_MUSIC, saved.workoutAudio)
+        assertTrue(saved.onboardingDone)
     }
 }

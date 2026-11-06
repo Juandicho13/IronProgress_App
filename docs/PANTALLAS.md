@@ -430,6 +430,8 @@ El borde de la pantalla sigue siendo el descanso (hielo, 0:48 en la cabecera, la
 
 ### 7.3 Respiración guiada (`Respiracion.dc.html`)
 
+**Alcance implementado (cuarta ronda):** sin aviso ni pregunta de seguridad para ningún patrón (decisión de Juan): Empezar arranca directo. La figura ocupa el alto libre, centrada. En la cuadrada un punto da una vuelta completa al borde en cada ciclo (arriba inhala, derecha retén, abajo exhala, izquierda retén) y deja pintado el recorrido, como un anillo que se llena; en la relajante y la coherente el círculo crece y baja con suavizado y un anillo fino alrededor se llena en cada ciclo. Todo se dibuja en cada cuadro a partir del tiempo del ciclo, así no se detiene en los cambios de fase. Debajo, "Ciclo 2 de 19" centrado; abajo, pausa redonda de 56 y **Terminar**. Al terminar sale un resumen con tiempo, ciclos y patrón y **Listo** a todo el ancho (igual en los flujos, con tiempo, rondas y posturas).
+
 **Alcance implementado (segunda ronda):** patrones en un control segmentado de ancho completo, minutos y figura centrados, recorrido de la cuadrada por el borde redondeado y sin el aviso de seguridad en la pantalla (la pregunta antes de la Relajante 4-7-8 se mantiene).
 
 - **Estructura:**
@@ -532,7 +534,9 @@ Estos formularios sencillos siguen Forja y se pueden cambiar sin modificar los c
 
 **Bienvenida y Ajustes (F1-25, hechos con estas reglas por Claude para que Juan los revise)**
 
-- Bienvenida: una sola página desplazable con título "Bienvenido a IronProgress", cinco tarjetas surface1 (objetivo, experiencia, unidades, días por semana con − y +, disciplinas que haces con varias opciones) y **Empezar** en ember. Sale solo la primera vez; las respuestas se cambian después en Ajustes cuando llegue esa sección.
+- Bienvenida (cuarta ronda, paso a paso al estilo de Kelo): portada con la marca, un título grande y **Empezar**; después una pregunta por pantalla (objetivo, experiencia, días por semana con un número grande, unidades, disciplinas con varias opciones, modo Básico o Pro y audio durante el entreno) con barra fina de progreso arriba, atrás y **Omitir** en las opcionales (modo y audio). Cada opción es una tarjeta grande con ícono, título y una línea; elegida, borde y fondo ember. **Continuar** fijo abajo, apagado hasta responder. Entre pasos, desliz corto con fundido (solo fundido con Reducir movimiento). Al final, "Todo listo" con el resumen de lo elegido, **Crear mi primera rutina** (abre el editor) e **Ir a Hoy**.
+- Ajustes: "Audio durante el entreno" reemplaza el interruptor de Voz y abre una hoja con Mantener volumen (por defecto), Bajar volumen, Pausar música y Sin voz.
+- (Versión anterior, reemplazada) Bienvenida: una sola página desplazable con título "Bienvenido a IronProgress", cinco tarjetas surface1 (objetivo, experiencia, unidades, días por semana con − y +, disciplinas que haces con varias opciones) y **Empezar** en ember. Sale solo la primera vez; las respuestas se cambian después en Ajustes cuando llegue esa sección.
 - Ajustes: se abre con el botón redondo `account_circle` a la derecha del título de Hoy. Barra superior con `chevron_left` y "Ajustes"; secciones App (idioma y tema con chips), Sonido y vibración (interruptores de sonido, vibración y voz) y Privacidad (Ocultar peso corporal y calorías). Todo se guarda al tocar, sin botón de guardar. Cambiar el idioma vuelve a dibujar la app en el idioma nuevo y la deja en Hoy.
 - Copia de seguridad (F1-24): sección al final de Ajustes con Guardar copia, Restaurar copia y Exportar series a CSV, en botones secundarios. Guardar abre el selector del sistema con el nombre `ironprogress-AAAA-MM-DD.json`. Restaurar pide confirmación ("No se puede deshacer", acción en `danger`) y avisa con un texto si el archivo no sirve; nada cambia en ese caso.
 - Con Ocultar encendido, las calorías de una serie salen como "Oculto" en Entreno, en la serie anterior, en el accesorio y en la Live Update; el dato se guarda igual.

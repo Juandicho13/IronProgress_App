@@ -253,6 +253,77 @@ class ScreenShotsTest {
     }
 
     @Test
+    fun breathingFrames() {
+        // Tres momentos del mismo ciclo: el recorrido de la cuadrada y el círculo de la 4-7-8.
+        listOf(
+            "caja" to com.olarte.ironprogress.domain.discipline.BreathingPattern.BOX,
+            "circulo" to com.olarte.ironprogress.domain.discipline.BreathingPattern.RELAXING,
+        ).forEach { (name, pattern) ->
+            val plan = pattern.toPlan(5)
+            listOf(2_000L, 7_000L, 13_000L).forEachIndexed { index, at ->
+                val timer = plan.stateAt(at, 0)
+                shoot("respiracion-$name-${index + 1}") {
+                    com.olarte.ironprogress.ui.discipline.BreathingScreen(
+                        com.olarte.ironprogress.ui.discipline.GuidedRunState(started = true, timer = timer.copy(isPaused = true)),
+                        com.olarte.ironprogress.ui.discipline.BreathingChoice(pattern = pattern),
+                        {},
+                        {},
+                        {},
+                        {},
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    fun onboardingSteps() {
+        val answers = com.olarte.ironprogress.ui.settings.OnboardingAnswers(
+            goal = com.olarte.ironprogress.domain.settings.TrainingGoal.MUSCLE,
+            experience = com.olarte.ironprogress.domain.settings.ExperienceLevel.INTERMEDIATE,
+            daysPerWeek = 4,
+            unit = com.olarte.ironprogress.domain.settings.WeightUnit.KG,
+            disciplines = setOf(
+                com.olarte.ironprogress.domain.catalog.Discipline.STRENGTH,
+                com.olarte.ironprogress.domain.catalog.Discipline.YOGA,
+            ),
+            proMode = false,
+            audio = com.olarte.ironprogress.domain.settings.WorkoutAudio.KEEP_VOLUME,
+        )
+        com.olarte.ironprogress.ui.settings.OnboardingStep.entries.forEach { step ->
+            // La primera pregunta sin responder: así se ve Continuar apagado.
+            val shown = if (step == com.olarte.ironprogress.ui.settings.OnboardingStep.GOAL) {
+                com.olarte.ironprogress.ui.settings.OnboardingAnswers()
+            } else {
+                answers
+            }
+            shoot("onboarding-${step.ordinal}-${step.name.lowercase()}") {
+                androidx.compose.runtime.key(step) {
+                    com.olarte.ironprogress.ui.settings.OnboardingScreen(
+                        com.olarte.ironprogress.ui.settings.OnboardingFlow(step, shown),
+                    ) {}
+                }
+            }
+        }
+    }
+
+    @Test
+    fun breathingSummary() {
+        val plan = com.olarte.ironprogress.domain.discipline.BreathingPattern.BOX.toPlan(5)
+        val timer = plan.stateAt(10_000_000, 0)
+        shoot("respiracion-resumen") {
+            com.olarte.ironprogress.ui.discipline.BreathingScreen(
+                com.olarte.ironprogress.ui.discipline.GuidedRunState(started = true, timer = timer, saved = true),
+                com.olarte.ironprogress.ui.discipline.BreathingChoice(),
+                {},
+                {},
+                {},
+                {},
+            )
+        }
+    }
+
+    @Test
     fun newInterval() {
         val template = com.olarte.ironprogress.domain.interval.IntervalTemplate(
             com.olarte.ironprogress.domain.interval.IntervalTemplateId("t"),

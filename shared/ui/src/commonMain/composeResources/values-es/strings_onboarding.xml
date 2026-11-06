@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onb2_welcome_title">Entrena a tu manera, sin complicarte</string>
+    <string name="onb2_welcome_sub">Unas preguntas rápidas y tu app queda lista. Puedes cambiar todo luego en Ajustes.</string>
+    <string name="onb2_continue">Continuar</string>
+    <string name="onb2_skip">Omitir</string>
+    <string name="onb2_back">Atrás</string>
+    <string name="onb2_goal_title">¿Qué quieres lograr?</string>
+    <string name="onb2_goal_sub">Elige tu objetivo principal.</string>
+    <string name="goal_strength_hint">Levantar más peso con buena técnica.</string>
+    <string name="goal_muscle_hint">Ganar masa muscular.</string>
+    <string name="goal_endurance_hint">Aguantar más y cansarte menos.</string>
+    <string name="goal_health_hint">Moverte y sentirte bien cada semana.</string>
+    <string name="goal_weight_hint">Bajar o mantener tu peso.</string>
+    <string name="onb2_exp_title">¿Cuánta experiencia tienes?</string>
+    <string name="onb2_exp_sub">Así ajustamos lo que te sugerimos.</string>
+    <string name="exp_beginner_hint">Estoy empezando o vuelvo después de un tiempo.</string>
+    <string name="exp_intermediate_hint">Entreno con constancia hace meses.</string>
+    <string name="exp_advanced_hint">Llevo años y conozco bien mis cargas.</string>
+    <string name="onb2_days_title">¿Cuántos días a la semana quieres entrenar?</string>
+    <string name="onb2_days_sub">Puedes cambiarlo cuando quieras.</string>
+    <string name="onb2_days_caption">días por semana</string>
+    <string name="onb2_units_title">¿En qué unidad anotas el peso?</string>
+    <string name="onb2_units_sub">Cada ejercicio puede tener la suya.</string>
+    <string name="unit_kg_hint">Kilogramos</string>
+    <string name="unit_lb_hint">Libras</string>
+    <string name="onb2_disc_title">¿Qué entrenas?</string>
+    <string name="onb2_disc_sub">Elige una o más.</string>
+    <string name="onb2_mode_title">¿Cómo quieres anotar tus series?</string>
+    <string name="onb2_mode_sub">Puedes cambiarlo en Ajustes cuando quieras.</string>
+    <string name="onb2_mode_basic">Básico</string>
+    <string name="onb2_mode_basic_hint">Solo peso y reps. Rápido y sencillo.</string>
+    <string name="onb2_recommended">Recomendado</string>
+    <string name="onb2_mode_pro">Pro</string>
+    <string name="onb2_mode_pro_hint">Añade RIR y RPE. RIR son las reps que te quedaban; RPE, qué tan duro fue del 1 al 10.</string>
+    <string name="onb2_audio_title">¿Qué pasa con tu música cuando la app habla?</string>
+    <string name="onb2_audio_sub">La voz te avisa los cambios en intervalos, bloques y respiración.</string>
+    <string name="onb2_done_title">Todo listo</string>
+    <string name="onb2_done_sub">Esto es lo que elegiste:</string>
+    <string name="onb2_summary_goal">Objetivo: %1$s</string>
+    <string name="onb2_summary_exp">Experiencia: %1$s</string>
+    <string name="onb2_summary_unit">Peso en %1$s</string>
+    <string name="onb2_summary_mode">Modo %1$s</string>
+    <string name="onb2_summary_audio">Audio: %1$s</string>
+    <string name="onb2_create_routine">Crear mi primera rutina</string>
+    <string name="onb2_go_today">Ir a Hoy</string>
+    <plurals name="onb2_days_per_week">
+        <item quantity="one">%1$d día por semana</item>
+        <item quantity="other">%1$d días por semana</item>
+    </plurals>
+</resources>

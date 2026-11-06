@@ -38,6 +38,17 @@ enum class WeightUnit {
     LB,
 }
 
+/**
+ * Qué pasa con la música del teléfono cuando la app habla durante el entreno. Por defecto la música
+ * sigue igual; [NO_VOICE] apaga la voz y la música no se toca nunca.
+ */
+enum class WorkoutAudio {
+    KEEP_VOLUME,
+    DUCK,
+    PAUSE_MUSIC,
+    NO_VOICE,
+}
+
 /** Lo que se responde en la bienvenida (CFG-01). */
 @Serializable
 data class TrainingProfile(
@@ -70,9 +81,17 @@ data class AppSettings(
     val hideBodyMetrics: Boolean = false,
     /** Modo Pro: muestra RIR y RPE para quien entrena por esfuerzo; apagado, solo peso y reps. */
     val proMode: Boolean = false,
+    /** Música y voz durante el entreno. Con [voice] apagado cuenta como [WorkoutAudio.NO_VOICE]. */
+    val audio: WorkoutAudio = WorkoutAudio.KEEP_VOLUME,
     val onboardingDone: Boolean = false,
     val profile: TrainingProfile? = null,
-)
+) {
+    /** Lo que de verdad se usa: la voz apagada de antes de este ajuste también cuenta como "Sin voz". */
+    val workoutAudio: WorkoutAudio get() = if (!voice) WorkoutAudio.NO_VOICE else audio
+
+    /** Elegir "Sin voz" apaga la voz; cualquier otra opción la prende. */
+    fun withWorkoutAudio(value: WorkoutAudio): AppSettings = copy(audio = value, voice = value != WorkoutAudio.NO_VOICE)
+}
 
 interface SettingsRepository {
     val settings: Flow<AppSettings>
@@ -83,7 +102,12 @@ interface SettingsRepository {
 
 /** Guarda lo elegido en la bienvenida y la marca como hecha: no vuelve a salir. */
 class CompleteOnboarding(private val repository: SettingsRepository) {
-    suspend operator fun invoke(profile: TrainingProfile) {
-        repository.update { it.copy(profile = profile, onboardingDone = true) }
+    suspend operator fun invoke(profile: TrainingProfile, proMode: Boolean? = null, audio: WorkoutAudio? = null) {
+        repository.update { current ->
+            var next = current.copy(profile = profile, onboardingDone = true)
+            if (proMode != null) next = next.copy(proMode = proMode)
+            if (audio != null) next = next.withWorkoutAudio(audio)
+            next
+        }
     }
 }

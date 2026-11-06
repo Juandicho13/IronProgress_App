@@ -84,12 +84,10 @@ import com.olarte.ironprogress.ui.resources.wod_tap_each
 import com.olarte.ironprogress.ui.resources.wod_time
 import com.olarte.ironprogress.ui.resources.wod_title
 import com.olarte.ironprogress.ui.resources.wod_voice_hint
-import com.olarte.ironprogress.ui.settings.LocalAppSettings
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
-import com.olarte.ironprogress.ui.voice.mutedUnless
-import com.olarte.ironprogress.ui.voice.rememberVoiceSpeaker
+import com.olarte.ironprogress.ui.voice.rememberWorkoutVoice
 import com.olarte.ironprogress.ui.voice.text
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -98,7 +96,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun WodRoute(languageCode: String, onClose: () -> Unit) {
     val model = koinViewModel<WodViewModel>()
     val state by model.state.collectAsStateWithLifecycle()
-    val speaker = rememberVoiceSpeaker().mutedUnless(LocalAppSettings.current.voice)
+    val speaker = rememberWorkoutVoice()
     LaunchedEffect(model, speaker) {
         model.voiceLines.collect { lines -> lines.forEach { speaker.speak(it.text { null }) } }
     }

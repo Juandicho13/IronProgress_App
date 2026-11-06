@@ -47,10 +47,7 @@ import com.olarte.ironprogress.ui.components.ForjaNumber
 import com.olarte.ironprogress.ui.interval.clock
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.flow_breath_of
-import com.olarte.ironprogress.ui.resources.flow_close
-import com.olarte.ironprogress.ui.resources.flow_done
 import com.olarte.ironprogress.ui.resources.flow_exhale
-import com.olarte.ironprogress.ui.resources.flow_failed
 import com.olarte.ironprogress.ui.resources.flow_inhale
 import com.olarte.ironprogress.ui.resources.flow_last
 import com.olarte.ironprogress.ui.resources.flow_left
@@ -63,15 +60,15 @@ import com.olarte.ironprogress.ui.resources.flow_pause
 import com.olarte.ironprogress.ui.resources.flow_resume
 import com.olarte.ironprogress.ui.resources.flow_right
 import com.olarte.ironprogress.ui.resources.flow_round
-import com.olarte.ironprogress.ui.resources.flow_saved
 import com.olarte.ironprogress.ui.resources.flow_seconds_left
 import com.olarte.ironprogress.ui.resources.flow_skip
-import com.olarte.ironprogress.ui.settings.LocalAppSettings
+import com.olarte.ironprogress.ui.resources.guided_summary_minutes
+import com.olarte.ironprogress.ui.resources.guided_summary_poses
+import com.olarte.ironprogress.ui.resources.guided_summary_rounds
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
-import com.olarte.ironprogress.ui.voice.mutedUnless
-import com.olarte.ironprogress.ui.voice.rememberVoiceSpeaker
+import com.olarte.ironprogress.ui.voice.rememberWorkoutVoice
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -81,7 +78,7 @@ import org.koin.core.parameter.parametersOf
 fun FlowRoute(flowId: String, languageCode: String, onClose: () -> Unit) {
     val model = koinViewModel<FlowViewModel>(key = "flow-$flowId") { parametersOf(flowId, languageCode) }
     val state by model.state.collectAsStateWithLifecycle()
-    val speaker = rememberVoiceSpeaker().mutedUnless(LocalAppSettings.current.voice)
+    val speaker = rememberWorkoutVoice()
     val haptics = ForjaTheme.haptics
     LaunchedEffect(model, speaker) {
         model.cues.collect { cue ->
@@ -118,6 +115,22 @@ fun FlowScreen(flow: GuidedFlow, state: GuidedRunState, languageCode: String, on
         limitMs = timer?.segmentDurationMs ?: Long.MAX_VALUE,
     )
 
+    if (state.finished) {
+        val posesDone = if (timer?.isFinished == true) plan.segments.size else index
+        val roundsDone = if (timer?.isFinished == true) flow.rounds else (segment.round - 1).coerceAtLeast(0)
+        GuidedSummary(
+            flow.name.resolve(languageCode),
+            listOf(
+                SummaryStat(stringResource(Res.string.guided_summary_minutes), summaryClock(timer?.totalElapsedMs ?: 0L)),
+                SummaryStat(stringResource(Res.string.guided_summary_rounds), "$roundsDone"),
+                SummaryStat(stringResource(Res.string.guided_summary_poses), "$posesDone"),
+            ),
+            state,
+            onClose,
+        )
+        return
+    }
+
     Column(
         Modifier.fillMaxSize().background(colors.background).statusBarsPadding().navigationBarsPadding()
             .verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
@@ -150,11 +163,6 @@ fun FlowScreen(flow: GuidedFlow, state: GuidedRunState, languageCode: String, on
             Crossfade(targetState = pose?.figure, animationSpec = tween(450), label = "pose") { figure ->
                 PoseFigureCanvas(PoseFigures.find(figure), colors.ice, colors.surface3, Modifier.fillMaxSize())
             }
-        }
-
-        if (state.finished) {
-            Finished(state, onClose)
-            return@Column
         }
 
         Column(
@@ -247,24 +255,6 @@ private fun BreathGuide(elapsedMs: Long) {
             color = colors.ice,
             modifier = Modifier.padding(start = ForjaSpacing.esp4),
         )
-    }
-}
-
-@Composable
-internal fun Finished(state: GuidedRunState, onClose: () -> Unit) {
-    val colors = ForjaTheme.colors
-    Column(
-        Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(stringResource(Res.string.flow_done), style = ForjaTheme.typography.title1, color = colors.text1)
-        Text(
-            stringResource(if (state.failed) Res.string.flow_failed else Res.string.flow_saved),
-            style = ForjaTheme.typography.body,
-            color = if (state.failed) colors.danger else colors.text2,
-        )
-        PillButton(stringResource(Res.string.flow_close), primary = true, modifier = Modifier.fillMaxWidth(), onClick = onClose)
     }
 }
 

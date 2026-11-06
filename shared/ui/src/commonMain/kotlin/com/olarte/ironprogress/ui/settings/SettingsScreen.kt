@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import com.olarte.ironprogress.domain.settings.AppLanguage
 import com.olarte.ironprogress.domain.settings.AppSettings
 import com.olarte.ironprogress.domain.settings.ThemeMode
+import com.olarte.ironprogress.domain.settings.WorkoutAudio
 import com.olarte.ironprogress.ui.components.ForjaDivider
 import com.olarte.ironprogress.ui.components.ForjaListGroup
 import com.olarte.ironprogress.ui.components.ForjaListRow
@@ -30,10 +31,19 @@ import com.olarte.ironprogress.ui.components.ForjaSheet
 import com.olarte.ironprogress.ui.components.ForjaSwitchRow
 import com.olarte.ironprogress.ui.components.ForjaTopBar
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.audio_duck
+import com.olarte.ironprogress.ui.resources.audio_duck_hint
+import com.olarte.ironprogress.ui.resources.audio_keep
+import com.olarte.ironprogress.ui.resources.audio_keep_hint
+import com.olarte.ironprogress.ui.resources.audio_none
+import com.olarte.ironprogress.ui.resources.audio_none_hint
+import com.olarte.ironprogress.ui.resources.audio_pause
+import com.olarte.ironprogress.ui.resources.audio_pause_hint
 import com.olarte.ironprogress.ui.resources.backup_section
 import com.olarte.ironprogress.ui.resources.lang_en
 import com.olarte.ironprogress.ui.resources.lang_es
 import com.olarte.ironprogress.ui.resources.lang_system
+import com.olarte.ironprogress.ui.resources.settings_audio
 import com.olarte.ironprogress.ui.resources.settings_back
 import com.olarte.ironprogress.ui.resources.settings_backup_hint
 import com.olarte.ironprogress.ui.resources.settings_backup_row
@@ -50,8 +60,6 @@ import com.olarte.ironprogress.ui.resources.settings_sound
 import com.olarte.ironprogress.ui.resources.settings_theme
 import com.olarte.ironprogress.ui.resources.settings_title
 import com.olarte.ironprogress.ui.resources.settings_vibration
-import com.olarte.ironprogress.ui.resources.settings_voice
-import com.olarte.ironprogress.ui.resources.settings_voice_hint
 import com.olarte.ironprogress.ui.resources.theme_dark
 import com.olarte.ironprogress.ui.resources.theme_light
 import com.olarte.ironprogress.ui.resources.theme_system
@@ -65,7 +73,7 @@ fun SettingsRoute(onBack: () -> Unit, onOpenBackup: () -> Unit = {}) {
     SettingsScreen(LocalAppSettings.current, LocalSettingsIntents.current, onBack, onOpenBackup)
 }
 
-private enum class SettingsSheet { LANGUAGE, THEME }
+private enum class SettingsSheet { LANGUAGE, THEME, AUDIO }
 
 /**
  * Ajustes (CFG-02 y CFG-03) en filas agrupadas: Idioma y Tema muestran su valor y abren una hoja con
@@ -115,11 +123,10 @@ fun SettingsScreen(settings: AppSettings, onIntent: (SettingsIntent) -> Unit, on
                     onIntent(SettingsIntent.Vibration(it))
                 })
                 ForjaDivider()
-                ForjaSwitchRow(
-                    stringResource(Res.string.settings_voice),
-                    settings.voice,
-                    { onIntent(SettingsIntent.Voice(it)) },
-                    subtitle = stringResource(Res.string.settings_voice_hint),
+                ForjaListRow(
+                    stringResource(Res.string.settings_audio),
+                    value = settings.workoutAudio.label(),
+                    onClick = { sheet = SettingsSheet.AUDIO },
                 )
             }
 
@@ -164,9 +171,38 @@ fun SettingsScreen(settings: AppSettings, onIntent: (SettingsIntent) -> Unit, on
                 }
             }
         }
+        SettingsSheet.AUDIO -> ForjaSheet(stringResource(Res.string.settings_audio), onDismiss = { sheet = null }) {
+            WorkoutAudio.entries.forEachIndexed { index, audio ->
+                if (index > 0) ForjaDivider()
+                ForjaRadioRow(audio.label(), audio == settings.workoutAudio, subtitle = audio.hint()) {
+                    sheet = null
+                    onIntent(SettingsIntent.Audio(audio))
+                }
+            }
+        }
         null -> Unit
     }
 }
+
+@Composable
+internal fun WorkoutAudio.label(): String = stringResource(
+    when (this) {
+        WorkoutAudio.KEEP_VOLUME -> Res.string.audio_keep
+        WorkoutAudio.DUCK -> Res.string.audio_duck
+        WorkoutAudio.PAUSE_MUSIC -> Res.string.audio_pause
+        WorkoutAudio.NO_VOICE -> Res.string.audio_none
+    },
+)
+
+@Composable
+internal fun WorkoutAudio.hint(): String = stringResource(
+    when (this) {
+        WorkoutAudio.KEEP_VOLUME -> Res.string.audio_keep_hint
+        WorkoutAudio.DUCK -> Res.string.audio_duck_hint
+        WorkoutAudio.PAUSE_MUSIC -> Res.string.audio_pause_hint
+        WorkoutAudio.NO_VOICE -> Res.string.audio_none_hint
+    },
+)
 
 @Composable
 private fun AppLanguage.label(): String = stringResource(

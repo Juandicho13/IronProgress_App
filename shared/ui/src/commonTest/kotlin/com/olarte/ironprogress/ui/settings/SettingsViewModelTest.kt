@@ -9,6 +9,7 @@ import com.olarte.ironprogress.domain.settings.CompleteOnboarding
 import com.olarte.ironprogress.domain.settings.SettingsRepository
 import com.olarte.ironprogress.domain.settings.ThemeMode
 import com.olarte.ironprogress.domain.settings.TrainingProfile
+import com.olarte.ironprogress.domain.settings.WorkoutAudio
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -69,6 +70,24 @@ class SettingsViewModelTest {
         assertFalse(s.voice)
         assertTrue(s.onboardingDone)
         assertEquals(5, s.profile?.daysPerWeek)
+    }
+
+    @Test
+    fun onboardingSavesProModeAndAudioAndTheAudioRowChangesIt() = runTest(dispatcher) {
+        val repo = MemorySettings()
+        val model = SettingsViewModel(repo, CompleteOnboarding(repo))
+        runCurrent()
+
+        model.onIntent(SettingsIntent.FinishOnboarding(TrainingProfile(), proMode = true, audio = WorkoutAudio.NO_VOICE))
+        runCurrent()
+        assertTrue(model.state.value.settings.proMode)
+        assertEquals(WorkoutAudio.NO_VOICE, model.state.value.settings.workoutAudio)
+        assertFalse(model.state.value.settings.voice)
+
+        model.onIntent(SettingsIntent.Audio(WorkoutAudio.DUCK))
+        runCurrent()
+        assertEquals(WorkoutAudio.DUCK, model.state.value.settings.workoutAudio)
+        assertTrue(model.state.value.settings.voice)
     }
 
     @Test

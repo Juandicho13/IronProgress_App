@@ -46,13 +46,10 @@
     <string name="breath_inhale">Inhala</string>
     <string name="breath_hold">Retén</string>
     <string name="breath_exhale">Exhala</string>
+    <string name="breath_cycle_of">Ciclo %1$d de %2$d</string>
     <string name="breath_cycle">Ciclo</string>
     <string name="breath_minutes">Minutos</string>
-    <string name="breath_warning">Sentado o acostado; nunca en el agua, conduciendo ni de pie. Si te mareas, vuelve a respirar normal.</string>
     <string name="breath_saves">Al terminar se guarda en tu historial como sesión de respiración.</string>
     <string name="breath_start">Empezar</string>
     <string name="breath_finish">Terminar</string>
-    <string name="breath_confirm_title">Antes de empezar</string>
-    <string name="breath_confirm_ok">Entendido, empezar</string>
-    <string name="breath_confirm_cancel">Cancelar</string>
 </resources>

@@ -377,7 +377,7 @@
     <string name="interval_pause">Pausa</string>
     <string name="interval_resume">Seguir</string>
     <string name="interval_skip_rest">Saltar descanso</string>
-    <string name="interval_skip_work">Saltar al descanso</string>
+    <string name="interval_skip_work">Saltar trabajo</string>
     <string name="interval_mute">Silenciar la voz</string>
     <string name="interval_unmute">Activar la voz</string>
     <string name="interval_close">Cerrar</string>

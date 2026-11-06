@@ -54,6 +54,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -186,9 +187,10 @@ fun ForjaTopBar(
             Text(
                 title,
                 Modifier.semantics { heading() },
-                style = ForjaTheme.typography.title3,
+                // Dos líneas antes de cortar: un nombre largo de rutina se lee entero.
+                style = if (title.length > TITLE_LONG) longTitleStyle() else ForjaTheme.typography.title3,
                 color = ForjaTheme.colors.text1,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
             )
@@ -532,3 +534,8 @@ fun ForjaNote(text: String, error: Boolean = false, modifier: Modifier = Modifie
         color = if (error) ForjaTheme.colors.danger else ForjaTheme.colors.text2,
     )
 }
+
+private const val TITLE_LONG = 18
+
+@Composable
+private fun longTitleStyle() = ForjaTheme.typography.body.copy(fontWeight = FontWeight.SemiBold)

@@ -3,7 +3,7 @@ package com.olarte.ironprogress.domain.discipline
 import com.olarte.ironprogress.domain.time.TimerPlan
 import com.olarte.ironprogress.domain.time.TimerPlans
 
-/** Qué tan delicado es un patrón. Desde [CAUTION] se avisa antes de empezar (PANTALLAS 7.3). */
+/** Qué tan delicado es un patrón. Sin aviso en pantalla desde la cuarta ronda (PANTALLAS 7.3). */
 enum class BreathingRisk {
     LOW,
 
@@ -22,7 +22,7 @@ data class BreathingPattern(val id: String, val inhale: Int, val holdIn: Int, va
 
     val cycleSeconds: Int get() = inhale + holdIn + exhale + holdOut
 
-    /** El aviso de seguridad sale como pregunta antes de empezar. */
+    /** Patrón delicado. La app ya no pregunta antes de empezar (decisión de Juan); queda para el catálogo de F5. */
     val warnsBeforeStart: Boolean get() = risk >= BreathingRisk.CAUTION
 
     /** Ciclos enteros que caben en [minutes], al menos uno; el último no se corta. */

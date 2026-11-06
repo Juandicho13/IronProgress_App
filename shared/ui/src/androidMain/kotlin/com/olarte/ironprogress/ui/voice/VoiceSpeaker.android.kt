@@ -22,8 +22,11 @@ actual fun rememberVoiceSpeaker(): VoiceSpeaker {
 }
 
 /**
- * Voz del sistema con TextToSpeech. Mientras habla pide el foco de audio con atenuación
- * (AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK): la música baja y vuelve al terminar la última frase.
+ * Voz del sistema con TextToSpeech. Según "Audio durante el entreno":
+ * - MIX: no pide el foco de audio; la música sigue igual y la voz suena encima.
+ * - DUCK: foco AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK; la música baja y vuelve al terminar la última frase.
+ * - PAUSE: foco AUDIOFOCUS_GAIN_TRANSIENT; la música se pausa y sigue al terminar.
+ * TextToSpeech habla en su propio hilo: speak() solo encola y vuelve enseguida.
  * También la puede usar el servicio del entreno, que vive sin pantalla.
  */
 class AndroidVoiceSpeaker(context: Context) :
@@ -34,16 +37,19 @@ class AndroidVoiceSpeaker(context: Context) :
         .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
         .build()
-    private val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+    private val duckRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+        .setAudioAttributes(attributes)
+        .build()
+    private val pauseRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
         .setAudioAttributes(attributes)
         .build()
     private val pendingUtterances = AtomicInteger(0)
-    private val waiting = mutableListOf<Pair<String, Boolean>>()
+    private val waiting = mutableListOf<Pair<String, MusicBehavior>>()
     private val nextId = AtomicInteger(0)
 
     @Volatile private var ready = false
 
-    @Volatile private var holdsFocus = false
+    @Volatile private var heldFocus: AudioFocusRequest? = null
     private val tts = TextToSpeech(context.applicationContext, this)
 
     override fun onInit(status: Int) {
@@ -64,18 +70,24 @@ class AndroidVoiceSpeaker(context: Context) :
         )
         ready = true
         synchronized(waiting) {
-            waiting.forEach { (text, duck) -> speak(text, duck) }
+            waiting.forEach { (text, music) -> speak(text, music) }
             waiting.clear()
         }
     }
 
-    override fun speak(text: String, duckMusic: Boolean) {
+    override fun speak(text: String, music: MusicBehavior) {
         if (!ready) {
-            synchronized(waiting) { waiting += text to duckMusic }
+            synchronized(waiting) { waiting += text to music }
             return
         }
-        if (duckMusic && !holdsFocus) {
-            holdsFocus = audioManager.requestAudioFocus(focusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        val wanted = when (music) {
+            MusicBehavior.MIX -> null
+            MusicBehavior.DUCK -> duckRequest
+            MusicBehavior.PAUSE -> pauseRequest
+        }
+        if (wanted != null && heldFocus !== wanted) {
+            releaseFocus()
+            if (audioManager.requestAudioFocus(wanted) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) heldFocus = wanted
         }
         pendingUtterances.incrementAndGet()
         tts.speak(text, TextToSpeech.QUEUE_ADD, null, "ironprogress-${nextId.incrementAndGet()}")
@@ -101,9 +113,7 @@ class AndroidVoiceSpeaker(context: Context) :
     }
 
     private fun releaseFocus() {
-        if (holdsFocus) {
-            audioManager.abandonAudioFocusRequest(focusRequest)
-            holdsFocus = false
-        }
+        heldFocus?.let { audioManager.abandonAudioFocusRequest(it) }
+        heldFocus = null
     }
 }

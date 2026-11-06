@@ -67,12 +67,10 @@ import com.olarte.ironprogress.ui.resources.interval_skip_rest
 import com.olarte.ironprogress.ui.resources.interval_skip_work
 import com.olarte.ironprogress.ui.resources.interval_summary_line
 import com.olarte.ironprogress.ui.resources.interval_unmute
-import com.olarte.ironprogress.ui.settings.LocalAppSettings
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
-import com.olarte.ironprogress.ui.voice.mutedUnless
-import com.olarte.ironprogress.ui.voice.rememberVoiceSpeaker
+import com.olarte.ironprogress.ui.voice.rememberWorkoutVoice
 import com.olarte.ironprogress.ui.voice.text
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -83,16 +81,15 @@ import org.koin.core.parameter.parametersOf
 fun IntervalRunRoute(id: String, languageCode: String, onClose: () -> Unit) {
     val model = koinViewModel<IntervalRunViewModel>(key = "interval-run-$id") { parametersOf(id, languageCode) }
     val state by model.state.collectAsStateWithLifecycle()
-    val speaker = rememberVoiceSpeaker().mutedUnless(LocalAppSettings.current.voice)
+    val speaker = rememberWorkoutVoice()
     var subtitle by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(model, speaker) {
         model.voiceLines.collect { lines ->
             val names = model.state.value.names
-            val duck = model.state.value.template?.voice?.duckMusic ?: true
             lines.forEach { line ->
                 val text = line.text { names[it] }
                 subtitle = text
-                speaker.speak(text, duck)
+                speaker.speak(text)
             }
         }
     }
@@ -115,7 +112,7 @@ fun IntervalRunScreen(state: IntervalRunState, subtitle: String?, onIntent: (Int
     val timer = state.timer
     Column(
         Modifier.fillMaxSize().background(colors.background).statusBarsPadding().navigationBarsPadding()
-            .verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
+            .padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -134,7 +131,7 @@ fun IntervalRunScreen(state: IntervalRunState, subtitle: String?, onIntent: (Int
                 onClick = onClose,
             )
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(template.name, style = type.title3, color = colors.text1)
+                Text(template.name, style = type.title3, color = colors.text1, maxLines = 2, textAlign = TextAlign.Center)
                 Text(
                     stringResource(Res.string.interval_of, clock(elapsed), clock(template.totalSeconds)),
                     style = type.caption,
@@ -148,55 +145,74 @@ fun IntervalRunScreen(state: IntervalRunState, subtitle: String?, onIntent: (Int
         }
 
         if (state.finished) {
-            Finished(state)
-            TextAction(stringResource(Res.string.interval_close), onClick = onClose)
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Column(
+                    Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) { Finished(state) }
+            }
+            com.olarte.ironprogress.ui.components.ForjaButton(
+                stringResource(Res.string.interval_close),
+                Modifier.fillMaxWidth(),
+                com.olarte.ironprogress.ui.components.ForjaButtonStyle.PRIMARY,
+                onClick = onClose,
+            )
             return@Column
         }
 
         RoundSegments(template.rounds, timer.round, timer.kind == SegmentKind.REST)
-        Text(stringResource(Res.string.interval_round, timer.round, template.rounds), style = type.caption, color = colors.text2)
 
         val working = timer.kind == SegmentKind.WORK
         val phaseColor = if (working) colors.ember else colors.ice
-        Text(
-            stringResource(if (working) Res.string.interval_phase_work else Res.string.interval_phase_rest),
-            modifier = Modifier.timerPhase(),
-            style = type.label,
-            color = phaseColor,
-        )
-        val exerciseName = timer.label?.let { state.names[it] }
-        Text(
-            if (working) exerciseName.orEmpty() else stringResource(Res.string.interval_breathe),
-            style = type.title1,
-            color = colors.text1,
-        )
+        // El centro ocupa todo el alto libre y queda centrado; si no cabe, se desplaza.
+        Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(stringResource(Res.string.interval_round, timer.round, template.rounds), style = type.caption, color = colors.text2)
+                Text(
+                    stringResource(if (working) Res.string.interval_phase_work else Res.string.interval_phase_rest),
+                    modifier = Modifier.timerPhase(),
+                    style = type.label,
+                    color = phaseColor,
+                )
+                val exerciseName = timer.label?.let { state.names[it] }
+                val headline = if (working) exerciseName.orEmpty() else stringResource(Res.string.interval_breathe)
+                if (headline.isNotEmpty()) {
+                    Text(headline, style = type.title1, color = colors.text1, textAlign = TextAlign.Center, maxLines = 2)
+                }
 
-        Ring(timer, phaseColor)
+                Ring(timer, phaseColor)
 
-        // Espacio fijo para "En pausa" y los avisos de la voz: al aparecer no empujan nada.
-        Box(Modifier.fillMaxWidth().height(40.dp), contentAlignment = Alignment.Center) {
-            val cue = if (timer.isPaused) stringResource(Res.string.interval_paused) else subtitle
-            if (cue != null) {
-                Box(
-                    Modifier.height(40.dp).clip(CircleShape).background(colors.surface2).padding(horizontal = ForjaSpacing.esp4),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(cue, style = type.body2, color = colors.text1, maxLines = 1)
+                // Espacio fijo para "En pausa" y los avisos de la voz: al aparecer no empujan nada.
+                Box(Modifier.fillMaxWidth().height(40.dp), contentAlignment = Alignment.Center) {
+                    val cue = if (timer.isPaused) stringResource(Res.string.interval_paused) else subtitle
+                    if (cue != null) {
+                        Box(
+                            Modifier.height(40.dp).clip(CircleShape).background(colors.surface2).padding(horizontal = ForjaSpacing.esp4),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(cue, style = type.body2, color = colors.text1, maxLines = 1)
+                        }
+                    }
+                }
+
+                if (working) {
+                    timer.label?.let { id ->
+                        state.lastTime[id]?.let { last ->
+                            Text(stringResource(Res.string.interval_last_time, last), style = type.body2, color = colors.text2)
+                        }
+                    }
+                } else {
+                    state.roundToLog?.let { round -> RepsCard(state, round) { onIntent(IntervalRunIntent.LogReps(round, it)) } }
                 }
             }
         }
 
-        if (working) {
-            timer.label?.let { id ->
-                state.lastTime[id]?.let { last ->
-                    Text(stringResource(Res.string.interval_last_time, last), style = type.body2, color = colors.text2)
-                }
-            }
-        } else {
-            state.roundToLog?.let { round -> RepsCard(state, round) { onIntent(IntervalRunIntent.LogReps(round, it)) } }
-        }
-
-        // Pausa y saltar: dos botones iguales que llenan el ancho.
+        // Pausa y saltar: dos botones iguales que llenan el ancho, siempre abajo.
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
             com.olarte.ironprogress.ui.components.ForjaButton(
                 stringResource(if (timer.isPaused) Res.string.interval_resume else Res.string.interval_pause),

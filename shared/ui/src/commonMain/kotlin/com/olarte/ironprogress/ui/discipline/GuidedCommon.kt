@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.olarte.ironprogress.ui.components.ForjaMoreIcons
 import com.olarte.ironprogress.ui.resources.Res
@@ -36,9 +37,15 @@ import org.jetbrains.compose.resources.stringResource
 
 /** Botón redondo de 48 con ícono de 24 (PANTALLAS 0). */
 @Composable
-internal fun RoundIconButton(icon: Painter, description: String, background: Boolean = true, onClick: () -> Unit) {
+internal fun RoundIconButton(
+    icon: Painter,
+    description: String,
+    background: Boolean = true,
+    size: Dp = ForjaMeasures.minTouch,
+    onClick: () -> Unit,
+) {
     Box(
-        Modifier.size(ForjaMeasures.minTouch).clip(CircleShape)
+        Modifier.size(size).clip(CircleShape)
             .then(if (background) Modifier.background(ForjaTheme.colors.surface3) else Modifier)
             .semantics { contentDescription = description }
             .clickable(role = Role.Button, onClick = onClick),

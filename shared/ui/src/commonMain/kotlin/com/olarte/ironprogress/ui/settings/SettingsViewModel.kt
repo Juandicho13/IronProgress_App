@@ -8,6 +8,7 @@ import com.olarte.ironprogress.domain.settings.CompleteOnboarding
 import com.olarte.ironprogress.domain.settings.SettingsRepository
 import com.olarte.ironprogress.domain.settings.ThemeMode
 import com.olarte.ironprogress.domain.settings.TrainingProfile
+import com.olarte.ironprogress.domain.settings.WorkoutAudio
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -31,7 +32,10 @@ sealed interface SettingsIntent {
 
     data class ProMode(val on: Boolean) : SettingsIntent
 
-    data class FinishOnboarding(val profile: TrainingProfile) : SettingsIntent
+    data class Audio(val value: WorkoutAudio) : SettingsIntent
+
+    data class FinishOnboarding(val profile: TrainingProfile, val proMode: Boolean? = null, val audio: WorkoutAudio? = null) :
+        SettingsIntent
 }
 
 /** Ajustes y bienvenida (CFG-01 a CFG-03). Cada cambio se guarda al momento en DataStore. */
@@ -44,7 +48,7 @@ class SettingsViewModel(private val repository: SettingsRepository, private val 
     fun onIntent(intent: SettingsIntent) {
         viewModelScope.launch {
             when (intent) {
-                is SettingsIntent.FinishOnboarding -> completeOnboarding(intent.profile)
+                is SettingsIntent.FinishOnboarding -> completeOnboarding(intent.profile, intent.proMode, intent.audio)
                 else -> repository.update { it.apply(intent) }
             }
         }
@@ -58,6 +62,7 @@ class SettingsViewModel(private val repository: SettingsRepository, private val 
         is SettingsIntent.Voice -> copy(voice = intent.on)
         is SettingsIntent.HideBodyMetrics -> copy(hideBodyMetrics = intent.on)
         is SettingsIntent.ProMode -> copy(proMode = intent.on)
+        is SettingsIntent.Audio -> withWorkoutAudio(intent.value)
         is SettingsIntent.FinishOnboarding -> this
     }
 }

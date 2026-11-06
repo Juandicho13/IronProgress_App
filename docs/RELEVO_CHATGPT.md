@@ -378,3 +378,13 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - Cancelar entreno (menú ⋮ de Entreno) descarta la sesión con `SessionStatus.DISCARDED`. Terminar sin ninguna serie hecha también la descarta, y salir de un entreno libre sin ejercicios igual. Salir con ejercicios pero sin series hechas la deja abierta para volver.
 - Capturas en `scratchpad/shots3`. El teclado de la serie va en su propia ventana y Robolectric no la captura: hay que verlo en el teléfono.
 
+## 30. Cuarta ronda: respiración, audio y bienvenida, 5 de noviembre de 2026
+
+- **Respiración:** sin aviso ni pregunta de seguridad (Juan lo pidió). `BreathFigure` dibuja a partir del tiempo dentro del ciclo (`rememberCycleMs`: la lectura del motor más lo que pasó, con vuelta al final del ciclo), así no se detiene en los cambios de fase. La cuadrada da una vuelta completa por ciclo con el recorrido pintado; los círculos usan `FastOutSlowInEasing` y un anillo fino de ciclo. "Ciclo N de M" centrado; resumen al terminar (`GuidedSummary`, también en los flujos).
+- **La voz congelaba las animaciones en iPhone:** `AVAudioSession.setActive` bloquea el hilo que lo pide. `AppleVoiceSpeaker` hace todo lo de audio en una cola serial propia (`dispatch_queue_create`); `speak()` solo encola. En Android TextToSpeech ya hablaba en su hilo.
+- **Audio durante el entreno:** `WorkoutAudio` en `AppSettings` (KEEP_VOLUME por defecto, DUCK, PAUSE_MUSIC, NO_VOICE; "Sin voz" apaga `voice`, y la voz apagada de antes cuenta como "Sin voz"). La voz usa `rememberWorkoutVoice()`, que aplica el ajuste con `MusicBehavior`: Android sin foco, `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK` o `AUDIOFOCUS_GAIN_TRANSIENT`; iPhone `mixWithOthers`, `duckOthers` con `interruptSpokenAudioAndMixWithOthers`, o sin mezcla (la música se pausa y sigue al desactivar la sesión). El interruptor "bajar la música" de cada intervalo se quitó: manda el ajuste general.
+- **Bienvenida:** `OnboardingFlow` (sin interfaz, probada en `OnboardingFlowTest`) lleva el paso, las respuestas, Continuar, atrás y Omitir; `OnboardingScreen` lo dibuja. Al terminar guarda perfil, modo Pro y audio con `CompleteOnboarding`; "Crear mi primera rutina" abre el editor con `LocalOnboardingExit`.
+- **Intervalos:** botones de pausa y saltar fijos abajo, el centro centrado en el alto libre; "Saltar trabajo" y "Saltar descanso".
+- **Barra superior:** los títulos largos (más de 18 letras) usan un estilo más chico y hasta dos líneas.
+- Swift y `iosMain` sin compilar aquí: revisar en el Mac `VoiceSpeaker.ios.kt` (cola de audio y opciones de la sesión).
+

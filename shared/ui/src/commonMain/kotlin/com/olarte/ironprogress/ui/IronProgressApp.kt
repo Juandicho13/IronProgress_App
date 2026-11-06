@@ -94,6 +94,16 @@ fun IronProgressApp() {
     // Pila de Navigation 3: la raíz es una pestaña y encima pueden ir Catálogo o Entreno.
     // Sobrevive a girar el teléfono y al cierre del sistema (se guarda con navConfiguration).
     val backStack = rememberNavBackStack(navConfiguration, Route.Today)
+    // Recién terminada la bienvenida: "Crear mi primera rutina" abre el editor.
+    val onboardingExit = com.olarte.ironprogress.ui.settings.LocalOnboardingExit.current
+    LaunchedEffect(onboardingExit.value) {
+        if (onboardingExit.value == com.olarte.ironprogress.ui.settings.OnboardingExit.CREATE_ROUTINE) {
+            backStack.clear()
+            backStack.add(Route.Plan)
+            backStack.add(Route.RoutineEditor(null))
+        }
+        onboardingExit.value = null
+    }
     val hazeState = rememberHazeState()
     val currentDestination = backStack.lastOrNull() ?: Route.Today
 

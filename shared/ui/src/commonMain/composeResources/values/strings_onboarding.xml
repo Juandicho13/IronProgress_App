@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onb2_welcome_title">Train your way, without the hassle</string>
+    <string name="onb2_welcome_sub">A few quick questions and your app is ready. You can change everything later in Settings.</string>
+    <string name="onb2_continue">Continue</string>
+    <string name="onb2_skip">Skip</string>
+    <string name="onb2_back">Back</string>
+    <string name="onb2_goal_title">What do you want to achieve?</string>
+    <string name="onb2_goal_sub">Pick your main goal.</string>
+    <string name="goal_strength_hint">Lift more weight with good form.</string>
+    <string name="goal_muscle_hint">Build muscle.</string>
+    <string name="goal_endurance_hint">Last longer and tire less.</string>
+    <string name="goal_health_hint">Move and feel good every week.</string>
+    <string name="goal_weight_hint">Lose or keep your weight.</string>
+    <string name="onb2_exp_title">How much experience do you have?</string>
+    <string name="onb2_exp_sub">This tunes what we suggest.</string>
+    <string name="exp_beginner_hint">Just starting or coming back after a while.</string>
+    <string name="exp_intermediate_hint">Training consistently for months.</string>
+    <string name="exp_advanced_hint">Years in, and I know my loads well.</string>
+    <string name="onb2_days_title">How many days a week do you want to train?</string>
+    <string name="onb2_days_sub">You can change it anytime.</string>
+    <string name="onb2_days_caption">days per week</string>
+    <string name="onb2_units_title">Which unit do you log weight in?</string>
+    <string name="onb2_units_sub">Each exercise can have its own.</string>
+    <string name="unit_kg_hint">Kilograms</string>
+    <string name="unit_lb_hint">Pounds</string>
+    <string name="onb2_disc_title">What do you train?</string>
+    <string name="onb2_disc_sub">Pick one or more.</string>
+    <string name="onb2_mode_title">How do you want to log your sets?</string>
+    <string name="onb2_mode_sub">You can change it in Settings anytime.</string>
+    <string name="onb2_mode_basic">Basic</string>
+    <string name="onb2_mode_basic_hint">Only weight and reps. Quick and simple.</string>
+    <string name="onb2_recommended">Recommended</string>
+    <string name="onb2_mode_pro">Pro</string>
+    <string name="onb2_mode_pro_hint">Adds RIR and RPE. RIR is the reps you had left; RPE, how hard it was from 1 to 10.</string>
+    <string name="onb2_audio_title">What happens to your music when the app speaks?</string>
+    <string name="onb2_audio_sub">The voice calls out changes in intervals, blocks and breathing.</string>
+    <string name="onb2_done_title">All set</string>
+    <string name="onb2_done_sub">Here is what you picked:</string>
+    <string name="onb2_summary_goal">Goal: %1$s</string>
+    <string name="onb2_summary_exp">Experience: %1$s</string>
+    <string name="onb2_summary_unit">Weight in %1$s</string>
+    <string name="onb2_summary_mode">%1$s mode</string>
+    <string name="onb2_summary_audio">Audio: %1$s</string>
+    <string name="onb2_create_routine">Create my first routine</string>
+    <string name="onb2_go_today">Go to Today</string>
+    <plurals name="onb2_days_per_week">
+        <item quantity="one">%1$d day per week</item>
+        <item quantity="other">%1$d days per week</item>
+    </plurals>
+</resources>

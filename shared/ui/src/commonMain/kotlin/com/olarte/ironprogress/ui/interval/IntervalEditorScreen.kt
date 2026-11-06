@@ -50,8 +50,6 @@ import com.olarte.ironprogress.ui.resources.interval_countdown
 import com.olarte.ironprogress.ui.resources.interval_countdown_hint
 import com.olarte.ironprogress.ui.resources.interval_custom
 import com.olarte.ironprogress.ui.resources.interval_default_name
-import com.olarte.ironprogress.ui.resources.interval_duck
-import com.olarte.ironprogress.ui.resources.interval_duck_hint
 import com.olarte.ironprogress.ui.resources.interval_each_round
 import com.olarte.ironprogress.ui.resources.interval_edit
 import com.olarte.ironprogress.ui.resources.interval_error
@@ -324,9 +322,6 @@ private fun VoiceSection(voice: VoiceSettings, onChange: (VoiceSettings) -> Unit
             voice.enabled,
         ) {
             onChange(voice.copy(saysWhatsNext = it))
-        }
-        SwitchRow(stringResource(Res.string.interval_duck), stringResource(Res.string.interval_duck_hint), voice.duckMusic, voice.enabled) {
-            onChange(voice.copy(duckMusic = it))
         }
     }
 }
