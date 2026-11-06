@@ -525,4 +525,70 @@ class ScreenShotsTest {
     fun settingsPro() {
         shoot("ajustes-pro") { SettingsScreen(AppSettings(proMode = true), {}, {}) }
     }
+
+    private val todayMs = 1_793_923_200_000L
+
+    private fun demoPlanState(): PlanState {
+        val folder = Folder(FolderId("demo"), "Demo", 0)
+        val routines = listOf("Demo · Empuje", "Demo · Tirón", "Demo · Pierna", "Demo · Cuerpo completo")
+            .mapIndexed { index, name -> Routine(RoutineId("d$index"), folder.id, name, sortOrder = index) }
+        val week = com.olarte.ironprogress.domain.routine.WeekProgress(
+            (0..6).map { com.olarte.ironprogress.domain.routine.WeekDayStatus(it, false, it == 3) },
+            0,
+            0,
+        )
+        return PlanState(
+            routines,
+            listOf(folder),
+            routines.associate { it.id to 5 },
+            loading = false,
+            week = week,
+            nextRoutineId = routines.first().id,
+        )
+    }
+
+    @Test
+    fun headers() {
+        shoot("cabecera-hoy") {
+            com.olarte.ironprogress.ui.today.TodayScreen(
+                com.olarte.ironprogress.ui.today.TodayState(loading = false, todayEpochMs = todayMs),
+                onIntent = {},
+                onCreateRoutine = {},
+                onStartFree = {},
+            )
+        }
+        shoot("cabecera-plan") { PlanScreen(demoPlanState(), {}, {}) }
+        shoot("cabecera-progreso") {
+            ProgressScreen(ProgressState(loading = false), rememberLazyListState(), CatalogState(), "es", {}, rememberLazyListState(), {})
+        }
+        shoot("cabecera-ejercicios") {
+            com.olarte.ironprogress.ui.catalog.CatalogScreen(CatalogState(), "es", {})
+        }
+    }
+
+    @Test
+    fun todayWithDemo() {
+        val block = WorkoutBlock(BlockId("b1"), 0, BlockFormat.SETS)
+        val exercise = RoutineExercise(RoutineExerciseId("e1"), block.id, testBench.id, 0)
+        val sets = (0..2).map { SetTemplate(SetTemplateId("s$it"), exercise.id, it, repsMin = 6, repsMax = 10, targetRir = 2) }
+        val detail = RoutineDetail(Routine(RoutineId("d0"), FolderId("demo"), "Demo · Empuje"), listOf(block), listOf(exercise), sets)
+        val card = com.olarte.ironprogress.ui.today.TodayRoutineCard(
+            detail = detail,
+            folderName = "Demo",
+            positionInRotation = 1,
+            rotationSize = 4,
+            isActiveSession = false,
+            estimatedMinutes = 45,
+            primaryDiscipline = com.olarte.ironprogress.domain.catalog.Discipline.STRENGTH,
+            exercises = emptyList(),
+        )
+        shoot("hoy-demo") {
+            com.olarte.ironprogress.ui.today.TodayScreen(
+                com.olarte.ironprogress.ui.today.TodayState(loading = false, todayEpochMs = todayMs, nextRoutine = card),
+                onIntent = {},
+                onCreateRoutine = {},
+                onStartFree = {},
+            )
+        }
+    }
 }

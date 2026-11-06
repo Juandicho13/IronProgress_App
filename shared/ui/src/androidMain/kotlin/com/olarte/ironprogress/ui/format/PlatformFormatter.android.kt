@@ -1,7 +1,8 @@
 package com.olarte.ironprogress.ui.format
 
-import java.text.DateFormat
+import android.text.format.DateFormat
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -19,5 +20,11 @@ private class JavaPlatformFormatter(private val locale: Locale) : PlatformFormat
         return format.format(value)
     }
 
-    override fun date(epochMs: Long): String = DateFormat.getDateInstance(DateFormat.MEDIUM, locale).format(Date(epochMs))
+    /** "5 nov 2026" o "Nov 5, 2026": día, mes corto y año en el orden del idioma. */
+    override fun date(epochMs: Long): String =
+        SimpleDateFormat(DateFormat.getBestDateTimePattern(locale, DATE_SKELETON), locale).format(Date(epochMs))
+
+    private companion object {
+        const val DATE_SKELETON = "dMMMy"
+    }
 }

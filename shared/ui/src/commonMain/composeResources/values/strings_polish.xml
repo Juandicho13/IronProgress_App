@@ -41,4 +41,6 @@
     <string name="progress_body_body">Body weight, measurements and photos arrive with body tracking.</string>
     <string name="settings_backup_row">Backup and export</string>
     <string name="settings_backup_hint">Save, restore or export to CSV</string>
+    <!-- Idioma en el que se resolvieron los textos: las fechas y los números lo siguen. -->
+    <string name="resolved_language">en</string>
 </resources>

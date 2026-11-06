@@ -24,7 +24,7 @@ val uiModule = module {
     viewModel { (id: String) -> com.olarte.ironprogress.ui.catalog.ExerciseDetailViewModel(get(), id) }
     viewModel { (languageCode: String) -> CatalogViewModel(get(), get(), languageCode) }
     viewModel { com.olarte.ironprogress.ui.interval.IntervalListViewModel(get()) }
-    viewModel { com.olarte.ironprogress.ui.settings.SettingsViewModel(get(), get()) }
+    viewModel { com.olarte.ironprogress.ui.settings.SettingsViewModel(get(), get(), getOrNull()) }
     viewModel { com.olarte.ironprogress.ui.backup.BackupViewModel(get(), get()) }
     viewModel { (flowId: String, languageCode: String) ->
         com.olarte.ironprogress.ui.discipline.FlowViewModel(get(), get(), flowId, languageCode)

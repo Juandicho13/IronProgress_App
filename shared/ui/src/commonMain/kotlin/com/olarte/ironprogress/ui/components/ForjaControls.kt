@@ -51,6 +51,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -210,14 +211,31 @@ fun ForjaTopBar(
 /** Título grande de pestaña (Hoy, Plan, Progreso) con una acción redonda a la derecha. */
 @Composable
 fun ForjaLargeTitle(title: String, modifier: Modifier = Modifier, eyebrow: String? = null, trailing: @Composable () -> Unit = {}) {
+    // Cabecera común de Hoy, Plan, Progreso y Ejercicios: la línea de arriba (fecha o vacía) y la
+    // acción de la derecha siempre ocupan su lugar, así el título queda a la misma altura en todas.
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
-            if (eyebrow != null) Text(eyebrow, style = ForjaTheme.typography.caption, color = ForjaTheme.colors.text2)
-            Text(title, Modifier.semantics { heading() }, style = ForjaTheme.typography.title1, color = ForjaTheme.colors.text1)
+            Text(
+                eyebrow.orEmpty(),
+                style = ForjaTheme.typography.caption,
+                color = ForjaTheme.colors.text2,
+                maxLines = 1,
+                modifier = if (eyebrow == null) Modifier.clearAndSetSemantics {} else Modifier,
+            )
+            Text(
+                title,
+                Modifier.semantics { heading() },
+                style = ForjaTheme.typography.title1,
+                color = ForjaTheme.colors.text1,
+                maxLines = 1,
+            )
         }
-        trailing()
+        Box(Modifier.heightIn(min = ForjaMeasures.minTouch), contentAlignment = Alignment.CenterEnd) { trailing() }
     }
 }
+
+/** Espacio entre la barra de estado y la cabecera de las pestañas: el mismo en las cuatro. */
+val ForjaHeaderTop = ForjaSpacing.esp3
 
 /**
  * Pantalla completa de Forja: fondo opaco, barra superior y una lista con márgenes de 20 y

@@ -15,3 +15,5 @@ actual fun systemLanguageTag(): String {
     val region = NSLocale.currentLocale.countryCode
     return if (region.isNullOrBlank()) preferred else "$preferred-$region"
 }
+
+actual fun systemRegion(): String? = NSLocale.currentLocale.countryCode?.ifBlank { null }

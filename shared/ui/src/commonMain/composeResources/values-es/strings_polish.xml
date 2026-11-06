@@ -41,4 +41,6 @@
     <string name="progress_body_body">El peso corporal, las medidas y las fotos llegan con el seguimiento del cuerpo.</string>
     <string name="settings_backup_row">Copia de seguridad y exportar</string>
     <string name="settings_backup_hint">Guardar, restaurar o exportar a CSV</string>
+    <!-- Idioma en el que se resolvieron los textos: las fechas y los números lo siguen. -->
+    <string name="resolved_language">es</string>
 </resources>

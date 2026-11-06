@@ -2,6 +2,7 @@ package com.olarte.ironprogress.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.olarte.ironprogress.domain.routine.SeedDemoRoutines
 import com.olarte.ironprogress.domain.settings.AppLanguage
 import com.olarte.ironprogress.domain.settings.AppSettings
 import com.olarte.ironprogress.domain.settings.CompleteOnboarding
@@ -11,6 +12,7 @@ import com.olarte.ironprogress.domain.settings.TrainingProfile
 import com.olarte.ironprogress.domain.settings.WorkoutAudio
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -39,11 +41,23 @@ sealed interface SettingsIntent {
 }
 
 /** Ajustes y bienvenida (CFG-01 a CFG-03). Cada cambio se guarda al momento en DataStore. */
-class SettingsViewModel(private val repository: SettingsRepository, private val completeOnboarding: CompleteOnboarding) : ViewModel() {
+class SettingsViewModel(
+    private val repository: SettingsRepository,
+    private val completeOnboarding: CompleteOnboarding,
+    private val seedDemoRoutines: SeedDemoRoutines? = null,
+) : ViewModel() {
 
     val state: StateFlow<SettingsState> = repository.settings
         .map { SettingsState(loading = false, settings = it) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsState())
+
+    init {
+        // Con la bienvenida ya hecha (o al terminarla) siembra las rutinas demo una sola vez.
+        viewModelScope.launch {
+            val done = repository.settings.first { it.onboardingDone }
+            if (!done.demoRoutinesSeeded) runCatching { seedDemoRoutines?.invoke() }
+        }
+    }
 
     fun onIntent(intent: SettingsIntent) {
         viewModelScope.launch {

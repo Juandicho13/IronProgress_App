@@ -87,6 +87,7 @@ import com.olarte.ironprogress.ui.resources.onb2_days_sub
 import com.olarte.ironprogress.ui.resources.onb2_days_title
 import com.olarte.ironprogress.ui.resources.onb2_disc_sub
 import com.olarte.ironprogress.ui.resources.onb2_disc_title
+import com.olarte.ironprogress.ui.resources.onb2_done_demo
 import com.olarte.ironprogress.ui.resources.onb2_done_sub
 import com.olarte.ironprogress.ui.resources.onb2_done_title
 import com.olarte.ironprogress.ui.resources.onb2_exp_sub
@@ -436,6 +437,12 @@ private fun Done(flow: OnboardingFlow, onBack: () -> Unit, onExit: (OnboardingEx
                     }
                 }
             }
+            Text(
+                stringResource(Res.string.onb2_done_demo),
+                style = ForjaTheme.typography.caption,
+                color = colors.text2,
+                textAlign = TextAlign.Center,
+            )
         }
         Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
             ForjaButton(stringResource(Res.string.onb2_create_routine), Modifier.fillMaxWidth(), ForjaButtonStyle.PRIMARY) {

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,6 +48,7 @@ import com.olarte.ironprogress.domain.catalog.Muscle
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorChoice
 import com.olarte.ironprogress.ui.components.ForjaButtonStyle
+import com.olarte.ironprogress.ui.components.ForjaHeaderTop
 import com.olarte.ironprogress.ui.components.ForjaIconButton
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaLargeTitle
@@ -106,11 +106,10 @@ fun CatalogScreen(
             .fillMaxSize()
             .background(colors.background)
             .statusBarsPadding()
-            .padding(horizontal = ForjaSpacing.esp5),
+            .padding(horizontal = ForjaSpacing.esp5)
+            .padding(top = ForjaHeaderTop),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
     ) {
-        Spacer(modifier = Modifier.height(ForjaSpacing.esp2))
-
         // Un solo titulo grande por pantalla (titulo-1), con + para crear un ejercicio propio.
         ForjaLargeTitle(stringResource(Res.string.catalog_title)) {
             ForjaIconButton(ForjaIcons.Add, stringResource(Res.string.editor_create)) { onEdit(null) }

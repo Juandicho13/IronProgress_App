@@ -2,7 +2,7 @@ import ActivityKit
 import Foundation
 
 /// Datos de la Live Activity del entreno (F1-16, PANTALLAS 5.9).
-/// Este archivo va en la app y en la extensión IronProgressLiveActivity (Target Membership).
+/// Vive en LiveActivityShared, carpeta que compilan la app y la extensión IronProgressLiveActivity.
 struct WorkoutActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         /// "Descanso · Press banca" o "A la serie 3 de 4".

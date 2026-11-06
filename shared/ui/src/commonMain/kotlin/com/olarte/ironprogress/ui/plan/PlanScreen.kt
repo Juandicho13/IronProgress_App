@@ -27,6 +27,7 @@ import com.olarte.ironprogress.ui.components.ForjaButtonStyle
 import com.olarte.ironprogress.ui.components.ForjaDialog
 import com.olarte.ironprogress.ui.components.ForjaDivider
 import com.olarte.ironprogress.ui.components.ForjaEmptyState
+import com.olarte.ironprogress.ui.components.ForjaHeaderTop
 import com.olarte.ironprogress.ui.components.ForjaIconButton
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaLargeTitle
@@ -101,10 +102,9 @@ fun PlanScreen(state: PlanState, onIntent: (PlanIntent) -> Unit, onEdit: (String
 
     Column(
         Modifier.fillMaxSize().background(colors.background).statusBarsPadding()
-            .verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5),
+            .verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5).padding(top = ForjaHeaderTop),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
     ) {
-        Spacer(Modifier.height(ForjaSpacing.esp3))
         ForjaLargeTitle(stringResource(Res.string.plan_title)) {
             ForjaIconButton(ForjaIcons.Add, stringResource(Res.string.plan_add_menu), enabled = !state.busy) { sheet = PlanSheet.Create }
         }
@@ -120,10 +120,12 @@ fun PlanScreen(state: PlanState, onIntent: (PlanIntent) -> Unit, onEdit: (String
             }
         } else if (!state.loading) {
             if (state.week.days.isNotEmpty()) com.olarte.ironprogress.ui.today.TodayWeekCard(state.week)
-            ForjaSectionLabel(stringResource(Res.string.plan_routines))
-            // Rutinas sin carpeta primero, luego cada carpeta en su orden.
+            // Rutinas sin carpeta primero, luego cada carpeta en su orden. "Rutinas" solo si hay sueltas.
             val loose = state.routines.filter { routine -> state.folders.none { it.id == routine.folderId } }
-            if (loose.isNotEmpty()) RoutineGroup(loose, state, onEdit) { sheet = PlanSheet.RoutineActions(it) }
+            if (loose.isNotEmpty()) {
+                ForjaSectionLabel(stringResource(Res.string.plan_routines))
+                RoutineGroup(loose, state, onEdit) { sheet = PlanSheet.RoutineActions(it) }
+            }
             state.folders.forEach { item ->
                 key(item.id) {
                     FolderHeader(item.name, !state.busy) { sheet = PlanSheet.FolderActions(item) }

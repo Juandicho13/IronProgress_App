@@ -68,6 +68,7 @@ val sharedAppModule: Module = module {
     factory { com.olarte.ironprogress.domain.session.EditPastSet(get()) }
     factory { com.olarte.ironprogress.domain.session.DeletePastEntry(get()) }
     factory { com.olarte.ironprogress.domain.settings.CompleteOnboarding(get()) }
+    factory { com.olarte.ironprogress.domain.routine.SeedDemoRoutines(get(), get(), get(), get()) }
     factory { com.olarte.ironprogress.domain.discipline.SaveGuidedSession(get(), get(), get()) }
     single<com.olarte.ironprogress.domain.backup.BackupRepository> {
         com.olarte.ironprogress.data.backup.RoomBackupRepository(get(), get(), get())

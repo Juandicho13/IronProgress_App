@@ -44,6 +44,7 @@ import com.olarte.ironprogress.ui.components.ForjaButton
 import com.olarte.ironprogress.ui.components.ForjaButtonStyle
 import com.olarte.ironprogress.ui.components.ForjaCard
 import com.olarte.ironprogress.ui.components.ForjaEmptyState
+import com.olarte.ironprogress.ui.components.ForjaHeaderTop
 import com.olarte.ironprogress.ui.components.ForjaLargeTitle
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.label
@@ -120,7 +121,7 @@ fun ProgressScreen(
 
     if (selected == 0) {
         Column(Modifier.fillMaxSize().background(colors.background).statusBarsPadding()) {
-            Column(Modifier.padding(horizontal = ForjaSpacing.esp5).padding(top = ForjaSpacing.esp3, bottom = ForjaSpacing.esp2)) {
+            Column(Modifier.padding(horizontal = ForjaSpacing.esp5).padding(top = ForjaHeaderTop, bottom = ForjaSpacing.esp2)) {
                 header()
             }
             CatalogScreen(state = catalogState, languageCode = languageCode, onIntent = onCatalogIntent, listState = catalogListState)
@@ -135,7 +136,7 @@ fun ProgressScreen(
         contentPadding = PaddingValues(
             start = ForjaSpacing.esp5,
             end = ForjaSpacing.esp5,
-            top = ForjaSpacing.esp3,
+            top = ForjaHeaderTop,
             bottom = ForjaMeasures.islandHeight + ForjaMeasures.accessoryHeight + ForjaSpacing.esp8,
         ),
     ) {

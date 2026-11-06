@@ -6,8 +6,37 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A1F0C0DE00000000000000A2 /* IronProgressLiveActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1F0C0DE00000000000000A1 /* IronProgressLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A1F0C0DE00000000000000AF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7018CCD4112C382FB1E73784 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1F0C0DE00000000000000A9;
+			remoteInfo = IronProgressLiveActivity;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A1F0C0DE00000000000000AD /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A1F0C0DE00000000000000A2 /* IronProgressLiveActivity.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		C58B9DF87EE5E5522653C508 /* IronProgress.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IronProgress.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1F0C0DE00000000000000A1 /* IronProgressLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = IronProgressLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -17,6 +46,13 @@
 				Info.plist,
 			);
 			target = E5C2021B69CAA8887D560002 /* iosApp */;
+		};
+		A1F0C0DE00000000000000A3 /* Exceptions for "IronProgressLiveActivity" folder in "IronProgressLiveActivity" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A1F0C0DE00000000000000A9 /* IronProgressLiveActivity */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -34,10 +70,30 @@
 			path = Configuration;
 			sourceTree = "<group>";
 		};
+		A1F0C0DE00000000000000A4 /* IronProgressLiveActivity */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A1F0C0DE00000000000000A3 /* Exceptions for "IronProgressLiveActivity" folder in "IronProgressLiveActivity" target */,
+			);
+			path = IronProgressLiveActivity;
+			sourceTree = "<group>";
+		};
+		A1F0C0DE00000000000000A5 /* LiveActivityShared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LiveActivityShared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		73A6A3269CDE3CBF783963F7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1F0C0DE00000000000000A7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -52,6 +108,8 @@
 			children = (
 				ACCC1433200F719ABB3E95CB /* Configuration */,
 				1A2746DBE99D34DE9933EB3A /* iosApp */,
+				A1F0C0DE00000000000000A5 /* LiveActivityShared */,
+				A1F0C0DE00000000000000A4 /* IronProgressLiveActivity */,
 				4B8A302BB14982773E2F26DD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -60,6 +118,7 @@
 			isa = PBXGroup;
 			children = (
 				C58B9DF87EE5E5522653C508 /* IronProgress.app */,
+				A1F0C0DE00000000000000A1 /* IronProgressLiveActivity.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -75,13 +134,16 @@
 				F16ECC7C4EA145B6DD5AC855 /* Sources */,
 				73A6A3269CDE3CBF783963F7 /* Frameworks */,
 				2417183907ACF893E43263DC /* Resources */,
+				A1F0C0DE00000000000000AD /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A1F0C0DE00000000000000AE /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1A2746DBE99D34DE9933EB3A /* iosApp */,
+				A1F0C0DE00000000000000A5 /* LiveActivityShared */,
 			);
 			name = iosApp;
 			packageProductDependencies = (
@@ -89,6 +151,29 @@
 			productName = iosApp;
 			productReference = C58B9DF87EE5E5522653C508 /* IronProgress.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A1F0C0DE00000000000000A9 /* IronProgressLiveActivity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1F0C0DE00000000000000AA /* Build configuration list for PBXNativeTarget "IronProgressLiveActivity" */;
+			buildPhases = (
+				A1F0C0DE00000000000000A6 /* Sources */,
+				A1F0C0DE00000000000000A7 /* Frameworks */,
+				A1F0C0DE00000000000000A8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A1F0C0DE00000000000000A4 /* IronProgressLiveActivity */,
+				A1F0C0DE00000000000000A5 /* LiveActivityShared */,
+			);
+			name = IronProgressLiveActivity;
+			packageProductDependencies = (
+			);
+			productName = IronProgressLiveActivity;
+			productReference = A1F0C0DE00000000000000A1 /* IronProgressLiveActivity.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -103,6 +188,9 @@
 					E5C2021B69CAA8887D560002 = {
 						CreatedOnToolsVersion = 16.2;
 					};
+					A1F0C0DE00000000000000A9 = {
+						CreatedOnToolsVersion = 16.2;
+					};
 				};
 			};
 			buildConfigurationList = D89C6144CD6974DE4B778CF5 /* Build configuration list for PBXProject "iosApp" */;
@@ -110,6 +198,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				es,
 				Base,
 			);
 			mainGroup = 161EE03EEF9AD694C071B111;
@@ -120,12 +209,20 @@
 			projectRoot = "";
 			targets = (
 				E5C2021B69CAA8887D560002 /* iosApp */,
+				A1F0C0DE00000000000000A9 /* IronProgressLiveActivity */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		2417183907ACF893E43263DC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1F0C0DE00000000000000A8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -164,7 +261,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1F0C0DE00000000000000A6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A1F0C0DE00000000000000AE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1F0C0DE00000000000000A9 /* IronProgressLiveActivity */;
+			targetProxy = A1F0C0DE00000000000000AF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0BCC8FF16E3DCEB8CADA4DEE /* Debug */ = {
@@ -346,6 +458,60 @@
 			};
 			name = Release;
 		};
+		A1F0C0DE00000000000000AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "${TEAM_ID}";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = IronProgressLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IronProgress;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.olarte.ironprogress.IronProgress$(TEAM_ID).LiveActivity";
+				PRODUCT_NAME = IronProgressLiveActivity;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1F0C0DE00000000000000AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "${TEAM_ID}";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = IronProgressLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IronProgress;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.olarte.ironprogress.IronProgress$(TEAM_ID).LiveActivity";
+				PRODUCT_NAME = IronProgressLiveActivity;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -363,6 +529,15 @@
 			buildConfigurations = (
 				36225220B343AAB3CC3FC033 /* Debug */,
 				ABF3E1B8396488F83D437F53 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1F0C0DE00000000000000AA /* Build configuration list for PBXNativeTarget "IronProgressLiveActivity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1F0C0DE00000000000000AB /* Debug */,
+				A1F0C0DE00000000000000AC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

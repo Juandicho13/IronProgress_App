@@ -60,6 +60,8 @@ Relojes:
 - **Para qué:** ver cómo llegas y empezar el entreno que toca en un toque.
 - **Estructura, de arriba abajo (desde 76 dp):**
   1. Cabecera: `caption` con la fecha ("Miércoles 23 de septiembre") y `title1` "Hoy"; a la derecha, botón de 48 en `surface3` con `account_circle` ("Perfil y ajustes").
+
+**Alcance implementado (quinta ronda):** Hoy, Plan, Progreso y Ejercicios usan la misma cabecera (`ForjaLargeTitle`): línea de arriba siempre reservada (la fecha en Hoy, vacía en las demás), acción de 48 a la derecha y 12 de la barra de estado, así el título queda a la misma altura al cambiar de pestaña. La fecha usa el esqueleto día, mes corto y año del idioma ("5 nov 2026").
   2. Tarjeta **Recuperación** en `iceVeil`: ícono `watch` en hielo y etiqueta "Recuperación"; `title3` "Lista para entrenar completo"; una fila con `bedtime` "7 h 42 min de sueño" y `ecg_heart` "52 lpm en reposo" (cifras en `text1`, resto en `text2`, 14/20).
   3. Tarjeta **Esta semana**: `title3` a la izquierda y "2 de 5 · racha de 6 semanas" a la derecha (`text2`). Siete círculos de 36: día hecho en `ember` con `check`; hoy con borde de 2 en `ember` y la letra; día planeado en `surface3` con la letra; día de descanso solo con la letra en `text3`. Cada círculo dice su estado para lectores de pantalla ("Lunes: entrenaste").
   4. Tarjeta **Siguiente**: `caption` "Siguiente · Semana 3 de 6", `title2` "Empuje A", "5 ejercicios · 55 min · Gimnasio"; lista de ejercicios con separador `line` y, a la derecha, lo que cambia hoy: en `ember` con `north_east` cuando sube ("62,5 kg", "+1 rep") y en `text2` cuando se mantiene ("40 kg", "+10 kg", "25 kg"); botón principal **Empezar** con `play_arrow`.

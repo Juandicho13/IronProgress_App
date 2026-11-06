@@ -48,4 +48,5 @@
         <item quantity="one">%1$d día por semana</item>
         <item quantity="other">%1$d días por semana</item>
     </plurals>
+    <string name="onb2_done_demo">En Plan tienes unas rutinas en la carpeta Demo para empezar. Cópialas, cámbialas o bórralas.</string>
 </resources>

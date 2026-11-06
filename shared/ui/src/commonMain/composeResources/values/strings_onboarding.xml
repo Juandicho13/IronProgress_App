@@ -48,4 +48,5 @@
         <item quantity="one">%1$d day per week</item>
         <item quantity="other">%1$d days per week</item>
     </plurals>
+    <string name="onb2_done_demo">In Plan you will find a few routines in the Demo folder to start with. Copy them, change them or delete them.</string>
 </resources>

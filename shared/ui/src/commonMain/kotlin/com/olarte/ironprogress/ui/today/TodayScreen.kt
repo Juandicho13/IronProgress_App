@@ -36,7 +36,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,7 +46,6 @@ import com.olarte.ironprogress.domain.routine.WeekProgress
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaMoreIcons
-import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.appLanguage
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
@@ -154,28 +152,21 @@ fun TodayScreen(
             .padding(horizontal = ForjaSpacing.esp5),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
         contentPadding = PaddingValues(
-            top = ForjaSpacing.esp3,
+            top = com.olarte.ironprogress.ui.components.ForjaHeaderTop,
             bottom = ForjaMeasures.islandHeight + ForjaMeasures.accessoryHeight + ForjaSpacing.esp7,
         ),
     ) {
         item {
-            Row(verticalAlignment = Alignment.Bottom) {
-                TodayTitle(state, formats, Modifier.weight(1f))
-                // Botón redondo de 48 en surface3 a la derecha del título (PANTALLAS 0): abre Ajustes.
-                val settingsLabel = stringResource(Res.string.settings_open)
-                Box(
-                    Modifier.size(ForjaMeasures.minTouch).clip(CircleShape).background(colors.surface3)
-                        .semantics { contentDescription = settingsLabel }
-                        .clickable(role = Role.Button, onClick = onOpenSettings),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        ForjaMoreIcons.AccountCircle,
-                        contentDescription = null,
-                        tint = colors.text1,
-                        modifier = Modifier.size(ForjaMeasures.iconSize),
-                    )
-                }
+            // Cabecera común (ForjaLargeTitle): la fecha va en la línea de arriba y Ajustes a la derecha.
+            com.olarte.ironprogress.ui.components.ForjaLargeTitle(
+                title = stringResource(Res.string.nav_today),
+                eyebrow = if (state.todayEpochMs > 0L) formats.date(state.todayEpochMs).uppercase() else null,
+            ) {
+                com.olarte.ironprogress.ui.components.ForjaIconButton(
+                    ForjaMoreIcons.AccountCircle,
+                    stringResource(Res.string.settings_open),
+                    onClick = onOpenSettings,
+                )
             }
         }
         if (state.loading) {
@@ -575,24 +566,5 @@ private fun TodayPrimaryButton(text: String, enabled: Boolean, showPlayIcon: Boo
                 color = if (enabled) colors.onEmber else colors.text3,
             )
         }
-    }
-}
-
-@Composable
-private fun TodayTitle(state: TodayState, formats: Formats, modifier: Modifier) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
-        if (state.todayEpochMs > 0L) {
-            Text(
-                text = formats.date(state.todayEpochMs).uppercase(),
-                style = ForjaTheme.typography.caption,
-                color = ForjaTheme.colors.text2,
-            )
-        }
-        Text(
-            text = stringResource(Res.string.nav_today),
-            modifier = Modifier.semantics { heading() },
-            style = ForjaTheme.typography.title1,
-            color = ForjaTheme.colors.text1,
-        )
     }
 }

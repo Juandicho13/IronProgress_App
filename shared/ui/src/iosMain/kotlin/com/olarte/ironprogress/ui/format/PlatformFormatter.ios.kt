@@ -2,8 +2,6 @@ package com.olarte.ironprogress.ui.format
 
 import platform.Foundation.NSDate
 import platform.Foundation.NSDateFormatter
-import platform.Foundation.NSDateFormatterMediumStyle
-import platform.Foundation.NSDateFormatterNoStyle
 import platform.Foundation.NSLocale
 import platform.Foundation.NSNumber
 import platform.Foundation.NSNumberFormatter
@@ -30,8 +28,8 @@ private class ApplePlatformFormatter(private val locale: NSLocale) : PlatformFor
     override fun date(epochMs: Long): String {
         val formatter = NSDateFormatter()
         formatter.locale = locale
-        formatter.dateStyle = NSDateFormatterMediumStyle
-        formatter.timeStyle = NSDateFormatterNoStyle
+        // Mismo esqueleto que Android: día, mes corto y año en el orden del idioma ("5 nov 2026").
+        formatter.setLocalizedDateFormatFromTemplate("dMMMy")
         return formatter.stringFromDate(NSDate.dateWithTimeIntervalSince1970(epochMs / 1_000.0))
     }
 }

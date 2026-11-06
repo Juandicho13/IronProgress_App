@@ -33,24 +33,26 @@ struct IronProgressLiveActivity: Widget {
                 Countdown(state: context.state, size: 15)
                     .frame(maxWidth: 52)
             } minimal: {
-                RestRing(state: context.state, size: 22)
+                RestRing(state: context.state, size: 22, fills: true)
             }
             .keylineTint(context.state.ready ? ForjaTokens.ready : ForjaTokens.ice)
         }
     }
 }
 
-/// Anillo azul que se va vaciando mientras descansa; en Listo, un círculo verde con el check.
+/// Anillo azul del descanso; en Listo, un círculo verde con el check.
+/// Compacta y expandida: se va vaciando. Mínima (`fills`): se va llenando hasta quedar toda azul.
 /// Lo anima el sistema con ProgressView(timerInterval:), sin actualizar la actividad cada segundo.
-/// ActivityKit no deja dibujar alrededor de la isla: el anillo va dentro, a la izquierda.
+/// ActivityKit no deja dibujar alrededor de la isla: el anillo va dentro.
 private struct RestRing: View {
     let state: WorkoutActivityAttributes.ContentState
     let size: CGFloat
+    var fills: Bool = false
 
     var body: some View {
         Group {
             if !state.ready, let endsAt = state.endsAt, endsAt > state.startedAt {
-                ProgressView(timerInterval: state.startedAt...endsAt, countsDown: true) {
+                ProgressView(timerInterval: state.startedAt...endsAt, countsDown: !fills) {
                     EmptyView()
                 } currentValueLabel: {
                     EmptyView()

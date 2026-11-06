@@ -13,8 +13,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.settings.AppSettings
 import com.olarte.ironprogress.domain.settings.ThemeMode
 import com.olarte.ironprogress.ui.format.LocalAppLanguageTag
-import com.olarte.ironprogress.ui.format.systemLanguageTag
+import com.olarte.ironprogress.ui.format.resolvedLanguageTag
+import com.olarte.ironprogress.ui.format.systemRegion
+import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.resolved_language
 import com.olarte.ironprogress.ui.theme.ForjaTheme
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /** Ajustes vigentes para cualquier pantalla: tema, vibración, voz y ocultar peso corporal y calorías. */
@@ -50,10 +54,11 @@ fun SettingsGate(content: @Composable () -> Unit) {
     val settings = state.settings
     CompositionLocalProvider(appLocaleProvider(settings.language.tag)) {
         key(settings.language) {
+            val resolved = stringResource(Res.string.resolved_language)
             CompositionLocalProvider(
                 LocalAppSettings provides settings,
                 LocalSettingsIntents provides model::onIntent,
-                LocalAppLanguageTag provides (settings.language.tag ?: systemLanguageTag()),
+                LocalAppLanguageTag provides resolvedLanguageTag(settings.language.tag ?: resolved, systemRegion()),
                 LocalOnboardingExit provides exit,
             ) {
                 if (settings.onboardingDone) {
