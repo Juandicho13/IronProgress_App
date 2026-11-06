@@ -1,8 +1,5 @@
 package com.olarte.ironprogress.ui.interval
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -43,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.time.SegmentKind
 import com.olarte.ironprogress.ui.a11y.timerPhase
+import com.olarte.ironprogress.ui.components.ForjaMoreIcons
 import com.olarte.ironprogress.ui.components.ForjaNumber
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.interval_breathe
@@ -130,7 +128,11 @@ fun IntervalRunScreen(state: IntervalRunState, subtitle: String?, onIntent: (Int
 
         val elapsed = (timer.totalElapsedMs / 1000).toInt()
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            TextAction(stringResource(Res.string.interval_close), colors.text2, onClick = onClose)
+            com.olarte.ironprogress.ui.components.ForjaIconButton(
+                com.olarte.ironprogress.ui.components.ForjaIcons.Close,
+                stringResource(Res.string.interval_close),
+                onClick = onClose,
+            )
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(template.name, style = type.title3, color = colors.text1)
                 Text(
@@ -139,9 +141,9 @@ fun IntervalRunScreen(state: IntervalRunState, subtitle: String?, onIntent: (Int
                     color = colors.text2,
                 )
             }
-            TextAction(
+            com.olarte.ironprogress.ui.components.ForjaIconButton(
+                if (state.muted) ForjaMoreIcons.VolumeOff else ForjaMoreIcons.VolumeUp,
                 stringResource(if (state.muted) Res.string.interval_unmute else Res.string.interval_mute),
-                colors.text2,
             ) { onIntent(IntervalRunIntent.ToggleMute) }
         }
 
@@ -171,13 +173,16 @@ fun IntervalRunScreen(state: IntervalRunState, subtitle: String?, onIntent: (Int
 
         Ring(timer, phaseColor)
 
-        if (timer.isPaused) Text(stringResource(Res.string.interval_paused), style = type.body, color = colors.text2)
-        if (subtitle != null) {
-            Box(
-                Modifier.height(40.dp).clip(CircleShape).background(colors.surface2).padding(horizontal = ForjaSpacing.esp4),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(subtitle, style = type.body2, color = colors.text1)
+        // Espacio fijo para "En pausa" y los avisos de la voz: al aparecer no empujan nada.
+        Box(Modifier.fillMaxWidth().height(40.dp), contentAlignment = Alignment.Center) {
+            val cue = if (timer.isPaused) stringResource(Res.string.interval_paused) else subtitle
+            if (cue != null) {
+                Box(
+                    Modifier.height(40.dp).clip(CircleShape).background(colors.surface2).padding(horizontal = ForjaSpacing.esp4),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(cue, style = type.body2, color = colors.text1, maxLines = 1)
+                }
             }
         }
 
@@ -191,14 +196,17 @@ fun IntervalRunScreen(state: IntervalRunState, subtitle: String?, onIntent: (Int
             state.roundToLog?.let { round -> RepsCard(state, round) { onIntent(IntervalRunIntent.LogReps(round, it)) } }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4)) {
-            TextAction(
+        // Pausa y saltar: dos botones iguales que llenan el ancho.
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
+            com.olarte.ironprogress.ui.components.ForjaButton(
                 stringResource(if (timer.isPaused) Res.string.interval_resume else Res.string.interval_pause),
-                colors.text1,
+                Modifier.weight(1f),
+                com.olarte.ironprogress.ui.components.ForjaButtonStyle.SECONDARY,
             ) { onIntent(IntervalRunIntent.TogglePause) }
-            TextAction(
+            com.olarte.ironprogress.ui.components.ForjaButton(
                 stringResource(if (working) Res.string.interval_skip_work else Res.string.interval_skip_rest),
-                colors.text1,
+                Modifier.weight(1f),
+                com.olarte.ironprogress.ui.components.ForjaButtonStyle.TONAL,
                 enabled = !timer.isPaused,
             ) { onIntent(IntervalRunIntent.Skip) }
         }
@@ -227,8 +235,7 @@ private fun Ring(timer: com.olarte.ironprogress.domain.time.TimerState, color: C
     val colors = ForjaTheme.colors
     val duration = timer.segmentDurationMs ?: 1L
     val left = timer.remainingInSegmentMs ?: 0L
-    val target = (left.toFloat() / duration.toFloat()).coerceIn(0f, 1f)
-    val progress by animateFloatAsState(target, tween(durationMillis = 120, easing = LinearEasing))
+    val progress = com.olarte.ironprogress.ui.components.rememberSmoothFraction(left, duration, !timer.isPaused && !timer.isFinished)
     val seconds = timer.displaySecondsLeft?.toInt() ?: 0
     val track = colors.surface3
     Box(Modifier.size(300.dp), contentAlignment = Alignment.Center) {
@@ -274,7 +281,7 @@ private fun RepsCard(state: IntervalRunState, round: Int, onPick: (Int) -> Unit)
             style = ForjaTheme.typography.body,
             color = colors.text1,
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2, Alignment.CenterHorizontally)) {
             ((last - 2).coerceAtLeast(0)..(last + 2)).forEach { value ->
                 val selected = chosen == value
                 Box(

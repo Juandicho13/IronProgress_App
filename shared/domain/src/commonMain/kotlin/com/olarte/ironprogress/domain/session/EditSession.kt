@@ -20,6 +20,21 @@ fun WorkoutSet.copyMeasurements(previous: WorkoutSet): WorkoutSet = copy(
     rpe = previous.rpe,
 )
 
+/**
+ * Rellena solo las medidas vacías con las de [source] (la serie anterior o la última vez). Lo que
+ * ya tiene la serie, como las reps objetivo de la rutina, se queda; RIR y RPE no se copian.
+ */
+fun WorkoutSet.fillMissingFrom(source: WorkoutSet): WorkoutSet = copy(
+    weightKg = weightKg ?: source.weightKg,
+    reps = reps ?: source.reps,
+    durationSeconds = durationSeconds ?: source.durationSeconds,
+    distanceMeters = distanceMeters ?: source.distanceMeters,
+    calories = calories ?: source.calories,
+    heightCm = heightCm ?: source.heightCm,
+    breaths = breaths ?: source.breaths,
+    watts = watts ?: source.watts,
+)
+
 /** La serie equivalente conserva el tipo y su posición dentro de ese tipo. */
 fun equivalentPreviousSet(set: WorkoutSet, current: List<WorkoutSet>, previous: List<WorkoutSet>): WorkoutSet? {
     val index = current.sortedBy { it.sortOrder }.filter { it.setType == set.setType }.indexOfFirst { it.id == set.id }

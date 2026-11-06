@@ -368,3 +368,13 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Resumen:** Listo fijo abajo a todo el ancho; "1 serie de trabajo" con plurales.
 - **Capturas:** `ScreenShotsTest` suma Entreno con una serie hecha, Descanso, Respiración (antes y corriendo), Nuevo intervalo, Plan con la semana y Resumen.
 
+## 29. Tercera ronda tras el gimnasio, 5 de noviembre de 2026
+
+- Tiempo fluido: `rememberSmoothRemainingMs`, `rememberSmoothFraction` y `rememberSmoothElapsedMs` descuentan en cada cuadro lo que pasó desde la última lectura del motor. El motor sigue mandando; nadie cuenta segundos con `delay`. Los usan intervalos, WOD, flujo y respiración; el descanso ya iba por cuadro.
+- Sin parpadeo de carga: Hoy, Plan y Progreso crean su ViewModel en `IronProgressApp` y se lo pasan a su ruta. Hoy no vuelve a "Cargando" al refrescar, y `DelayedLoading` espera 300 ms antes de mostrar el texto.
+- Modo Pro (`AppSettings.proMode`, apagado por defecto): RIR y RPE solo se ven y se anotan con él, también la columna RIR del editor de rutinas. El ícono de información abre la explicación.
+- Relleno: la primera serie pendiente vacía toma lo de la última vez (`fillMissingFrom`), una sola vez por serie; al completar, la siguiente toma el peso y lo que le falte sin pisar sus reps objetivo.
+- Teclado: RPE de 1 a 10 en medios y RIR entero de 0 a 10; las teclas que se saldrían no hacen nada. En el descanso o al corregir una serie hecha el botón es Listo.
+- Cancelar entreno (menú ⋮ de Entreno) descarta la sesión con `SessionStatus.DISCARDED`. Terminar sin ninguna serie hecha también la descarta, y salir de un entreno libre sin ejercicios igual. Salir con ejercicios pero sin series hechas la deja abierta para volver.
+- Capturas en `scratchpad/shots3`. El teclado de la serie va en su propia ventana y Robolectric no la captura: hay que verlo en el teléfono.
+

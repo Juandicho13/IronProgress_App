@@ -86,6 +86,10 @@ fun IronProgressApp() {
     val catalogState by viewModel.state.collectAsStateWithLifecycle()
     val workoutViewModel = koinViewModel<WorkoutViewModel>()
     val workoutState by workoutViewModel.state.collectAsStateWithLifecycle()
+    // Las pestañas guardan su ViewModel en la app: al volver a una no hay pantalla de carga.
+    val todayViewModel = koinViewModel<com.olarte.ironprogress.ui.today.TodayViewModel>()
+    val planViewModel = koinViewModel<com.olarte.ironprogress.ui.plan.PlanViewModel>()
+    val progressViewModel = koinViewModel<com.olarte.ironprogress.ui.progress.ProgressViewModel>()
 
     // Pila de Navigation 3: la raíz es una pestaña y encima pueden ir Catálogo o Entreno.
     // Sobrevive a girar el teléfono y al cierre del sistema (se guarda con navConfiguration).
@@ -143,6 +147,9 @@ fun IronProgressApp() {
             isWorkoutScreenOpen = isWorkoutScreenOpen,
         )
 
+        LaunchedEffect(workoutViewModel, appSettings.proMode) {
+            workoutViewModel.onIntent(WorkoutIntent.SetProMode(appSettings.proMode))
+        }
         LaunchedEffect(workoutViewModel, workoutState.rest != null) {
             if (workoutState.rest != null) while (true) withFrameNanos { workoutViewModel.refreshRest() }
         }
@@ -168,6 +175,10 @@ fun IronProgressApp() {
                     is WorkoutEffect.Finished -> {
                         backStack.removeAll { it is Route.Workout }
                         backStack.add(Route.Summary(effect.sessionId))
+                    }
+                    WorkoutEffect.Discarded -> {
+                        backStack.removeAll { it is Route.Workout }
+                        if (backStack.isEmpty()) backStack.add(Route.Today)
                     }
                 }
             }
@@ -213,6 +224,8 @@ fun IronProgressApp() {
                     entry<Route.Workout> {
                         CompositionLocalProvider(LocalForjaHazeState provides hazeState) {
                             WorkoutRoute(workoutViewModel, onMinimize = {
+                                // Un entreno libre sin ningún ejercicio no se deja abierto: salir lo descarta.
+                                if (workoutState.session?.exercises?.isEmpty() == true) workoutViewModel.onIntent(WorkoutIntent.Cancel)
                                 backStack.removeAll { it is Route.Workout }
                                 if (backStack.isEmpty()) backStack.add(Route.Today)
                             })
@@ -262,6 +275,7 @@ fun IronProgressApp() {
                             onOpenSettings = {
                                 backStack.add(Route.Settings)
                             },
+                            viewModel = todayViewModel,
                         )
                     }
 
@@ -277,6 +291,7 @@ fun IronProgressApp() {
                                     onDisciplines = { backStack.add(Route.Disciplines) },
                                 )
                             },
+                            model = planViewModel,
                         )
                     }
                     entry<Route.IntervalEditor> { route ->
@@ -361,6 +376,7 @@ fun IronProgressApp() {
                             onCatalogIntent = viewModel::onIntent,
                             catalogListState = catalogListState,
                             onHistory = { backStack.add(Route.History) },
+                            model = progressViewModel,
                         )
                     }
                 },

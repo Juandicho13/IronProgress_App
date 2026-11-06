@@ -365,7 +365,10 @@ private fun ExerciseEditor(
             ColumnLabel(stringResource(Res.string.routine_col_set), Modifier.width(40.dp))
             ColumnLabel(stringResource(Res.string.routine_col_min), Modifier.weight(1f))
             ColumnLabel(stringResource(Res.string.routine_col_max), Modifier.weight(1f))
-            ColumnLabel(stringResource(Res.string.routine_col_rir), Modifier.weight(1f))
+            // RIR solo en modo Pro; en el básico la tabla es serie, mínimo y máximo.
+            if (com.olarte.ironprogress.ui.settings.LocalAppSettings.current.proMode) {
+                ColumnLabel(stringResource(Res.string.routine_col_rir), Modifier.weight(1f))
+            }
             Spacer(Modifier.width(ForjaMeasures.minTouch))
         }
         sets()
@@ -410,7 +413,11 @@ private fun SetRow(number: Int, draft: SetDraft, enabled: Boolean, onChange: (Se
         NumberCell(draft.maximum, stringResource(Res.string.routine_col_max), enabled, Modifier.weight(1f)) {
             onChange(draft.copy(maximum = it))
         }
-        NumberCell(draft.rir, stringResource(Res.string.routine_col_rir), enabled, Modifier.weight(1f)) { onChange(draft.copy(rir = it)) }
+        if (com.olarte.ironprogress.ui.settings.LocalAppSettings.current.proMode) {
+            NumberCell(draft.rir, stringResource(Res.string.routine_col_rir), enabled, Modifier.weight(1f)) {
+                onChange(draft.copy(rir = it))
+            }
+        }
         ForjaIconButton(
             ForjaIcons.Remove,
             stringResource(Res.string.routine_remove_set, number),

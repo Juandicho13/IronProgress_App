@@ -245,7 +245,12 @@ private fun BreathFigure(pattern: BreathingPattern, timer: TimerState?) {
     val colors = ForjaTheme.colors
     val kind = timer?.kind ?: SegmentKind.INHALE
     val duration = timer?.segmentDurationMs ?: 1L
-    val progress = if (timer == null) 0f else (timer.elapsedInSegmentMs.toFloat() / duration).coerceIn(0f, 1f)
+    val elapsed = com.olarte.ironprogress.ui.components.rememberSmoothElapsedMs(
+        timer?.elapsedInSegmentMs ?: 0L,
+        running = timer != null && !timer.isPaused && !timer.isFinished,
+        limitMs = duration,
+    )
+    val progress = if (timer == null) 0f else (elapsed.toFloat() / duration).coerceIn(0f, 1f)
     Canvas(Modifier.fillMaxSize()) {
         val side = size.minDimension * 0.8f
         val topLeft = Offset((size.width - side) / 2f, (size.height - side) / 2f)

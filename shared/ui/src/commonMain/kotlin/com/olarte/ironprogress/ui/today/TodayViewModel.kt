@@ -43,6 +43,9 @@ class TodayViewModel(
 
     private var observationJob: Job? = null
 
+    /** Tras la primera carga, refrescar no vuelve a mostrar "Cargando": se ven los datos de antes. */
+    private var loadedOnce = false
+
     init {
         observe()
     }
@@ -51,7 +54,7 @@ class TodayViewModel(
         val now = clock.now()
         mutableState.update {
             it.copy(
-                loading = true,
+                loading = !loadedOnce,
                 failed = false,
                 todayEpochMs = now.toEpochMilliseconds(),
             )
@@ -79,6 +82,7 @@ class TodayViewModel(
                 }.catch {
                     mutableState.update { it.copy(loading = false, failed = true) }
                 }.collect { newState ->
+                    loadedOnce = true
                     mutableState.value = newState
                 }
             } catch (e: CancellationException) {

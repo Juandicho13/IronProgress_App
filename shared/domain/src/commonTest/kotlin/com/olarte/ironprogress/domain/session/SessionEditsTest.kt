@@ -87,4 +87,16 @@ class SessionEditsTest {
         assertNull(started.sets.single().weightKg)
         assertEquals(listOf(2, 3, 4), started.exercises.filter { it != replacement }.map { it.sortOrder })
     }
+
+    @Test
+    fun fillMissingKeepsWhatTheSetAlreadyHas() {
+        val source = set("e1", 0, done = true).copy(weightKg = 20.0, reps = 8, rir = 2, rpe = 8.0)
+        val target = set("e1", 1).copy(weightKg = null, reps = 10)
+        val filled = target.fillMissingFrom(source)
+        assertEquals(20.0, filled.weightKg)
+        assertEquals(10, filled.reps)
+        assertNull(filled.rir)
+        assertNull(filled.rpe)
+        assertNull(filled.completedAt)
+    }
 }

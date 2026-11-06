@@ -112,7 +112,11 @@ fun FlowScreen(flow: GuidedFlow, state: GuidedRunState, languageCode: String, on
     val segment = plan.segments[index]
     val pose = flow.poseFor(segment.label)
     val perRound = plan.segments.size / flow.rounds
-    val elapsed = timer?.elapsedInSegmentMs ?: 0L
+    val elapsed = com.olarte.ironprogress.ui.components.rememberSmoothElapsedMs(
+        timer?.elapsedInSegmentMs ?: 0L,
+        running = timer != null && !timer.isPaused && !timer.isFinished,
+        limitMs = timer?.segmentDurationMs ?: Long.MAX_VALUE,
+    )
 
     Column(
         Modifier.fillMaxSize().background(colors.background).statusBarsPadding().navigationBarsPadding()

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_section_training">Entreno</string>
+    <string name="settings_pro">Modo Pro</string>
+    <string name="settings_pro_hint">Muestra RIR y RPE para anotar qué tan dura fue cada serie. Apagado, solo anotas peso y reps.</string>
+    <string name="workout_exercise_of">Ejercicio %1$d de %2$d</string>
+    <string name="workout_exercises">Ejercicios</string>
+    <string name="workout_current">Ahora</string>
+    <string name="workout_cancel">Cancelar entreno</string>
+    <string name="workout_cancel_title">¿Cancelar este entreno?</string>
+    <string name="workout_cancel_body">No se guardará nada.</string>
+    <string name="workout_cancel_confirm">Cancelar entreno</string>
+    <string name="workout_cancel_keep">Seguir entrenando</string>
+    <string name="workout_menu">Opciones del entreno</string>
+    <string name="workout_effort_info">Qué son RIR y RPE</string>
+    <string name="workout_effort_title">Qué tan dura fue</string>
+    <string name="workout_rir_explain">RIR: reps en reserva. Cuántas reps más podías hacer. 2 quiere decir que te sobraban 2.</string>
+    <string name="workout_rpe_explain">RPE: esfuerzo de 1 a 10. 10 es tu límite; 8 quiere decir que podías hacer unas 2 más.</string>
+    <string name="workout_effort_example">Ejemplo: 60 kg por 8 reps y podías hacer 2 más es RIR 2, RPE 8.</string>
+    <string name="workout_effort_ok">Entendido</string>
+    <string name="workout_done_editing">Listo</string>
+    <string name="rest_edit_next">Toca para cambiar la siguiente serie</string>
+    <string name="rest_reps_label">reps</string>
+</resources>

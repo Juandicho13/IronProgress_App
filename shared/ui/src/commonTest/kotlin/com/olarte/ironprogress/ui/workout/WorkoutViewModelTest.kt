@@ -119,15 +119,12 @@ class WorkoutViewModelTest {
     }
 
     @Test
-    fun finishNeedsADoneSetEndsTheSessionAndOpensTheSummary() = runTest {
+    fun finishWithADoneSetEndsTheSessionAndOpensTheSummary() = runTest {
         fixture { sessions, _, create ->
             val model = create()
             val id = start(model)
             val effects = mutableListOf<WorkoutEffect>()
             backgroundScope.launch { model.effects.collect { effects += it } }
-            model.onIntent(WorkoutIntent.Finish)
-            runCurrent()
-            assertTrue(effects.none { it is WorkoutEffect.Finished })
             type(model, id, WorkoutField.WEIGHT, "60")
             type(model, id, WorkoutField.REPS, "8")
             model.onIntent(WorkoutIntent.Complete(id))
@@ -344,6 +341,120 @@ class WorkoutViewModelTest {
             assertNull(saved.withInput(WorkoutField.REPS, "1.2"))
             assertNull(saved.withInput(WorkoutField.WEIGHT, "NaN"))
             assertNotNull(saved.withInput(WorkoutField.RIR, ""))
+        }
+    }
+
+    @Test
+    fun finishingWithNothingDoneDiscardsTheSessionSilently() = runTest {
+        fixture { sessions, _, create ->
+            val model = create()
+            start(model)
+            val effects = mutableListOf<WorkoutEffect>()
+            backgroundScope.launch { model.effects.collect { effects += it } }
+            model.onIntent(WorkoutIntent.Finish)
+            runCurrent()
+            assertEquals(SessionStatus.DISCARDED, sessions.data.value.single().session.status)
+            assertTrue(effects.none { it is WorkoutEffect.Finished })
+            assertEquals(WorkoutEffect.Discarded, effects.last())
+            assertNull(model.state.value.session)
+        }
+    }
+
+    @Test
+    fun cancelDiscardsEvenWithDoneSets() = runTest {
+        fixture { sessions, _, create ->
+            val model = create()
+            val id = start(model)
+            type(model, id, WorkoutField.WEIGHT, "60")
+            type(model, id, WorkoutField.REPS, "8")
+            model.onIntent(WorkoutIntent.Complete(id))
+            runCurrent()
+            model.onIntent(WorkoutIntent.Cancel)
+            runCurrent()
+            assertEquals(SessionStatus.DISCARDED, sessions.data.value.single().session.status)
+            assertNull(model.restController.state.value.timer)
+            assertNull(model.state.value.session)
+        }
+    }
+
+    @Test
+    fun rpeNeverGoesBelowOneAndRirStaysWhole() = runTest {
+        fixture { sessions, _, create ->
+            val model = create()
+            model.onIntent(WorkoutIntent.SetProMode(true))
+            val id = start(model)
+            model.onIntent(WorkoutIntent.OpenKeyboard(id, WorkoutField.RPE))
+            model.onIntent(WorkoutIntent.Adjust(-0.5))
+            runCurrent()
+            assertEquals(1.0, sessions.data.value.single().sets.single().rpe)
+            // Un 0 al empezar o una coma sin número no hacen nada; 7,5 sí entra.
+            model.onIntent(WorkoutIntent.OpenKeyboard(id, WorkoutField.RPE))
+            listOf("0", ",", "7", ",", "3", "5").forEach { model.onIntent(WorkoutIntent.Key(it)) }
+            runCurrent()
+            assertEquals("7.5", model.state.value.keyboard?.text)
+            assertFalse(model.state.value.keyboard!!.invalid)
+            assertEquals(7.5, sessions.data.value.single().sets.single().rpe)
+            model.onIntent(WorkoutIntent.OpenKeyboard(id, WorkoutField.RIR))
+            listOf(",", "1", "1").forEach { model.onIntent(WorkoutIntent.Key(it)) }
+            runCurrent()
+            assertEquals("1", model.state.value.keyboard?.text)
+            assertEquals(1, sessions.data.value.single().sets.single().rir)
+        }
+    }
+
+    @Test
+    fun basicModeHidesRirAndRpeFromTheKeyboard() = runTest {
+        fixture { _, _, create ->
+            val model = create()
+            val id = start(model)
+            assertEquals(listOf(WorkoutField.WEIGHT, WorkoutField.REPS), model.fieldsFor(id))
+            model.onIntent(WorkoutIntent.SetProMode(true))
+            assertEquals(listOf(WorkoutField.WEIGHT, WorkoutField.REPS, WorkoutField.RIR, WorkoutField.RPE), model.fieldsFor(id))
+            model.onIntent(WorkoutIntent.OpenKeyboard(id, WorkoutField.RPE))
+            model.onIntent(WorkoutIntent.SetProMode(false))
+            assertNull(model.state.value.keyboard)
+        }
+    }
+
+    @Test
+    fun nextSetKeepsItsTargetRepsAndTakesTheWeight() = runTest {
+        fixture { sessions, _, create ->
+            val model = create()
+            val id = start(model)
+            val exercise = model.state.value.session!!.exercises.single().id
+            model.onIntent(WorkoutIntent.AddSet(exercise))
+            runCurrent()
+            val second = model.state.value.session!!.sets.single { it.id != id }.id
+            // La segunda serie ya trae 10 reps objetivo y no tiene peso.
+            model.onIntent(WorkoutIntent.OpenKeyboard(second, WorkoutField.REPS))
+            listOf("1", "0").forEach { model.onIntent(WorkoutIntent.Key(it)) }
+            runCurrent()
+            type(model, id, WorkoutField.WEIGHT, "20")
+            type(model, id, WorkoutField.REPS, "8")
+            model.onIntent(WorkoutIntent.Complete(id))
+            runCurrent()
+            val next = sessions.data.value.single().sets.single { it.id == second }
+            assertEquals(20.0, next.weightKg)
+            assertEquals(10, next.reps)
+        }
+    }
+
+    @Test
+    fun firstSetStartsWithWhatWasDoneLastTime() = runTest {
+        fixture { sessions, _, create ->
+            val model = create()
+            val id = start(model)
+            type(model, id, WorkoutField.WEIGHT, "62,5")
+            type(model, id, WorkoutField.REPS, "8")
+            model.onIntent(WorkoutIntent.Complete(id))
+            runCurrent()
+            model.onIntent(WorkoutIntent.Finish)
+            runCurrent()
+            val again = start(model)
+            val prefilled = sessions.data.value.flatMap { it.sets }.single { it.id == again }
+            assertEquals(62.5, prefilled.weightKg)
+            assertEquals(8, prefilled.reps)
+            assertNull(prefilled.completedAt)
         }
     }
 }

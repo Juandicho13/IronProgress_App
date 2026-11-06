@@ -76,8 +76,8 @@ fun ProgressRoute(
     onCatalogIntent: (CatalogIntent) -> Unit,
     catalogListState: LazyListState,
     onHistory: () -> Unit,
+    model: ProgressViewModel = koinViewModel(),
 ) {
-    val model = koinViewModel<ProgressViewModel>()
     val state by model.state.collectAsStateWithLifecycle()
     ProgressScreen(state, listState, catalogState, languageCode, onCatalogIntent, catalogListState, onHistory)
 }
@@ -145,7 +145,9 @@ fun ProgressScreen(
                 ForjaEmptyState(stringResource(Res.string.progress_body_title), stringResource(Res.string.progress_body_body))
             }
             state.loading -> item {
-                Text(stringResource(Res.string.editor_loading), style = ForjaTheme.typography.body2, color = colors.text2)
+                com.olarte.ironprogress.ui.components.DelayedLoading(true) {
+                    Text(stringResource(Res.string.editor_loading), style = ForjaTheme.typography.body2, color = colors.text2)
+                }
             }
             state.sets.isEmpty() -> item {
                 ForjaEmptyState(stringResource(Res.string.progress_empty_title), stringResource(Res.string.progress_empty_body))

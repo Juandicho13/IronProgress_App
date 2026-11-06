@@ -73,8 +73,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun PlanRoute(onEdit: (String?) -> Unit, intervals: @Composable () -> Unit = {}) {
-    val model = koinViewModel<PlanViewModel>()
+fun PlanRoute(onEdit: (String?) -> Unit, intervals: @Composable () -> Unit = {}, model: PlanViewModel = koinViewModel()) {
     val state by model.state.collectAsStateWithLifecycle()
     PlanScreen(state, model::onIntent, onEdit, intervals)
 }
@@ -109,7 +108,7 @@ fun PlanScreen(state: PlanState, onIntent: (PlanIntent) -> Unit, onEdit: (String
         ForjaLargeTitle(stringResource(Res.string.plan_title)) {
             ForjaIconButton(ForjaIcons.Add, stringResource(Res.string.plan_add_menu), enabled = !state.busy) { sheet = PlanSheet.Create }
         }
-        if (state.loading) ForjaNote(stringResource(Res.string.editor_loading))
+        com.olarte.ironprogress.ui.components.DelayedLoading(state.loading) { ForjaNote(stringResource(Res.string.editor_loading)) }
         if (state.failed) {
             ForjaNote(stringResource(Res.string.editor_error), error = true)
             ForjaButton(stringResource(Res.string.editor_retry), style = ForjaButtonStyle.SECONDARY) { onIntent(PlanIntent.Retry) }

@@ -21,6 +21,7 @@ import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.domain.session.WorkoutSetId
 import com.olarte.ironprogress.domain.session.copyMeasurements
 import com.olarte.ironprogress.domain.session.equivalentPreviousSet
+import com.olarte.ironprogress.domain.session.fillMissingFrom
 import com.olarte.ironprogress.domain.session.firstPendingInGroup
 import com.olarte.ironprogress.domain.session.groupWithNext
 import com.olarte.ironprogress.domain.session.hasRequiredMeasurements
@@ -84,6 +85,9 @@ class WorkoutViewModel(
     private var highlightJob: Job? = null
     private var undoExpiresAt = 0L
     private var lastRestFrameMs = 0L
+
+    /** Series ya rellenadas con la última vez: cada una una sola vez, aunque el usuario la vacíe. */
+    private val prefilled = mutableSetOf<WorkoutSetId>()
 
     fun refreshRest() {
         val rest = state.value.rest ?: return
@@ -193,6 +197,7 @@ class WorkoutViewModel(
                             keyboard = it.keyboard?.takeIf { keyboard -> detail?.sets?.any { set -> set.id == keyboard.setId } == true },
                         )
                     }
+                    if (detail != null) prefillFromLastTime(detail, previous)
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -301,11 +306,23 @@ class WorkoutViewModel(
                     )
                 }
             }
+            is WorkoutIntent.SetProMode -> mutableState.update { current ->
+                val keyboard = current.keyboard?.takeIf { intent.on || it.field !in PRO_FIELDS }
+                current.copy(proMode = intent.on, keyboard = keyboard)
+            }
+            WorkoutIntent.Cancel -> {
+                if (state.value.session == null) return
+                enqueue { discard() }
+            }
             WorkoutIntent.Finish -> {
                 if (state.value.pendingWrites > 0) return
                 enqueue {
                     val detail = active()
-                    if (detail.sets.none { it.isCompleted }) return@enqueue
+                    // Sin ninguna serie hecha no hay entreno que guardar: se descarta sin preguntar.
+                    if (detail.sets.none { it.isCompleted }) {
+                        discard()
+                        return@enqueue
+                    }
                     EndSession(sessions, clock)(detail.session)
                     restController.clearRest()
                     notifyRestDeadline(null)
@@ -410,9 +427,43 @@ class WorkoutViewModel(
     }
 
     fun fieldsFor(id: WorkoutSetId): List<WorkoutField> {
-        val detail = state.value.session ?: return listOf(WorkoutField.WEIGHT, WorkoutField.REPS, WorkoutField.RIR, WorkoutField.RPE)
+        val pro = if (state.value.proMode) PRO_FIELDS else emptyList()
+        val detail = state.value.session ?: return listOf(WorkoutField.WEIGHT, WorkoutField.REPS) + pro
         val set = detail.sets.firstOrNull { it.id == id }
-        return state.value.measuresOf(set?.sessionExerciseId) + WorkoutField.RIR + WorkoutField.RPE
+        return state.value.measuresOf(set?.sessionExerciseId) + pro
+    }
+
+    /**
+     * La primera serie pendiente de cada ejercicio, si está vacía, arranca con lo que se hizo la
+     * última vez en esa misma serie: completar es un solo toque. Nunca pisa lo ya escrito.
+     */
+    private fun prefillFromLastTime(
+        detail: SessionDetail,
+        previous: Map<com.olarte.ironprogress.domain.catalog.ExerciseId, List<WorkoutSet>>,
+    ) {
+        detail.exercises.forEach { exercise ->
+            val sets = detail.setsOf(exercise.id)
+            val pending = sets.firstOrNull { !it.isCompleted } ?: return@forEach
+            if (pending.id in prefilled) return@forEach
+            prefilled += pending.id
+            if (!pending.isBlank()) return@forEach
+            val last = equivalentPreviousSet(pending, sets, previous[exercise.exerciseId].orEmpty()) ?: return@forEach
+            enqueue {
+                val current =
+                    active().sets.firstOrNull { it.id == pending.id }?.takeIf { !it.isCompleted && it.isBlank() } ?: return@enqueue
+                sessions.saveSet(current.fillMissingFrom(last))
+            }
+        }
+    }
+
+    /** Marca la sesión como descartada: no sale en el historial ni cuenta en Hoy ni en la racha. */
+    private suspend fun discard() {
+        val detail = active()
+        EndSession(sessions, clock)(detail.session, discard = true)
+        restController.clearRest()
+        notifyRestDeadline(null)
+        mutableState.update { it.copy(rest = null, restExpanded = false, keyboard = null, undoSetId = null, work = null) }
+        effectChannel.send(WorkoutEffect.Discarded)
     }
 
     private suspend fun setMode(intent: WorkoutIntent.SetMode) {
@@ -448,6 +499,8 @@ class WorkoutViewModel(
 
     private fun typeKey(key: String) {
         val keyboard = state.value.keyboard ?: return
+        val base = if (keyboard.replace) "" else keyboard.text
+        if (key != "backspace" && !allowsKey(keyboard.field, base, key)) return
         val text = when (key) {
             "backspace" -> keyboard.text.dropLast(1)
             ".", "," -> if (keyboard.replace ||
@@ -465,7 +518,31 @@ class WorkoutViewModel(
     }
 
     private fun setKeyboardValue(value: Double) {
-        saveKeyboardText(value.coerceAtLeast(0.0).let { if (it % 1.0 == 0.0) it.toLong().toString() else it.toString() })
+        val field = state.value.keyboard?.field ?: return
+        val clamped = when (field) {
+            WorkoutField.RPE -> (kotlin.math.round(value * 2) / 2).coerceIn(RPE_MIN, RPE_MAX)
+            WorkoutField.RIR -> kotlin.math.round(value).coerceIn(0.0, RIR_MAX)
+            else -> value.coerceAtLeast(0.0)
+        }
+        saveKeyboardText(clamped.let { if (it % 1.0 == 0.0) it.toLong().toString() else it.toString() })
+    }
+
+    /**
+     * RIR va de 0 a 10 en enteros; RPE de 1 a 10 en medios (7, 7,5, 8). Una tecla que dejaría un
+     * valor fuera de rango no hace nada, así nunca hace falta un aviso en rojo.
+     */
+    private fun allowsKey(field: WorkoutField, base: String, key: String): Boolean {
+        if (field != WorkoutField.RIR && field != WorkoutField.RPE) return true
+        val decimal = key == "." || key == ","
+        if (field == WorkoutField.RIR) {
+            if (decimal) return false
+            val next = (base + key).toIntOrNull() ?: return false
+            return next <= RIR_MAX && !(base == "0")
+        }
+        if (decimal) return base.isNotEmpty() && '.' !in base && (base.toDoubleOrNull() ?: 0.0) in RPE_MIN..(RPE_MAX - 0.5)
+        if ('.' in base) return base.substringAfter('.').isEmpty() && (key == "0" || key == "5")
+        val next = (base + key).toDoubleOrNull() ?: return false
+        return next in RPE_MIN..RPE_MAX && !(base.isEmpty() && key == "0")
     }
 
     private fun saveKeyboardText(text: String) {
@@ -509,10 +586,13 @@ class WorkoutViewModel(
             val toComplete = if (timed && set.durationSeconds == null) set.copy(durationSeconds = exercise.timedSeconds) else set
             val completed = completeSet(toComplete)
             if (state.value.work?.setId == id) mutableState.update { it.copy(work = null) }
-            // La siguiente serie vacía del mismo ejercicio arranca con lo que se acaba de hacer.
+            // La siguiente serie arranca con lo que se acaba de hacer en lo que tenga vacío: si ya
+            // trae las reps objetivo de la rutina, se quedan y solo se copia el peso.
             detail.setsOf(exercise.id).firstOrNull { !it.isCompleted && it.id != id }
-                ?.takeIf { it.isBlank() }
-                ?.let { sessions.saveSet(it.copyMeasurements(completed)) }
+                ?.let { next ->
+                    if (next.isBlank()) next.copyMeasurements(completed).copy(rir = null, rpe = null) else next.fillMissingFrom(completed)
+                }
+                ?.let { sessions.saveSet(it) }
             completing.remove(id)
             // Superserie o circuito: sin descanso hasta el último del grupo; después, la vuelta empieza
             // por el primero del grupo con series pendientes (F1-12).
@@ -556,6 +636,13 @@ class WorkoutViewModel(
                 mutableState.update { it.copy(highlightedSetId = null) }
             }
         }
+    }
+
+    private companion object {
+        val PRO_FIELDS = listOf(WorkoutField.RIR, WorkoutField.RPE)
+        const val RPE_MIN = 1.0
+        const val RPE_MAX = 10.0
+        const val RIR_MAX = 10.0
     }
 
     private fun WorkoutSet.isBlank(): Boolean = WorkoutField.entries.filter { it.measure != null }.all { value(it) == null }

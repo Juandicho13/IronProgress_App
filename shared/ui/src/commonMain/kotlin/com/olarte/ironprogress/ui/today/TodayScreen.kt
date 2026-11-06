@@ -105,8 +105,9 @@ fun TodayRoute(
     onCreateRoutine: () -> Unit,
     onStartFree: () -> Unit,
     onOpenSettings: () -> Unit = {},
+    // Vive a nivel de la app: cambiar de pestaña no lo recrea ni vuelve a mostrar "Cargando".
+    viewModel: TodayViewModel = koinViewModel(),
 ) {
-    val viewModel = koinViewModel<TodayViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel) {
@@ -179,11 +180,13 @@ fun TodayScreen(
         }
         if (state.loading) {
             item {
-                Text(
-                    text = stringResource(Res.string.editor_loading),
-                    style = typography.body,
-                    color = colors.text2,
-                )
+                com.olarte.ironprogress.ui.components.DelayedLoading(true) {
+                    Text(
+                        text = stringResource(Res.string.editor_loading),
+                        style = typography.body,
+                        color = colors.text2,
+                    )
+                }
             }
         }
 

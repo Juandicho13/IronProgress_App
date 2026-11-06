@@ -271,7 +271,12 @@ private fun Running(state: WodState, languageCode: String, onIntent: (WodIntent)
         }
     }
     if (total != null) {
-        val fraction = (state.elapsedSeconds.toFloat() / total).coerceIn(0f, 1f)
+        val elapsedMs = com.olarte.ironprogress.ui.components.rememberSmoothElapsedMs(
+            timer.totalElapsedMs,
+            running = !timer.isPaused && !finished,
+            limitMs = total * 1000L,
+        )
+        val fraction = (elapsedMs.toFloat() / (total * 1000L)).coerceIn(0f, 1f)
         Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(colors.surface3)) {
             Box(Modifier.fillMaxWidth(fraction).height(8.dp).clip(CircleShape).background(colors.ember))
         }

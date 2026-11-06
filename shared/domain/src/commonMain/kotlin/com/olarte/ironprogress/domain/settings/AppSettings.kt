@@ -68,6 +68,8 @@ data class AppSettings(
     val vibration: Boolean = true,
     val voice: Boolean = true,
     val hideBodyMetrics: Boolean = false,
+    /** Modo Pro: muestra RIR y RPE para quien entrena por esfuerzo; apagado, solo peso y reps. */
+    val proMode: Boolean = false,
     val onboardingDone: Boolean = false,
     val profile: TrainingProfile? = null,
 )

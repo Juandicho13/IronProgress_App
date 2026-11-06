@@ -76,12 +76,14 @@ class ScreenShotsTest {
                 ForjaTheme(darkTheme = dark.value, reduceMotion = true) { current() }
             }
         }
+        // Los cronómetros piden un cuadro tras otro: el reloj se avanza a mano para no esperar para siempre.
+        compose.mainClock.autoAdvance = false
         listOf(true, false).forEach { isDark ->
             dark.value = isDark
             screen.value = content
             repeat(5) {
                 shadowOf(Looper.getMainLooper()).idle()
-                compose.waitForIdle()
+                compose.mainClock.advanceTimeBy(1_000)
             }
             val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
             File(dir!!).mkdirs()
@@ -339,5 +341,117 @@ class ScreenShotsTest {
             )
         }
         store.clear()
+    }
+
+    private val squat = testBench.copy(
+        id = com.olarte.ironprogress.domain.catalog.ExerciseId("squat"),
+        name = com.olarte.ironprogress.domain.catalog.LocalizedText("Sentadilla", "Squat"),
+        pattern = com.olarte.ironprogress.domain.catalog.MovementPattern.SQUAT,
+        muscles = listOf(
+            com.olarte.ironprogress.domain.catalog.ExerciseMuscle(
+                Muscle.QUADS,
+                com.olarte.ironprogress.domain.catalog.MuscleRole.PRIMARY,
+            ),
+        ),
+    )
+    private val row = testBench.copy(
+        id = com.olarte.ironprogress.domain.catalog.ExerciseId("row"),
+        name = com.olarte.ironprogress.domain.catalog.LocalizedText("Remo con barra", "Barbell row"),
+        pattern = com.olarte.ironprogress.domain.catalog.MovementPattern.HORIZONTAL_PULL,
+        muscles = listOf(
+            com.olarte.ironprogress.domain.catalog.ExerciseMuscle(
+                Muscle.LATS,
+                com.olarte.ironprogress.domain.catalog.MuscleRole.PRIMARY,
+            ),
+        ),
+    )
+
+    private class ThreeExercises(list: List<com.olarte.ironprogress.domain.catalog.Exercise>) :
+        com.olarte.ironprogress.domain.catalog.ExerciseRepository {
+        private val flow = kotlinx.coroutines.flow.MutableStateFlow(list)
+        override fun observeExercises() = flow
+        override suspend fun setPreferredUnit(
+            id: com.olarte.ironprogress.domain.catalog.ExerciseId,
+            unit: com.olarte.ironprogress.domain.catalog.WeightUnit?,
+        ) = Unit
+        override suspend fun findExercise(id: com.olarte.ironprogress.domain.catalog.ExerciseId) = flow.value.firstOrNull { it.id == id }
+        override suspend fun saveCustomExercise(exercise: com.olarte.ironprogress.domain.catalog.Exercise) = Unit
+        override suspend fun setArchived(id: com.olarte.ironprogress.domain.catalog.ExerciseId, archived: Boolean) = Unit
+    }
+
+    /** Press, Sentadilla y Remo; la primera serie del Press hecha y su descanso saltado. */
+    private fun threeExerciseWorkout(pro: Boolean): com.olarte.ironprogress.ui.workout.WorkoutViewModel {
+        val model = newWorkoutViewModel(TestSessions(), catalog = ThreeExercises(listOf(testBench, squat, row)))
+            .also { store.put("t${store.keys().size}", it) }
+        model.onIntent(WorkoutIntent.SetProMode(pro))
+        idle()
+        model.onIntent(WorkoutIntent.StartFree)
+        idle()
+        listOf(testBench, squat, row).forEach {
+            model.onIntent(WorkoutIntent.AddExercise(it.id))
+            idle()
+        }
+        val press = model.state.value.session!!.exercises.minBy { it.sortOrder }.id
+        model.onIntent(WorkoutIntent.AddSet(press))
+        model.onIntent(WorkoutIntent.AddSet(press))
+        idle()
+        model.onIntent(WorkoutIntent.SelectExercise(press))
+        val first = model.state.value.session!!.setsOf(press).first().id
+        model.onIntent(WorkoutIntent.OpenKeyboard(first, com.olarte.ironprogress.ui.workout.WorkoutField.WEIGHT))
+        "20".forEach { model.onIntent(WorkoutIntent.Key(it.toString())) }
+        model.onIntent(WorkoutIntent.NextField)
+        model.onIntent(WorkoutIntent.Key("8"))
+        idle()
+        model.onIntent(WorkoutIntent.CloseKeyboard)
+        model.onIntent(WorkoutIntent.Complete(first))
+        idle()
+        model.onIntent(WorkoutIntent.SkipRest)
+        idle()
+        return model
+    }
+
+    @Test
+    fun workoutBasic() {
+        val model = threeExerciseWorkout(pro = false)
+        shoot("entreno-basico") {
+            val state by model.state.collectAsState()
+            WorkoutScreen(state.copy(undoSetId = null), 512, model::onIntent, onMinimize = {})
+        }
+        store.clear()
+    }
+
+    @Test
+    fun workoutPro() {
+        val model = threeExerciseWorkout(pro = true)
+        shoot("entreno-pro") {
+            val state by model.state.collectAsState()
+            WorkoutScreen(state.copy(undoSetId = null), 512, model::onIntent, onMinimize = {})
+        }
+        store.clear()
+    }
+
+    @Test
+    fun intervalRun() {
+        val template = com.olarte.ironprogress.domain.interval.IntervalTemplate(
+            com.olarte.ironprogress.domain.interval.IntervalTemplateId("t"),
+            "Mis intervalos",
+            40,
+            20,
+            10,
+        )
+        val timer = template.toPlan().stateAt(48_000, 0)
+        shoot("intervalo-corriendo") {
+            com.olarte.ironprogress.ui.interval.IntervalRunScreen(
+                com.olarte.ironprogress.ui.interval.IntervalRunState(template = template, timer = timer, reps = List(10) { null }),
+                "Prepárate",
+                {},
+                {},
+            )
+        }
+    }
+
+    @Test
+    fun settingsPro() {
+        shoot("ajustes-pro") { SettingsScreen(AppSettings(proMode = true), {}, {}) }
     }
 }

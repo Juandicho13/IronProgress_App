@@ -90,6 +90,8 @@ Relojes:
   - El descanso termina antes si el pulso baja del umbral R + 0,5 × (P - R) y ya pasó la mitad del tiempo; nunca después del tiempo + 60 s (`HANDOFF.md` 11.7).
 - **Toques:** tocar el campo de kg o de reps abre el Teclado (1.3); completar 1; otras reps 3 (reps, número, completar).
 
+**Alcance de la tercera ronda (5 nov 2026):** arriba, "Ejercicio 2 de 3" y una barra por ejercicio que se toca para ir a él; el ejercicio lleva su número y la lista "Ejercicios" sale numerada en el orden de la rutina con el de ahora resaltado. Sin modo Pro solo se ven peso y reps; con él, RIR y RPE y un ícono que explica qué son. Cada serie arranca rellena con la anterior o con la última vez, así completar es un toque. Deslizar para terminar aparece cuando ya hay una serie hecha; el menú ⋮ de arriba tiene Cancelar entreno con confirmación.
+
 ### 1.3 Teclado numérico (`Teclado.dc.html`)
 
 - **Para qué:** cambiar peso, reps o RIR sin el teclado del sistema.
@@ -101,6 +103,8 @@ Relojes:
   5. Teclas de 60 de alto, radio 20, `surface3`, cifras 26/600: 1 a 9, la coma, 0 y Borrar.
   6. Dos botones: **Siguiente** (pasa al campo siguiente) y **Completar serie** (principal, `ember`).
 - **Vibración:** cada tecla `KEYBOARD_TAP`; cambiar de segmento `SEGMENT_TICK`.
+
+**Alcance de la tercera ronda:** pestañas de campo en control segmentado, el valor en el centro con -paso y +paso simétricos a los lados, teclas a todo el ancho y abajo Siguiente y Completar serie del mismo tamaño (Listo si se corrige una serie hecha o se edita en el descanso). RPE va de 1 a 10 en medios y RIR de 0 a 10 entero: lo que se saldría del rango no se puede escribir.
 
 ### 1.3.1 Controles de Entreno para F1-10
 

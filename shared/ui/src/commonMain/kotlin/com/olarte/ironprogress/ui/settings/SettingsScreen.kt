@@ -40,9 +40,12 @@ import com.olarte.ironprogress.ui.resources.settings_backup_row
 import com.olarte.ironprogress.ui.resources.settings_hide
 import com.olarte.ironprogress.ui.resources.settings_hide_hint
 import com.olarte.ironprogress.ui.resources.settings_language
+import com.olarte.ironprogress.ui.resources.settings_pro
+import com.olarte.ironprogress.ui.resources.settings_pro_hint
 import com.olarte.ironprogress.ui.resources.settings_section_app
 import com.olarte.ironprogress.ui.resources.settings_section_feedback
 import com.olarte.ironprogress.ui.resources.settings_section_privacy
+import com.olarte.ironprogress.ui.resources.settings_section_training
 import com.olarte.ironprogress.ui.resources.settings_sound
 import com.olarte.ironprogress.ui.resources.settings_theme
 import com.olarte.ironprogress.ui.resources.settings_title
@@ -91,6 +94,16 @@ fun SettingsScreen(settings: AppSettings, onIntent: (SettingsIntent) -> Unit, on
                     stringResource(Res.string.settings_theme),
                     value = settings.theme.label(),
                     onClick = { sheet = SettingsSheet.THEME },
+                )
+            }
+
+            ForjaSectionLabel(stringResource(Res.string.settings_section_training))
+            ForjaListGroup {
+                ForjaSwitchRow(
+                    stringResource(Res.string.settings_pro),
+                    settings.proMode,
+                    { onIntent(SettingsIntent.ProMode(it)) },
+                    subtitle = stringResource(Res.string.settings_pro_hint),
                 )
             }
 

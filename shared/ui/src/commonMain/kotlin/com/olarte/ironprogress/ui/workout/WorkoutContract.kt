@@ -61,6 +61,8 @@ data class WorkoutState(
     /** Si el selector está abierto para cambiar este ejercicio en vez de agregar uno (F1-12). */
     val substitutingId: SessionExerciseId? = null,
     val query: String = "",
+    /** Modo Pro de Ajustes: con él se ven y se anotan RIR y RPE; sin él, solo peso y reps. */
+    val proMode: Boolean = false,
 ) {
     /** Unidad con la que se ve y se escribe el peso de un ejercicio de la sesión. */
     fun unitOf(id: SessionExerciseId?): WeightUnit {
@@ -136,6 +138,12 @@ sealed interface WorkoutIntent {
 
     /** Agrega el calentamiento sugerido antes de las series de trabajo (F1-22). */
     data class AddWarmup(val id: SessionExerciseId) : WorkoutIntent
+
+    /** Llega de Ajustes: el modo Pro muestra RIR y RPE. */
+    data class SetProMode(val on: Boolean) : WorkoutIntent
+
+    /** Cancela el entreno: no se guarda nada ni cuenta en Hoy ni en la racha. */
+    data object Cancel : WorkoutIntent
 }
 
 sealed interface WorkoutEffect {
@@ -144,4 +152,7 @@ sealed interface WorkoutEffect {
     data class OpenWorkout(val sessionId: String) : WorkoutEffect
     data object SetCompleted : WorkoutEffect
     data class Finished(val sessionId: String) : WorkoutEffect
+
+    /** La sesión se descartó (cancelada o terminada sin ninguna serie hecha): se vuelve a Hoy. */
+    data object Discarded : WorkoutEffect
 }

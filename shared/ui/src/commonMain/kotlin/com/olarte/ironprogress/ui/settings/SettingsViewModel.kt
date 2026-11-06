@@ -29,6 +29,8 @@ sealed interface SettingsIntent {
 
     data class HideBodyMetrics(val on: Boolean) : SettingsIntent
 
+    data class ProMode(val on: Boolean) : SettingsIntent
+
     data class FinishOnboarding(val profile: TrainingProfile) : SettingsIntent
 }
 
@@ -55,6 +57,7 @@ class SettingsViewModel(private val repository: SettingsRepository, private val 
         is SettingsIntent.Vibration -> copy(vibration = intent.on)
         is SettingsIntent.Voice -> copy(voice = intent.on)
         is SettingsIntent.HideBodyMetrics -> copy(hideBodyMetrics = intent.on)
+        is SettingsIntent.ProMode -> copy(proMode = intent.on)
         is SettingsIntent.FinishOnboarding -> this
     }
 }

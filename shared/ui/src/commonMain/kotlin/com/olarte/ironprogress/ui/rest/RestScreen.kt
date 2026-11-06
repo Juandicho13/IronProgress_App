@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -43,11 +44,13 @@ import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.appLanguage
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.rest_edit_next
 import com.olarte.ironprogress.ui.resources.rest_expand
 import com.olarte.ironprogress.ui.resources.rest_less
 import com.olarte.ironprogress.ui.resources.rest_minimize
 import com.olarte.ironprogress.ui.resources.rest_more
 import com.olarte.ironprogress.ui.resources.rest_next
+import com.olarte.ironprogress.ui.resources.rest_reps_label
 import com.olarte.ironprogress.ui.resources.rest_skip_short
 import com.olarte.ironprogress.ui.resources.rest_swipe
 import com.olarte.ironprogress.ui.resources.rest_title
@@ -55,6 +58,7 @@ import com.olarte.ironprogress.ui.resources.rest_total
 import com.olarte.ironprogress.ui.resources.workout_free
 import com.olarte.ironprogress.ui.resources.workout_undo
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
+import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
 import com.olarte.ironprogress.ui.workout.WorkoutIntent
@@ -116,7 +120,11 @@ fun RestScreen(state: WorkoutState, onIntent: (WorkoutIntent) -> Unit) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val detail = state.session
-    val next = detail?.sets?.firstOrNull { !it.isCompleted && it.id != rest.setId }
+    // La siguiente es la que toca en el ejercicio elegido; si ya no le quedan, la primera pendiente.
+    val next = state.selectedExerciseId?.let { id -> detail?.setsOf(id)?.firstOrNull { !it.isCompleted && it.id != rest.setId } }
+        ?: detail?.exercises?.sortedBy { it.sortOrder }?.firstNotNullOfOrNull { exercise ->
+            detail.setsOf(exercise.id).firstOrNull { !it.isCompleted && it.id != rest.setId }
+        }
     val exercise = detail?.exercises?.firstOrNull { it.id == next?.sessionExerciseId }
     val name = state.catalog[exercise?.exerciseId]?.name?.resolve(appLanguage())
     val formats = rememberFormats()
@@ -179,14 +187,23 @@ fun RestScreen(state: WorkoutState, onIntent: (WorkoutIntent) -> Unit) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(stringResource(Res.string.rest_next), style = typography.caption, color = colors.text2)
                     Text(name, style = typography.title3, color = colors.text1, textAlign = TextAlign.Center)
-                    next?.let {
-                        val target = listOfNotNull(
-                            it.weightKg?.let { value -> formats.weight(value) },
-                            it.reps?.let { value -> formats.number(value.toDouble(), 0) },
-                        ).joinToString(" × ")
-                        if (target.isNotEmpty()) {
-                            Text(target, style = typography.figure, color = colors.text1, maxLines = 1, softWrap = false)
+                    next?.let { set ->
+                        // Peso y reps de la siguiente serie: se tocan para cambiarlos sin salir del descanso.
+                        Row(
+                            Modifier.padding(top = ForjaSpacing.esp2),
+                            horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2, Alignment.CenterHorizontally),
+                        ) {
+                            val unit = state.unitOf(set.sessionExerciseId)
+                            NextValue(
+                                set.weightKg?.let { value -> formats.weight(value, unit).substringBeforeLast(' ') } ?: "-",
+                                if (unit == com.olarte.ironprogress.domain.catalog.WeightUnit.LB) "lb" else "kg",
+                            ) { onIntent(WorkoutIntent.OpenKeyboard(set.id, com.olarte.ironprogress.ui.workout.WorkoutField.WEIGHT)) }
+                            NextValue(
+                                set.reps?.let { value -> formats.number(value.toDouble(), 0) } ?: "-",
+                                stringResource(Res.string.rest_reps_label),
+                            ) { onIntent(WorkoutIntent.OpenKeyboard(set.id, com.olarte.ironprogress.ui.workout.WorkoutField.REPS)) }
                         }
+                        Text(stringResource(Res.string.rest_edit_next), style = typography.caption, color = colors.text3)
                     }
                 }
             }
@@ -202,6 +219,21 @@ fun RestScreen(state: WorkoutState, onIntent: (WorkoutIntent) -> Unit) {
             }
             Text(stringResource(Res.string.rest_swipe), style = typography.caption, color = colors.text3, textAlign = TextAlign.Center)
         }
+    }
+}
+
+/** Un número de la siguiente serie, grande y tocable, con su unidad debajo. */
+@Composable
+private fun NextValue(value: String, unit: String, onClick: () -> Unit) {
+    val colors = ForjaTheme.colors
+    Column(
+        Modifier.widthIn(min = 112.dp).clip(ForjaRadius.shapeM).background(colors.surface2)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = ForjaSpacing.esp4, vertical = ForjaSpacing.esp2),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(value, style = ForjaTheme.typography.figure, color = colors.text1, maxLines = 1, softWrap = false)
+        Text(unit, style = ForjaTheme.typography.caption, color = colors.text2, maxLines = 1)
     }
 }
 
