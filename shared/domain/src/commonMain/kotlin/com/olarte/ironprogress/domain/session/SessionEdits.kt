@@ -118,6 +118,8 @@ fun SessionDetail.substitute(id: SessionExerciseId, newExercise: ExerciseId, ids
         exerciseId = newExercise,
         sortOrder = exercise.sortOrder + 1,
         supersetGroup = exercise.supersetGroup,
+        restSeconds = exercise.restSeconds,
+        timedSeconds = exercise.timedSeconds,
     )
     val shifted = ordered().filter { it.sortOrder > exercise.sortOrder }.map { it.copy(sortOrder = it.sortOrder + 1) }
     val moved = pending.mapIndexed { index, set -> blank(set).copy(sessionExerciseId = replacement.id, sortOrder = index) }

@@ -45,6 +45,7 @@ import com.olarte.ironprogress.ui.catalog.CatalogViewModel
 import com.olarte.ironprogress.ui.components.ForjaIsland
 import com.olarte.ironprogress.ui.components.ForjaTab
 import com.olarte.ironprogress.ui.components.LocalForjaHazeState
+import com.olarte.ironprogress.ui.components.clearFocusOnTap
 import com.olarte.ironprogress.ui.discipline.BreathingRoute
 import com.olarte.ironprogress.ui.discipline.DisciplineTarget
 import com.olarte.ironprogress.ui.discipline.DisciplinesScreen
@@ -145,6 +146,9 @@ fun IronProgressApp() {
         LaunchedEffect(workoutViewModel, workoutState.rest != null) {
             if (workoutState.rest != null) while (true) withFrameNanos { workoutViewModel.refreshRest() }
         }
+        LaunchedEffect(workoutViewModel, workoutState.work != null) {
+            if (workoutState.work != null) while (true) withFrameNanos { workoutViewModel.refreshWork() }
+        }
         LaunchedEffect(workoutViewModel.restController) {
             workoutViewModel.restController.openWorkoutRequests.collect { sessionId ->
                 backStack.removeAll { it is Route.Workout }
@@ -181,6 +185,7 @@ fun IronProgressApp() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(ForjaTheme.colors.background)
+                .clearFocusOnTap()
                 .nestedScroll(scrollConnection),
         ) {
             NavDisplay(

@@ -43,6 +43,7 @@ import com.olarte.ironprogress.domain.discipline.GuidedFlow
 import com.olarte.ironprogress.domain.time.TimerSegment
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaMoreIcons
+import com.olarte.ironprogress.ui.components.ForjaNumber
 import com.olarte.ironprogress.ui.interval.clock
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.flow_breath_of
@@ -180,11 +181,10 @@ fun FlowScreen(flow: GuidedFlow, state: GuidedRunState, languageCode: String, on
                 )
             }
         } else {
-            Text(
+            ForjaNumber(
                 stringResource(Res.string.flow_seconds_left, clock((timer?.displaySecondsLeft ?: 0L).toInt())),
-                style = ForjaTheme.typography.largeFigure,
-                color = colors.text1,
-                modifier = Modifier.fillMaxWidth(),
+                ForjaTheme.typography.largeFigure,
+                Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
             )
         }

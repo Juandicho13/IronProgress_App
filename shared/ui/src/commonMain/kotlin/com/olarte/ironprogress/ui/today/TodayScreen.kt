@@ -254,7 +254,7 @@ fun TodayScreen(
 }
 
 @Composable
-private fun TodayWeekCard(weekProgress: WeekProgress) {
+internal fun TodayWeekCard(weekProgress: WeekProgress) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
 

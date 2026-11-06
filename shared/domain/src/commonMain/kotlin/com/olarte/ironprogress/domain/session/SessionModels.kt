@@ -92,7 +92,14 @@ data class SessionExercise(
     val sortOrder: Int,
     val supersetGroup: Int? = null,
     val notes: String = "",
-)
+    /** Descanso de este ejercicio en la sesión; null usa el de la rutina. 0 es sin descanso. */
+    val restSeconds: Int? = null,
+    /** Segundos de cada serie cuando va por tiempo; null en series normales. */
+    val timedSeconds: Int? = null,
+) {
+    val mode: com.olarte.ironprogress.domain.routine.ExerciseMode
+        get() = com.olarte.ironprogress.domain.routine.ExerciseMode.of(supersetGroup, restSeconds, timedSeconds)
+}
 
 /** Unidad atómica del registro. Todo en kg, metros, segundos, cm y vatios. */
 data class WorkoutSet(

@@ -26,6 +26,7 @@ import com.olarte.ironprogress.domain.routine.SetTemplate
 import com.olarte.ironprogress.domain.routine.SetTemplateId
 import com.olarte.ironprogress.domain.routine.WorkoutBlock
 import com.olarte.ironprogress.domain.settings.AppSettings
+import com.olarte.ironprogress.domain.time.stateAt
 import com.olarte.ironprogress.ui.catalog.CatalogState
 import com.olarte.ironprogress.ui.plan.PlanScreen
 import com.olarte.ironprogress.ui.plan.PlanState
@@ -164,6 +165,178 @@ class ScreenShotsTest {
             val state by model.state.collectAsState()
             if (!state.loading && state.session == null) model.onIntent(WorkoutIntent.StartFree)
             WorkoutScreen(state, 0, model::onIntent, onMinimize = {})
+        }
+        store.clear()
+    }
+
+    private fun idle() {
+        repeat(5) { shadowOf(Looper.getMainLooper()).idle() }
+    }
+
+    /** Sesión libre con Press: 3 series, la primera hecha. */
+    private fun workoutWithOneSetDone(
+        mode: com.olarte.ironprogress.domain.routine.ExerciseMode?,
+    ): com.olarte.ironprogress.ui.workout.WorkoutViewModel {
+        val model = newWorkoutViewModel(TestSessions()).also { store.put("w${store.keys().size}", it) }
+        idle()
+        model.onIntent(WorkoutIntent.StartFree)
+        idle()
+        model.onIntent(WorkoutIntent.AddExercise(testBench.id))
+        idle()
+        val exercise = model.state.value.session!!.exercises.single().id
+        if (mode != null) model.onIntent(WorkoutIntent.SetMode(exercise, mode))
+        model.onIntent(WorkoutIntent.AddSet(exercise))
+        model.onIntent(WorkoutIntent.AddSet(exercise))
+        idle()
+        val first = model.state.value.session!!.setsOf(exercise).first().id
+        model.onIntent(WorkoutIntent.OpenKeyboard(first, com.olarte.ironprogress.ui.workout.WorkoutField.WEIGHT))
+        "60".forEach { model.onIntent(WorkoutIntent.Key(it.toString())) }
+        model.onIntent(WorkoutIntent.NextField)
+        model.onIntent(WorkoutIntent.Key("8"))
+        idle()
+        model.onIntent(WorkoutIntent.CloseKeyboard)
+        model.onIntent(WorkoutIntent.Complete(first))
+        idle()
+        return model
+    }
+
+    @Test
+    fun workoutOneSetAtATime() {
+        val model = workoutWithOneSetDone(com.olarte.ironprogress.domain.routine.ExerciseMode.NO_REST)
+        shoot("entreno-serie") {
+            val state by model.state.collectAsState()
+            WorkoutScreen(state.copy(undoSetId = null), 754, model::onIntent, onMinimize = {})
+        }
+        store.clear()
+    }
+
+    @Test
+    fun rest() {
+        val model = workoutWithOneSetDone(null)
+        shoot("descanso") {
+            val state by model.state.collectAsState()
+            WorkoutScreen(state, 754, model::onIntent, onMinimize = {})
+        }
+        store.clear()
+    }
+
+    @Test
+    fun breathing() {
+        shoot("respiracion") {
+            com.olarte.ironprogress.ui.discipline.BreathingScreen(
+                com.olarte.ironprogress.ui.discipline.GuidedRunState(),
+                com.olarte.ironprogress.ui.discipline.BreathingChoice(),
+                {},
+                {},
+                {},
+                {},
+            )
+        }
+    }
+
+    @Test
+    fun breathingRunning() {
+        val plan = com.olarte.ironprogress.domain.discipline.BreathingPattern.BOX.toPlan(5)
+        val timer = plan.stateAt(6_000, 0)
+        shoot("respiracion-corriendo") {
+            com.olarte.ironprogress.ui.discipline.BreathingScreen(
+                com.olarte.ironprogress.ui.discipline.GuidedRunState(started = true, timer = timer),
+                com.olarte.ironprogress.ui.discipline.BreathingChoice(),
+                {},
+                {},
+                {},
+                {},
+            )
+        }
+    }
+
+    @Test
+    fun newInterval() {
+        val template = com.olarte.ironprogress.domain.interval.IntervalTemplate(
+            com.olarte.ironprogress.domain.interval.IntervalTemplateId("t"),
+            "Mis intervalos",
+            40,
+            20,
+            10,
+        )
+        shoot("nuevo-intervalo") {
+            com.olarte.ironprogress.ui.interval.IntervalEditorScreen(
+                com.olarte.ironprogress.ui.interval.IntervalEditorState(template),
+                "es",
+                false,
+                {},
+                {},
+            )
+        }
+    }
+
+    @Test
+    fun planWithWeek() {
+        val routines = listOf(
+            Routine(RoutineId("a"), null, "Pierna", sortOrder = 0),
+            Routine(RoutineId("b"), null, "Empuje", sortOrder = 1),
+        )
+        val week = com.olarte.ironprogress.domain.routine.WeekProgress(
+            (0..6).map { com.olarte.ironprogress.domain.routine.WeekDayStatus(it, it == 0 || it == 2, it == 3) },
+            2,
+            1,
+        )
+        shoot("plan-semana") {
+            PlanScreen(
+                PlanState(
+                    routines,
+                    emptyList(),
+                    routines.associate {
+                        it.id to 4
+                    },
+                    loading = false,
+                    week = week,
+                    nextRoutineId = RoutineId("b"),
+                ),
+                {},
+                {},
+            )
+        }
+    }
+
+    @Test
+    fun summary() {
+        val sessions = TestSessions()
+        val model = newWorkoutViewModel(sessions).also { store.put("s", it) }
+        idle()
+        model.onIntent(WorkoutIntent.StartFree)
+        idle()
+        model.onIntent(WorkoutIntent.AddExercise(testBench.id))
+        idle()
+        val id = model.state.value.session!!.sets.single().id
+        model.onIntent(WorkoutIntent.OpenKeyboard(id, com.olarte.ironprogress.ui.workout.WorkoutField.WEIGHT))
+        "60".forEach { model.onIntent(WorkoutIntent.Key(it.toString())) }
+        model.onIntent(WorkoutIntent.NextField)
+        model.onIntent(WorkoutIntent.Key("8"))
+        idle()
+        model.onIntent(WorkoutIntent.Complete(id))
+        idle()
+        val detail = sessions.data.value.single()
+        val ended = detail.copy(
+            session = detail.session.copy(
+                status = com.olarte.ironprogress.domain.session.SessionStatus.FINISHED,
+                endedAt = detail.session.startedAt + kotlin.time.Duration.parse("18m"),
+            ),
+        )
+        val summary = com.olarte.ironprogress.domain.session.summarize(ended, listOf(ended))
+        shoot("resumen") {
+            com.olarte.ironprogress.ui.summary.SummaryScreen(
+                com.olarte.ironprogress.ui.summary.SummaryState(
+                    loading = false,
+                    summary = summary,
+                    exercises = mapOf(
+                        testBench.id to testBench,
+                    ),
+                ),
+                "es",
+                {},
+                {},
+            )
         }
         store.clear()
     }

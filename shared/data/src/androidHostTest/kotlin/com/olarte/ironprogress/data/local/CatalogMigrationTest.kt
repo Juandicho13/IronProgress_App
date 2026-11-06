@@ -169,6 +169,44 @@ class CatalogMigrationTest {
     }
 
     @Test
+    fun version3KeepsTheSessionAndAddsTheModeOfEachExercise() = runTest {
+        val file = File.createTempFile("ironprogress-v3", ".db").apply { delete() }
+        try {
+            createDatabaseFromSchema(file, version = 3) { connection ->
+                connection.execSQL(
+                    "INSERT INTO workout_sessions (id, discipline, started_at, status, notes, adjustment_applied, created_at, updated_at) VALUES ('session', 'STRENGTH', 1000, 'IN_PROGRESS', '', 0, 1, 1)",
+                )
+                connection.execSQL(
+                    "INSERT INTO workout_blocks (id, session_id, sort_order, format, created_at, updated_at) VALUES ('block', 'session', 0, 'SETS', 1, 1)",
+                )
+                connection.execSQL(
+                    "INSERT INTO session_exercises (id, session_id, block_id, exercise_id, sort_order, notes, created_at, updated_at) VALUES ('exercise', 'session', 'block', 'bench', 0, '', 1, 1)",
+                )
+            }
+            val database = Room.databaseBuilder<IronProgressDatabase>(
+                name = file.absolutePath,
+                factory = { IronProgressDatabaseConstructor.initialize() },
+            ).buildIronProgressDatabase()
+            try {
+                val repository = com.olarte.ironprogress.data.workout.RoomSessionRepository(database.sessionDao(), kotlin.time.Clock.System)
+                val active = assertNotNull(repository.observeActiveSession().first())
+                val exercise = active.exercises.single()
+                assertNull(exercise.restSeconds)
+                assertNull(exercise.timedSeconds)
+                assertEquals(com.olarte.ironprogress.domain.routine.ExerciseMode.REST, exercise.mode)
+                repository.saveExercise(exercise.copy(timedSeconds = 45, restSeconds = 0))
+                val saved = assertNotNull(repository.observeActiveSession().first()).exercises.single()
+                assertEquals(45, saved.timedSeconds)
+                assertEquals(com.olarte.ironprogress.domain.routine.ExerciseMode.TIMED, saved.mode)
+            } finally {
+                database.close()
+            }
+        } finally {
+            listOf("", "-wal", "-shm", "-journal", ".v3.bak").forEach { File(file.path + it).delete() }
+        }
+    }
+
+    @Test
     fun noBackupForANewInstall() {
         val file = File.createTempFile("ironprogress-new", ".db").apply { delete() }
         assertNull(backupBeforeMigration(file.absolutePath))

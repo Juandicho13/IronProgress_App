@@ -9,6 +9,7 @@ import com.olarte.ironprogress.domain.common.IdGenerator
 import com.olarte.ironprogress.domain.routine.BlockFormat
 import com.olarte.ironprogress.domain.routine.BlockId
 import com.olarte.ironprogress.domain.routine.EditRoutines
+import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.Folder
 import com.olarte.ironprogress.domain.routine.FolderId
 import com.olarte.ironprogress.domain.routine.RoutineDetail
@@ -21,6 +22,7 @@ import com.olarte.ironprogress.domain.routine.WorkoutBlock
 import com.olarte.ironprogress.domain.routine.addExercise
 import com.olarte.ironprogress.domain.routine.moveExercise
 import com.olarte.ironprogress.domain.routine.removeExercise
+import com.olarte.ironprogress.domain.routine.values
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,6 +73,9 @@ sealed interface RoutineEditorIntent {
     data class MoveExercise(val id: RoutineExerciseId, val target: Int) : RoutineEditorIntent
     data class ExerciseNotes(val id: RoutineExerciseId, val value: String) : RoutineEditorIntent
     data class Rest(val id: RoutineExerciseId, val value: String) : RoutineEditorIntent
+
+    /** Cómo se hace el ejercicio: con o sin descanso, por tiempo o en superserie con el siguiente. */
+    data class Mode(val id: RoutineExerciseId, val mode: ExerciseMode, val seconds: Int? = null) : RoutineEditorIntent
     data class AddSet(val id: RoutineExerciseId) : RoutineEditorIntent
     data class RemoveSet(val id: SetTemplateId) : RoutineEditorIntent
     data class ChangeSet(val id: SetTemplateId, val value: SetDraft) : RoutineEditorIntent
@@ -83,6 +88,41 @@ sealed interface RoutineEditorIntent {
 sealed interface RoutineEditorEffect {
     data object Close : RoutineEditorEffect
 }
+
+/** Aplica el modo a un ejercicio; superserie lo agrupa con el siguiente del mismo bloque. */
+internal fun RoutineEditorState.withMode(detail: RoutineDetail, intent: RoutineEditorIntent.Mode): RoutineEditorState? {
+    val exercise = detail.exercises.firstOrNull { it.id == intent.id } ?: return null
+    if (intent.mode == ExerciseMode.SUPERSET) {
+        val inBlock = detail.exercises.filter { it.blockId == exercise.blockId }.sortedBy { it.sortOrder }
+        val next = inBlock.getOrNull(inBlock.indexOf(exercise) + 1) ?: return null
+        val group =
+            exercise.supersetGroup ?: next.supersetGroup ?: ((detail.exercises.mapNotNull { it.supersetGroup }.maxOrNull() ?: 0) + 1)
+        return copy(
+            detail = detail.copy(
+                exercises = detail.exercises.map {
+                    if (it.id == exercise.id || it.id == next.id) it.copy(supersetGroup = group, timedSeconds = null) else it
+                },
+            ),
+        )
+    }
+    val values = intent.mode.values(
+        rest[exercise.id]?.toIntOrNull() ?: exercise.restSeconds,
+        exercise.timedSeconds,
+        restSeconds = intent.seconds.takeIf { intent.mode == ExerciseMode.REST },
+        timedSeconds = intent.seconds.takeIf { intent.mode == ExerciseMode.TIMED },
+    )
+    var exercises = detail.exercises.map {
+        if (it.id == exercise.id) it.copy(supersetGroup = null, timedSeconds = values.timedSeconds) else it
+    }
+    // Si el compañero de superserie queda solo, deja de estar agrupado.
+    exercise.supersetGroup?.let { group ->
+        if (exercises.count { it.supersetGroup == group } == 1) {
+            exercises = exercises.map { if (it.supersetGroup == group) it.copy(supersetGroup = null) else it }
+        }
+    }
+    return copy(detail = detail.copy(exercises = exercises), rest = rest + (exercise.id to (values.restSeconds?.toString() ?: "")))
+}
+
 class RoutineEditorViewModel(
     private val repository: RoutineRepository,
     private val catalog: ExerciseRepository,
@@ -145,6 +185,7 @@ class RoutineEditorViewModel(
             is RoutineEditorIntent.Notes -> current.copy(notes = intent.value)
             is RoutineEditorIntent.FolderSelect -> current.copy(detail = detail.copy(routine = detail.routine.copy(folderId = intent.id)))
             is RoutineEditorIntent.Rest -> current.copy(rest = current.rest + (intent.id to intent.value))
+            is RoutineEditorIntent.Mode -> current.withMode(detail, intent) ?: return
             is RoutineEditorIntent.ChangeSet -> current.copy(sets = current.sets + (intent.id to intent.value))
             is RoutineEditorIntent.ExerciseNotes -> current.copy(
                 detail = detail.copy(

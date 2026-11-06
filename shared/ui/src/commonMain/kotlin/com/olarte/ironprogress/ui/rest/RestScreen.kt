@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -25,14 +25,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.olarte.ironprogress.ui.a11y.timerPhase
+import com.olarte.ironprogress.ui.components.ForjaButton
+import com.olarte.ironprogress.ui.components.ForjaButtonStyle
+import com.olarte.ironprogress.ui.components.ForjaMoreIcons
+import com.olarte.ironprogress.ui.components.ForjaTopBar
 import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.appLanguage
 import com.olarte.ironprogress.ui.format.rememberFormats
@@ -42,10 +48,11 @@ import com.olarte.ironprogress.ui.resources.rest_less
 import com.olarte.ironprogress.ui.resources.rest_minimize
 import com.olarte.ironprogress.ui.resources.rest_more
 import com.olarte.ironprogress.ui.resources.rest_next
-import com.olarte.ironprogress.ui.resources.rest_skip
+import com.olarte.ironprogress.ui.resources.rest_skip_short
 import com.olarte.ironprogress.ui.resources.rest_swipe
 import com.olarte.ironprogress.ui.resources.rest_title
 import com.olarte.ironprogress.ui.resources.rest_total
+import com.olarte.ironprogress.ui.resources.workout_free
 import com.olarte.ironprogress.ui.resources.workout_undo
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
@@ -54,23 +61,51 @@ import com.olarte.ironprogress.ui.workout.WorkoutIntent
 import com.olarte.ironprogress.ui.workout.WorkoutState
 import org.jetbrains.compose.resources.stringResource
 
+/**
+ * Barra del descanso minimizado al pie de Entreno: anillo pequeño con el tiempo a la izquierda (abre
+ * el descanso completo) y los tres controles a la derecha, del mismo alto.
+ */
 @Composable
 fun RestBar(state: WorkoutState, onIntent: (WorkoutIntent) -> Unit) {
     val rest = state.rest ?: return
     val timer = rest.at(state.restNowMs)
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-        TextButton(onClick = { onIntent(WorkoutIntent.AdjustRest(-15)) }) { Text(stringResource(Res.string.rest_less)) }
-        Column(
-            Modifier.clickable(role = Role.Button, onClickLabel = stringResource(Res.string.rest_expand)) {
+    Row(
+        Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
+    ) {
+        Box(
+            Modifier.clip(CircleShape).clickable(role = Role.Button, onClickLabel = stringResource(Res.string.rest_expand)) {
                 onIntent(WorkoutIntent.ExpandRest)
             },
-            horizontalAlignment = Alignment.CenterHorizontally,
+            contentAlignment = Alignment.Center,
         ) {
             RestRing((timer.remainingInSegmentMs ?: 0).toFloat() / (timer.segmentDurationMs ?: 1).coerceAtLeast(1), false)
-            Text(Formats.duration(timer.displaySecondsLeft ?: 0), color = ForjaTheme.colors.ice, style = ForjaTheme.typography.smallFigure)
+            Text(
+                Formats.duration(timer.displaySecondsLeft ?: 0),
+                color = ForjaTheme.colors.ice,
+                style = ForjaTheme.typography.label,
+                maxLines = 1,
+                softWrap = false,
+            )
         }
-        TextButton(onClick = { onIntent(WorkoutIntent.AdjustRest(15)) }) { Text(stringResource(Res.string.rest_more)) }
-        TextButton(onClick = { onIntent(WorkoutIntent.SkipRest) }) { Text(stringResource(Res.string.rest_skip)) }
+        RestControls(onIntent, Modifier.weight(1f))
+    }
+}
+
+/** -15 s, Saltar descanso y +15 s en una sola fila centrada; los tres con el mismo alto. */
+@Composable
+fun RestControls(onIntent: (WorkoutIntent) -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
+        ForjaButton(stringResource(Res.string.rest_less), Modifier.weight(1f), ForjaButtonStyle.SECONDARY) {
+            onIntent(WorkoutIntent.AdjustRest(-15))
+        }
+        ForjaButton(stringResource(Res.string.rest_skip_short), Modifier.weight(1.3f), ForjaButtonStyle.TONAL) {
+            onIntent(WorkoutIntent.SkipRest)
+        }
+        ForjaButton(stringResource(Res.string.rest_more), Modifier.weight(1f), ForjaButtonStyle.SECONDARY) {
+            onIntent(WorkoutIntent.AdjustRest(15))
+        }
     }
 }
 
@@ -102,52 +137,70 @@ fun RestScreen(state: WorkoutState, onIntent: (WorkoutIntent) -> Unit) {
                 if (distance > ForjaMeasures.minTouch.toPx()) dismiss()
                 dragOffset = 0f
             })
-        }.verticalScroll(rememberScrollState()).padding(ForjaSpacing.esp4),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
+        },
     ) {
-        TextButton(onClick = dismiss) { Text(stringResource(Res.string.rest_minimize)) }
-        Text(
-            state.routineName ?: stringResource(Res.string.rest_title),
-            modifier = Modifier.timerPhase(),
-            color = colors.ice,
-            style = typography.title2,
+        ForjaTopBar(
+            title = state.routineName ?: stringResource(Res.string.workout_free),
+            onBack = dismiss,
+            backDescription = stringResource(Res.string.rest_minimize),
+            backIcon = ForjaMoreIcons.ChevronLeft,
         )
-        Box(contentAlignment = Alignment.Center) {
-            RestRing((timer.remainingInSegmentMs ?: 0).toFloat() / (timer.segmentDurationMs ?: 1).coerceAtLeast(1), true)
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(Formats.duration(timer.displaySecondsLeft ?: 0), style = typography.heroFigure, color = colors.text1)
-                Text(
-                    stringResource(Res.string.rest_total, Formats.duration((timer.segmentDurationMs ?: 0) / 1000)),
-                    style = typography.body2,
-                    color = colors.text2,
-                )
-            }
-        }
-        if (name != null) {
-            Text(stringResource(Res.string.rest_next), style = typography.caption, color = colors.text2)
-            Text(name, style = typography.title2, color = colors.text1)
-            next?.let {
-                Text(
-                    listOfNotNull(
-                        it.weightKg?.let { value ->
-                            formats.weight(value)
-                        },
-                        it.reps?.let { value ->
-                            formats.number(value.toDouble(), 0)
-                        },
-                    ).joinToString(" × "),
-                    style = typography.figure,
-                    color = colors.text1,
-                )
-            }
-        }
-        Text(stringResource(Res.string.rest_swipe), style = typography.caption, color = colors.text3)
-        RestBar(state, onIntent)
-        if (state.undoSetId !=
-            null
+        Column(
+            Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4, Alignment.CenterVertically),
         ) {
-            TextButton(onClick = { onIntent(WorkoutIntent.Undo) }) { Text(stringResource(Res.string.workout_undo)) }
+            Text(
+                stringResource(Res.string.rest_title),
+                modifier = Modifier.timerPhase(),
+                color = colors.ice,
+                style = typography.title2,
+            )
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                RestRing((timer.remainingInSegmentMs ?: 0).toFloat() / (timer.segmentDurationMs ?: 1).coerceAtLeast(1), true)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        Formats.duration(timer.displaySecondsLeft ?: 0),
+                        modifier = Modifier.clearAndSetSemantics {},
+                        style = typography.heroFigure,
+                        color = colors.text1,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                    Text(
+                        stringResource(Res.string.rest_total, Formats.duration((timer.segmentDurationMs ?: 0) / 1000)),
+                        style = typography.body2,
+                        color = colors.text2,
+                        maxLines = 1,
+                    )
+                }
+            }
+            if (name != null) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(stringResource(Res.string.rest_next), style = typography.caption, color = colors.text2)
+                    Text(name, style = typography.title3, color = colors.text1, textAlign = TextAlign.Center)
+                    next?.let {
+                        val target = listOfNotNull(
+                            it.weightKg?.let { value -> formats.weight(value) },
+                            it.reps?.let { value -> formats.number(value.toDouble(), 0) },
+                        ).joinToString(" × ")
+                        if (target.isNotEmpty()) {
+                            Text(target, style = typography.figure, color = colors.text1, maxLines = 1, softWrap = false)
+                        }
+                    }
+                }
+            }
+        }
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
+        ) {
+            RestControls(onIntent)
+            if (state.undoSetId != null) {
+                ForjaButton(stringResource(Res.string.workout_undo), style = ForjaButtonStyle.TEXT) { onIntent(WorkoutIntent.Undo) }
+            }
+            Text(stringResource(Res.string.rest_swipe), style = typography.caption, color = colors.text3, textAlign = TextAlign.Center)
         }
     }
 }

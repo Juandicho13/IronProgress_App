@@ -3,6 +3,7 @@ package com.olarte.ironprogress.ui.summary
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,8 +32,9 @@ import com.olarte.ironprogress.domain.session.BlockResult
 import com.olarte.ironprogress.domain.session.SessionSummary
 import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.ui.components.EditorAction
-import com.olarte.ironprogress.ui.components.ForjaButtonStyle
+import com.olarte.ironprogress.ui.components.ForjaButton
 import com.olarte.ironprogress.ui.components.ForjaIcons
+import com.olarte.ironprogress.ui.components.ForjaNumber
 import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
@@ -60,12 +62,13 @@ import com.olarte.ironprogress.ui.resources.summary_result_rounds
 import com.olarte.ironprogress.ui.resources.summary_result_rounds_reps
 import com.olarte.ironprogress.ui.resources.summary_retry
 import com.olarte.ironprogress.ui.resources.summary_same_time
-import com.olarte.ironprogress.ui.resources.summary_sets
 import com.olarte.ironprogress.ui.resources.summary_title
 import com.olarte.ironprogress.ui.resources.summary_volume
 import com.olarte.ironprogress.ui.resources.summary_vs_last
+import com.olarte.ironprogress.ui.resources.summary_working_sets
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -84,26 +87,38 @@ fun SummaryScreen(state: SummaryState, languageCode: String, onRetry: () -> Unit
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val formats = rememberFormats()
-    Column(
-        Modifier.fillMaxSize().background(colors.background).statusBarsPadding().navigationBarsPadding()
-            .verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
-        verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
-    ) {
+    Column(Modifier.fillMaxSize().background(colors.background).statusBarsPadding().navigationBarsPadding()) {
+        Column(
+            Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
+                .padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
+            verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
+        ) {
+            SummaryBody(state, languageCode, formats, onRetry)
+        }
+        if (!state.loading) {
+            ForjaButton(
+                stringResource(Res.string.summary_done),
+                Modifier.fillMaxWidth().padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
+                onClick = onDone,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ColumnScope.SummaryBody(state: SummaryState, languageCode: String, formats: Formats, onRetry: () -> Unit) {
+    val colors = ForjaTheme.colors
+    val typography = ForjaTheme.typography
+    run {
         val summary = state.summary
         when {
             state.loading -> Text(stringResource(Res.string.summary_loading), color = colors.text2, style = typography.body)
             summary == null -> {
                 Text(stringResource(Res.string.summary_failed), color = colors.text1, style = typography.body)
                 EditorAction(stringResource(Res.string.summary_retry), onClick = onRetry)
-                EditorAction(
-                    stringResource(Res.string.summary_done),
-                    modifier = Modifier.fillMaxWidth(),
-                    style = ForjaButtonStyle.PRIMARY,
-                    onClick = onDone,
-                )
             }
             else -> {
-                Spacer(Modifier.height(ForjaSpacing.esp8))
+                Spacer(Modifier.height(ForjaSpacing.esp5))
                 val caption = (state.routineName ?: stringResource(Res.string.summary_free)) + " · " +
                     formats.date(summary.session.startedAt.toEpochMilliseconds())
                 Text(caption, style = typography.caption, color = colors.text2)
@@ -138,7 +153,11 @@ fun SummaryScreen(state: SummaryState, languageCode: String, onRetry: () -> Unit
                 if (summary.exercises.isNotEmpty()) {
                     Card {
                         Label(stringResource(Res.string.summary_exercises))
-                        Text(stringResource(Res.string.summary_sets, summary.workingSets), style = typography.caption, color = colors.text2)
+                        Text(
+                            pluralStringResource(Res.plurals.summary_working_sets, summary.workingSets, summary.workingSets),
+                            style = typography.caption,
+                            color = colors.text2,
+                        )
                         summary.exercises.forEach { exercise ->
                             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
@@ -168,13 +187,6 @@ fun SummaryScreen(state: SummaryState, languageCode: String, onRetry: () -> Unit
                         }
                     }
                 }
-                EditorAction(
-                    stringResource(Res.string.summary_done),
-                    modifier = Modifier.fillMaxWidth(),
-                    style = ForjaButtonStyle.PRIMARY,
-                    onClick = onDone,
-                )
-                Spacer(Modifier.height(ForjaSpacing.esp8))
             }
         }
     }
@@ -188,7 +200,7 @@ private fun Records(state: SummaryState, summary: SessionSummary, languageCode: 
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1),
     ) {
         Text(stringResource(Res.string.summary_records), style = ForjaTheme.typography.caption, color = colors.goldInk)
-        Text(summary.records.size.toString(), style = ForjaTheme.typography.largeFigure, color = colors.text1)
+        ForjaNumber(summary.records.size.toString(), ForjaTheme.typography.largeFigure)
         Text(
             summary.records.joinToString(" · ") {
                 state.exerciseName(it.exerciseId, languageCode) + " " + formats.number(it.weightKg, 2) + " × " + it.reps
@@ -206,7 +218,7 @@ private fun Metric(modifier: Modifier, label: String, value: String, note: Strin
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1),
     ) {
         Text(label, style = ForjaTheme.typography.caption, color = ForjaTheme.colors.text2)
-        Text(value, style = ForjaTheme.typography.figure, color = ForjaTheme.colors.text1)
+        ForjaNumber(value, ForjaTheme.typography.figure)
         Text(note, style = ForjaTheme.typography.caption, color = ForjaTheme.colors.text2)
     }
 }

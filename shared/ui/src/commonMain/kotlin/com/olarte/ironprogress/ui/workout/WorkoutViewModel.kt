@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
 import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.common.IdGenerator
+import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.RoutineRepository
 import com.olarte.ironprogress.domain.routine.SetType
+import com.olarte.ironprogress.domain.routine.values
 import com.olarte.ironprogress.domain.session.AddSessionExercise
 import com.olarte.ironprogress.domain.session.CompleteSet
 import com.olarte.ironprogress.domain.session.EndSession
@@ -101,6 +103,19 @@ class WorkoutViewModel(
             ) {
                 effectChannel.trySend(WorkoutEffect.RestTick)
             }
+        }
+    }
+
+    /** Cada cuadro mientras corre una serie por tiempo; al llegar a 0 la guarda y la completa. */
+    fun refreshWork() {
+        val work = state.value.work ?: return
+        val now = clock.now().toEpochMilliseconds()
+        if (work.isFinished(now)) {
+            mutableState.update { it.copy(work = null, workNowMs = now) }
+            edit(work.setId) { it.copy(durationSeconds = work.seconds) }
+            complete(work.setId)
+        } else {
+            mutableState.update { it.copy(workNowMs = now) }
         }
     }
 
@@ -322,6 +337,17 @@ class WorkoutViewModel(
                 (if (inGroup) detail.ungroup(intent.id) else detail.groupWithNext(intent.id)).forEach { sessions.saveExercise(it) }
             }
             is WorkoutIntent.RemoveSet -> enqueue { sessions.deleteSet(intent.id) }
+            is WorkoutIntent.SetMode -> enqueue { setMode(intent) }
+            is WorkoutIntent.StartWork -> {
+                val detail = state.value.session ?: return
+                val set = detail.sets.firstOrNull { it.id == intent.id && !it.isCompleted } ?: return
+                val exercise = detail.exercises.firstOrNull { it.id == set.sessionExerciseId } ?: return
+                val seconds = set.durationSeconds?.takeIf { it > 0 } ?: exercise.timedSeconds
+                    ?: ExerciseMode.DEFAULT_TIMED_SECONDS
+                val now = clock.now().toEpochMilliseconds()
+                mutableState.update { it.copy(work = WorkTimer(set.id, now, seconds), workNowMs = now, keyboard = null) }
+            }
+            WorkoutIntent.StopWork -> mutableState.update { it.copy(work = null) }
             WorkoutIntent.ClosePicker -> mutableState.update { it.copy(choosingExercise = false) }
             is WorkoutIntent.Search -> mutableState.update { it.copy(query = intent.query) }
             is WorkoutIntent.AddExercise -> {
@@ -386,9 +412,30 @@ class WorkoutViewModel(
     fun fieldsFor(id: WorkoutSetId): List<WorkoutField> {
         val detail = state.value.session ?: return listOf(WorkoutField.WEIGHT, WorkoutField.REPS, WorkoutField.RIR, WorkoutField.RPE)
         val set = detail.sets.firstOrNull { it.id == id }
-        val exercise = detail.exercises.firstOrNull { it.id == set?.sessionExerciseId }
-        val fields = state.value.catalog[exercise?.exerciseId]?.trackingType?.fields.orEmpty()
-        return WorkoutField.entries.filter { it.measure in fields || it.measure == null }
+        return state.value.measuresOf(set?.sessionExerciseId) + WorkoutField.RIR + WorkoutField.RPE
+    }
+
+    private suspend fun setMode(intent: WorkoutIntent.SetMode) {
+        val detail = active()
+        val exercise = detail.exercises.firstOrNull { it.id == intent.id } ?: return
+        if (intent.mode == ExerciseMode.SUPERSET) {
+            if (exercise.supersetGroup == null) detail.groupWithNext(intent.id).forEach { sessions.saveExercise(it) }
+            return
+        }
+        val current = if (exercise.supersetGroup != null) {
+            val changed = detail.ungroup(intent.id)
+            changed.forEach { sessions.saveExercise(it) }
+            changed.firstOrNull { it.id == intent.id } ?: exercise.copy(supersetGroup = null)
+        } else {
+            exercise
+        }
+        val values = intent.mode.values(
+            current.restSeconds,
+            current.timedSeconds,
+            restSeconds = intent.seconds.takeIf { intent.mode == ExerciseMode.REST },
+            timedSeconds = intent.seconds.takeIf { intent.mode == ExerciseMode.TIMED },
+        )
+        sessions.saveExercise(current.copy(supersetGroup = null, restSeconds = values.restSeconds, timedSeconds = values.timedSeconds))
     }
 
     private fun openKeyboard(id: WorkoutSetId, field: WorkoutField) {
@@ -441,7 +488,13 @@ class WorkoutViewModel(
                 completing.remove(id)
                 return@enqueue
             }
-            if (type == null || !set.hasRequiredMeasurements(type)) {
+            val timed = exercise.mode == ExerciseMode.TIMED
+            val ready = if (timed) {
+                (set.durationSeconds ?: exercise.timedSeconds) != null
+            } else {
+                type != null && set.hasRequiredMeasurements(type)
+            }
+            if (!ready) {
                 mutableState.update { it.copy(invalidSetId = id) }
                 completing.remove(id)
                 return@enqueue
@@ -450,9 +503,16 @@ class WorkoutViewModel(
             val planned = routine?.blocks?.sortedBy {
                 it.sortOrder
             }?.flatMap { routine.exercisesOf(it.id) }?.getOrNull(detail.exercises.indexOf(exercise))
-            val restSeconds = planned?.takeIf { it.exerciseId == exercise.exerciseId }?.restSeconds
+            val restSeconds = exercise.restSeconds
+                ?: planned?.takeIf { it.exerciseId == exercise.exerciseId }?.restSeconds
                 ?: routine?.routine?.restSeconds ?: com.olarte.ironprogress.domain.routine.Routine.DEFAULT_REST_SECONDS
-            val completed = completeSet(set)
+            val toComplete = if (timed && set.durationSeconds == null) set.copy(durationSeconds = exercise.timedSeconds) else set
+            val completed = completeSet(toComplete)
+            if (state.value.work?.setId == id) mutableState.update { it.copy(work = null) }
+            // La siguiente serie vacía del mismo ejercicio arranca con lo que se acaba de hacer.
+            detail.setsOf(exercise.id).firstOrNull { !it.isCompleted && it.id != id }
+                ?.takeIf { it.isBlank() }
+                ?.let { sessions.saveSet(it.copyMeasurements(completed)) }
             completing.remove(id)
             // Superserie o circuito: sin descanso hasta el último del grupo; después, la vuelta empieza
             // por el primero del grupo con series pendientes (F1-12).
@@ -497,6 +557,8 @@ class WorkoutViewModel(
             }
         }
     }
+
+    private fun WorkoutSet.isBlank(): Boolean = WorkoutField.entries.filter { it.measure != null }.all { value(it) == null }
 
     /** Peso que se escribe en el teclado: en lb con un decimal, en kg tal cual. */
     private fun shownWeight(kg: Double, unit: WeightUnit): Double =

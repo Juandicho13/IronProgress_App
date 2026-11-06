@@ -71,6 +71,8 @@ Relojes:
 
 ### 1.2 Entreno (`Entreno.dc.html`)
 
+**Alcance implementado (segunda ronda, pedido de Juan tras entrenar):** una serie a la vez. Arriba las series hechas del ejercicio en filas cortas que se tocan para corregir; en el centro la serie actual ("Serie 2 de 4", el anterior para copiar, números grandes y RIR y RPE como chips opcionales); abajo "Faltan N series" y Añadir serie. Los otros ejercicios van en filas debajo. Bajo el nombre, un chip con el modo del ejercicio (con descanso, sin descanso, por tiempo o superserie) que abre la hoja "Cómo lo haces". Por tiempo, el botón principal es "Empezar 0:30" y la serie se completa sola al llegar a 0.
+
 - **Para qué:** registrar series. Completar la serie sugerida toma 1 toque.
 - **Estructura:**
   1. Barra superior: `keyboard_arrow_down` "Minimizar el entreno" (vuelve a la pestaña de donde vino y deja el accesorio de sesión), nombre de la rutina con el cronómetro de la sesión ("Empuje A", "18:42") y `more_horiz` "Opciones del entreno".
@@ -112,6 +114,8 @@ Relojes:
 **Alcance implementado en F1-22:** en Opciones del ejercicio, "Usar lb en este ejercicio" (o kg) cambia cómo se ve y se escribe el peso de ese ejercicio: el campo dice "Peso (lb)", el teclado suma de 5 en 5 y todo se guarda en kg. "Discos y calentamiento" abre un diálogo sin diseño propio, con piezas de Forja: el peso de la serie que toca, la barra (20 kg o 45 lb), los discos por lado de mayor a menor, lo que falta si no sale exacto (en oro) y el calentamiento sugerido (barra × 10, 50 % × 5, 70 % × 3 y 85 % × 1), con "Agregar el calentamiento" para meter esas series antes de las de trabajo. Los discos de cada gimnasio llegan con los perfiles de F5-03.
 
 ### 1.4 Descanso en la barra (`Descanso.dc.html`)
+
+**Alcance implementado (segunda ronda):** el descanso a pantalla completa ya no repite el anillo pequeño; -15 s, Saltar y +15 s van en una sola fila del mismo alto y volver a las series está en la barra de arriba. La barra minimizada al pie de Entreno conserva su anillo pequeño con el tiempo.
 
 - **Para qué:** ver tus series mientras descansas, cuando minimizas el descanso a pantalla completa.
 - **Estructura:**
@@ -167,6 +171,8 @@ Relojes:
 - **Nota:** la ficha con músculos y exigencia es otra pantalla (7.5); desde la ficha se llega aquí con "Historial".
 
 ### 2.3 Plan con un entreno en curso (`Plan.dc.html`)
+
+**Alcance implementado (segunda ronda, 5 de noviembre):** arriba la semana en 7 círculos con los días entrenados, como en Hoy; la rutina que toca según la rotación lleva "Toca hoy" y un ícono de reproducir. La tarjeta de programa y la biblioteca llegan con F5.
 
 - **Estructura:** `title1` "Plan" con botón `add` "Crear rutina".
   1. Tarjeta del **programa**: "Programa", `title2` "Hipertrofia 6 semanas", "Semana 3 de 6 · descarga en la semana 6"; barra de 6 segmentos de 6 dp (hechas en `ember`, la actual a medias, la de descarga en hielo) y la semana en 7 círculos como en Hoy.
@@ -341,6 +347,8 @@ Diseño escrito por Claude el 5 de noviembre de 2026, con la plantilla 15.7 del 
 
 ### 5.9 Live Activity del entreno en iPhone (F1-16)
 
+**Alcance implementado (segunda ronda):** anillo azul que se vacía (`ProgressView(timerInterval:)`) en la compacta, la mínima, la expandida y la pantalla bloqueada; en las dos últimas con la cuenta atrás dentro. En Listo, check verde. El anillo va dentro de la isla: ActivityKit no permite dibujar alrededor de ella.
+
 Diseño escrito por Claude el 5 de noviembre de 2026 con las reglas de `HANDOFF.md` 12.10. Fondo negro siempre, brasa y hielo en sus tonos oscuros y cifras tabulares.
 
 - **Para qué:** ver y manejar el descanso desde la isla, la pantalla bloqueada y StandBy sin abrir la app (RF-VIV-01, RF-VIV-02).
@@ -417,6 +425,8 @@ El borde de la pantalla sigue siendo el descanso (hielo, 0:48 en la cabecera, la
 - **Figuras:** dibujarlas como vectores propios (no imágenes con licencia ajena). Las coordenadas de las 7 están en el diseño; la regla es una sola grosor de trazo, perfil mirando a la izquierda y el suelo siempre a la misma altura.
 
 ### 7.3 Respiración guiada (`Respiracion.dc.html`)
+
+**Alcance implementado (segunda ronda):** patrones en un control segmentado de ancho completo, minutos y figura centrados, recorrido de la cuadrada por el borde redondeado y sin el aviso de seguridad en la pantalla (la pregunta antes de la Relajante 4-7-8 se mantiene).
 
 - **Estructura:**
   1. Barra superior: minimizar, "Respiración guiada" con "Quedan 4:27" y el botón de la voz. Brillo radial de hielo al fondo.

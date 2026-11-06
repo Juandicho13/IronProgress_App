@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,6 +42,7 @@ import com.olarte.ironprogress.domain.catalog.ExerciseQuery
 import com.olarte.ironprogress.domain.catalog.ExerciseSearch
 import com.olarte.ironprogress.domain.routine.BlockFormat
 import com.olarte.ironprogress.domain.routine.BlockId
+import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.RoutineExerciseId
 import com.olarte.ironprogress.ui.components.EditorChoice
 import com.olarte.ironprogress.ui.components.ForjaButton
@@ -55,6 +57,7 @@ import com.olarte.ironprogress.ui.components.ForjaNote
 import com.olarte.ironprogress.ui.components.ForjaSheet
 import com.olarte.ironprogress.ui.components.ForjaTextField
 import com.olarte.ironprogress.ui.components.ForjaTopBar
+import com.olarte.ironprogress.ui.components.clearFocusOnTap
 import com.olarte.ironprogress.ui.format.appLanguage
 import com.olarte.ironprogress.ui.label
 import com.olarte.ironprogress.ui.resources.Res
@@ -88,11 +91,13 @@ import com.olarte.ironprogress.ui.resources.routine_no_results
 import com.olarte.ironprogress.ui.resources.routine_remove_block
 import com.olarte.ironprogress.ui.resources.routine_remove_exercise
 import com.olarte.ironprogress.ui.resources.routine_remove_set
-import com.olarte.ironprogress.ui.resources.routine_rest_short
+import com.olarte.ironprogress.ui.resources.workout_mode_title
 import com.olarte.ironprogress.ui.theme.ForjaMeasures
 import com.olarte.ironprogress.ui.theme.ForjaRadius
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
+import com.olarte.ironprogress.ui.workout.ExerciseModeSheet
+import com.olarte.ironprogress.ui.workout.summary
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -118,9 +123,10 @@ fun RoutineEditorRoute(id: String?, onClose: () -> Unit, setBack: ((() -> Unit)?
 fun RoutineEditorScreen(state: RoutineEditorState, onIntent: (RoutineEditorIntent) -> Unit, isNew: Boolean = false) {
     var picking by remember { mutableStateOf<BlockId?>(null) }
     var search by remember { mutableStateOf("") }
+    var modeFor by remember { mutableStateOf<RoutineExerciseId?>(null) }
     val language = appLanguage()
     val colors = ForjaTheme.colors
-    Column(Modifier.fillMaxSize().background(colors.background).statusBarsPadding().imePadding()) {
+    Column(Modifier.fillMaxSize().background(colors.background).statusBarsPadding().imePadding().clearFocusOnTap()) {
         ForjaTopBar(
             title = stringResource(if (isNew) Res.string.routine_new else Res.string.plan_edit),
             onBack = { onIntent(RoutineEditorIntent.Back) },
@@ -194,7 +200,19 @@ fun RoutineEditorScreen(state: RoutineEditorState, onIntent: (RoutineEditorInten
                                             name = state.catalog.find { it.id == exercise.exerciseId }?.name?.resolve(language)
                                                 ?: exercise.exerciseId.value,
                                             notes = exercise.notes,
-                                            rest = state.rest[exercise.id].orEmpty(),
+                                            modeText = ExerciseMode.of(
+                                                exercise.supersetGroup,
+                                                state.rest[exercise.id]?.toIntOrNull(),
+                                                exercise.timedSeconds,
+                                            ).summary(
+                                                state.rest[exercise.id]?.toIntOrNull() ?: detail.routine.restSeconds,
+                                                exercise.timedSeconds,
+                                                detail.exercises.count {
+                                                    it.supersetGroup != null &&
+                                                        it.supersetGroup == exercise.supersetGroup
+                                                },
+                                            ),
+                                            onMode = { modeFor = exercise.id },
                                             canUp = position > 0,
                                             canDown = position < exercises.lastIndex,
                                             enabled = !state.saving,
@@ -267,6 +285,24 @@ fun RoutineEditorScreen(state: RoutineEditorState, onIntent: (RoutineEditorInten
             }
         }
     }
+    modeFor?.let { id ->
+        val detail = state.detail
+        val exercise = detail?.exercises?.firstOrNull { it.id == id }
+        if (detail != null && exercise != null) {
+            val restValue = state.rest[id]?.toIntOrNull()
+            val inBlock = detail.exercises.filter { it.blockId == exercise.blockId }.sortedBy { it.sortOrder }
+            ExerciseModeSheet(
+                ExerciseMode.of(exercise.supersetGroup, restValue, exercise.timedSeconds),
+                restValue ?: detail.routine.restSeconds,
+                exercise.timedSeconds,
+                canGroup = inBlock.lastOrNull()?.id != id,
+                onDismiss = { modeFor = null },
+            ) { mode, seconds ->
+                onIntent(RoutineEditorIntent.Mode(id, mode, seconds))
+                modeFor = null
+            }
+        }
+    }
     if (state.confirmDiscard) {
         ForjaDialog(
             title = stringResource(Res.string.editor_discard),
@@ -283,7 +319,8 @@ fun RoutineEditorScreen(state: RoutineEditorState, onIntent: (RoutineEditorInten
 private fun ExerciseEditor(
     name: String,
     notes: String,
-    rest: String,
+    modeText: String,
+    onMode: () -> Unit,
     canUp: Boolean,
     canDown: Boolean,
     enabled: Boolean,
@@ -338,7 +375,12 @@ private fun ExerciseEditor(
             enabled = enabled,
             icon = ForjaIcons.Add,
         ) { onIntent(RoutineEditorIntent.AddSet(exerciseId)) }
-        ForjaTextField(stringResource(Res.string.routine_rest_short), rest, { onIntent(RoutineEditorIntent.Rest(exerciseId, it)) })
+        ForjaListRow(
+            stringResource(Res.string.workout_mode_title),
+            value = modeText,
+            enabled = enabled,
+            onClick = onMode,
+        )
         ForjaTextField(stringResource(Res.string.plan_notes), notes, { onIntent(RoutineEditorIntent.ExerciseNotes(exerciseId, it)) })
     }
 }
@@ -392,7 +434,8 @@ private fun NumberCell(value: String, description: String, enabled: Boolean, mod
         singleLine = true,
         textStyle = ForjaTheme.typography.smallFigure.copy(color = colors.text1, textAlign = TextAlign.Center),
         cursorBrush = SolidColor(colors.ember),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+        keyboardActions = com.olarte.ironprogress.ui.components.dismissingKeyboardActions(),
         modifier = modifier.semantics { contentDescription = description },
         decorationBox = { field ->
             Box(

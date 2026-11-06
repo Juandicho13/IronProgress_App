@@ -57,6 +57,7 @@ import com.olarte.ironprogress.ui.resources.plan_empty_body
 import com.olarte.ironprogress.ui.resources.plan_folder
 import com.olarte.ironprogress.ui.resources.plan_folder_delete
 import com.olarte.ironprogress.ui.resources.plan_name
+import com.olarte.ironprogress.ui.resources.plan_next_routine
 import com.olarte.ironprogress.ui.resources.plan_none
 import com.olarte.ironprogress.ui.resources.plan_rename
 import com.olarte.ironprogress.ui.resources.plan_routines
@@ -119,6 +120,7 @@ fun PlanScreen(state: PlanState, onIntent: (PlanIntent) -> Unit, onEdit: (String
                 ForjaButton(stringResource(Res.string.plan_create), enabled = !state.busy) { onEdit(null) }
             }
         } else if (!state.loading) {
+            if (state.week.days.isNotEmpty()) com.olarte.ironprogress.ui.today.TodayWeekCard(state.week)
             ForjaSectionLabel(stringResource(Res.string.plan_routines))
             // Rutinas sin carpeta primero, luego cada carpeta en su orden.
             val loose = state.routines.filter { routine -> state.folders.none { it.id == routine.folderId } }
@@ -241,9 +243,12 @@ private fun RoutineGroup(routines: List<Routine>, state: PlanState, onEdit: (Str
             key(routine.id) {
                 if (index > 0) ForjaDivider()
                 val count = state.counts[routine.id] ?: 0
+                val exercises = pluralStringResource(Res.plurals.catalog_exercise_count, count, count)
+                val isNext = routine.id == state.nextRoutineId
                 ForjaListRow(
                     title = routine.name,
-                    subtitle = pluralStringResource(Res.plurals.catalog_exercise_count, count, count),
+                    subtitle = if (isNext) stringResource(Res.string.plan_next_routine, exercises) else exercises,
+                    leading = if (isNext) ForjaIcons.PlayFilled else null,
                     enabled = !state.busy,
                     chevron = false,
                     onClick = { onEdit(routine.id.value) },

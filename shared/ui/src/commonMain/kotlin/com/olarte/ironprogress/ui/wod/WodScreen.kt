@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,6 +43,7 @@ import com.olarte.ironprogress.ui.a11y.timerPhase
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorField
 import com.olarte.ironprogress.ui.components.ForjaButtonStyle
+import com.olarte.ironprogress.ui.components.ForjaNumber
 import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.interval.StepButton
 import com.olarte.ironprogress.ui.interval.TextAction
@@ -175,11 +178,11 @@ private fun Setup(state: WodState, languageCode: String, onIntent: (WodIntent) -
             }
             val lowest = if (state.format == BlockFormat.FOR_TIME) 0 else 1
             StepButton("−", (state.minutes ?: 0) > lowest) { onIntent(WodIntent.Minutes(-1)) }
-            Text(
+            ForjaNumber(
                 state.minutes?.toString() ?: stringResource(Res.string.wod_no_cap),
-                style = ForjaTheme.typography.largeFigure,
-                color = colors.text1,
-                modifier = Modifier.padding(horizontal = ForjaSpacing.esp3),
+                ForjaTheme.typography.largeFigure,
+                Modifier.widthIn(min = 64.dp).padding(horizontal = ForjaSpacing.esp2),
+                textAlign = TextAlign.Center,
             )
             StepButton("+", (state.minutes ?: 0) < Wod.MAX_MINUTES) { onIntent(WodIntent.Minutes(1)) }
         }
@@ -202,7 +205,12 @@ private fun Setup(state: WodState, languageCode: String, onIntent: (WodIntent) -
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
                 StepButton("−", movement.reps > 1) { onIntent(WodIntent.Reps(index, -1)) }
-                Text("${movement.reps}", style = ForjaTheme.typography.largeFigure, color = colors.text1)
+                ForjaNumber(
+                    "${movement.reps}",
+                    ForjaTheme.typography.largeFigure,
+                    Modifier.widthIn(min = 56.dp),
+                    textAlign = TextAlign.Center,
+                )
                 StepButton("+", true) { onIntent(WodIntent.Reps(index, 1)) }
             }
             EditorField(stringResource(Res.string.wod_load_hint), movement.load.orEmpty()) { onIntent(WodIntent.Load(index, it)) }
@@ -243,10 +251,9 @@ private fun Running(state: WodState, languageCode: String, onIntent: (WodIntent)
     val finished = state.phase == WodPhase.FINISHED
 
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
+        ForjaNumber(
             if (finished) stringResource(Res.string.wod_time) else Formats.duration(shownSeconds.toLong()),
-            fontSize = 96.sp,
-            style = ForjaTheme.typography.heroFigure,
+            ForjaTheme.typography.heroFigure.copy(fontSize = 96.sp, lineHeight = 100.sp),
             color = if (ending || finished) colors.ember else colors.text1,
         )
         when {
@@ -273,7 +280,7 @@ private fun Running(state: WodState, languageCode: String, onIntent: (WodIntent)
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(stringResource(Res.string.wod_rounds_reps), style = ForjaTheme.typography.caption, color = colors.text2)
-            Text(score(wod, state), fontSize = 56.sp, style = ForjaTheme.typography.heroFigure, color = colors.text1)
+            ForjaNumber(score(wod, state), ForjaTheme.typography.heroFigure.copy(fontSize = 56.sp, lineHeight = 60.sp))
         }
         Column(horizontalAlignment = Alignment.End) {
             state.best?.let {
@@ -311,7 +318,7 @@ private fun Running(state: WodState, languageCode: String, onIntent: (WodIntent)
                     ) {
                         if (done) Text("✓", style = ForjaTheme.typography.label, color = colors.onEmber)
                     }
-                    Text("${movement.reps}", style = ForjaTheme.typography.largeFigure, color = colors.text1)
+                    ForjaNumber("${movement.reps}", ForjaTheme.typography.largeFigure)
                     Column(Modifier.weight(1f)) {
                         Text(
                             state.exerciseName(movement.exerciseId, languageCode),

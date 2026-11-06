@@ -4,6 +4,7 @@ import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.WeightUnit
+import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.SetType
 import com.olarte.ironprogress.domain.session.SessionDetail
 import com.olarte.ironprogress.domain.session.SessionExerciseId
@@ -32,7 +33,15 @@ data class WorkoutKeyboard(
     val invalid: Boolean = false,
 )
 
+/** Serie por tiempo en marcha: cuenta atrás de [seconds] desde [startedAtMs]. */
+data class WorkTimer(val setId: WorkoutSetId, val startedAtMs: Long, val seconds: Int) {
+    fun remainingMs(nowMs: Long): Long = (startedAtMs + seconds * 1000L - nowMs).coerceAtLeast(0)
+    fun isFinished(nowMs: Long): Boolean = remainingMs(nowMs) == 0L
+}
+
 data class WorkoutState(
+    val work: WorkTimer? = null,
+    val workNowMs: Long = 0,
     val rest: com.olarte.ironprogress.ui.rest.RestTimer? = null,
     val restNowMs: Long = 0,
     val restExpanded: Boolean = false,
@@ -60,6 +69,21 @@ data class WorkoutState(
     }
 
     fun unitOfSet(id: WorkoutSetId): WeightUnit = unitOf(session?.sets?.firstOrNull { it.id == id }?.sessionExerciseId)
+
+    fun modeOf(id: SessionExerciseId?): ExerciseMode = session?.exercises?.firstOrNull { it.id == id }?.mode ?: ExerciseMode.REST
+
+    /**
+     * Medidas de una serie de este ejercicio. Por tiempo cambia las reps por la duración y deja
+     * el peso si el ejercicio lo lleva.
+     */
+    fun measuresOf(id: SessionExerciseId?): List<WorkoutField> {
+        val exercise = session?.exercises?.firstOrNull { it.id == id }
+        val fields = catalog[exercise?.exerciseId]?.trackingType?.fields.orEmpty()
+        val base = WorkoutField.entries.filter { it.measure != null && it.measure in fields }
+        if (exercise?.mode != ExerciseMode.TIMED) return base
+        val timed = base.filter { it != WorkoutField.REPS && it != WorkoutField.DURATION } + WorkoutField.DURATION
+        return timed.distinct()
+    }
 }
 
 sealed interface WorkoutIntent {
@@ -91,6 +115,18 @@ sealed interface WorkoutIntent {
     data class Substitute(val id: SessionExerciseId) : WorkoutIntent
     data class ToggleGroup(val id: SessionExerciseId) : WorkoutIntent
     data class RemoveSet(val id: WorkoutSetId) : WorkoutIntent
+
+    /**
+     * Cómo se hace este ejercicio: con descanso ([seconds] de descanso), sin descanso, por tiempo
+     * ([seconds] por serie) o en superserie con el siguiente.
+     */
+    data class SetMode(val id: SessionExerciseId, val mode: ExerciseMode, val seconds: Int? = null) : WorkoutIntent
+
+    /** Arranca la cuenta atrás de una serie por tiempo; al llegar a 0 la serie se completa sola. */
+    data class StartWork(val id: WorkoutSetId) : WorkoutIntent
+
+    /** Para la cuenta atrás sin completar la serie. */
+    data object StopWork : WorkoutIntent
 
     /** Termina la sesión con el gesto de Deslizar para terminar (F1-21). */
     data object Finish : WorkoutIntent

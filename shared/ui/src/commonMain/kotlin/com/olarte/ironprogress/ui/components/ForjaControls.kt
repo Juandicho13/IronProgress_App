@@ -233,7 +233,9 @@ fun ForjaScreen(
     bottomBar: (@Composable ColumnScope.() -> Unit)? = null,
     content: LazyListScope.() -> Unit,
 ) {
-    Column(Modifier.fillMaxSize().background(ForjaTheme.colors.background).statusBarsPadding().imePadding().then(modifier)) {
+    Column(
+        Modifier.fillMaxSize().background(ForjaTheme.colors.background).statusBarsPadding().imePadding().clearFocusOnTap().then(modifier),
+    ) {
         ForjaTopBar(title, onBack, backDescription, subtitle = subtitle, actions = actions)
         LazyColumn(
             Modifier.weight(1f).fillMaxWidth(),
@@ -407,7 +409,8 @@ fun ForjaTextField(
         shape = ForjaRadius.shapeS,
         singleLine = singleLine,
         isError = isError,
-        keyboardOptions = keyboardOptions,
+        keyboardOptions = keyboardOptions.withDefaultImeAction(singleLine),
+        keyboardActions = dismissingKeyboardActions(),
         modifier = modifier.fillMaxWidth(),
         colors = OutlinedTextFieldDefaults.colors(
             focusedTextColor = colors.text1,
@@ -446,7 +449,8 @@ fun ForjaDialog(
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Column(
-            Modifier.fillMaxWidth().clip(ForjaRadius.shapeL).background(ForjaTheme.colors.surface1).padding(ForjaSpacing.esp5),
+            Modifier.fillMaxWidth().clip(ForjaRadius.shapeL).background(ForjaTheme.colors.surface1).clearFocusOnTap()
+                .padding(ForjaSpacing.esp5),
             verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
         ) {
             Text(title, Modifier.semantics { heading() }, style = ForjaTheme.typography.title3, color = ForjaTheme.colors.text1)
@@ -487,7 +491,7 @@ fun ForjaSheet(title: String, onDismiss: () -> Unit, content: @Composable Column
             )
         },
     ) {
-        Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = ForjaSpacing.esp4)) {
+        Column(Modifier.fillMaxWidth().clearFocusOnTap().navigationBarsPadding().imePadding().padding(bottom = ForjaSpacing.esp4)) {
             Text(
                 title,
                 Modifier.fillMaxWidth().padding(horizontal = ForjaSpacing.esp5).padding(bottom = ForjaSpacing.esp3).semantics { heading() },

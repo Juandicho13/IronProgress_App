@@ -115,6 +115,7 @@ internal fun RoutineExerciseEntity.toDomain() = RoutineExercise(
     restSeconds = restSeconds,
     unit = unit?.let { WeightUnit.valueOf(it) },
     notes = notes,
+    timedSeconds = timedSeconds,
 )
 
 internal fun RoutineExercise.toEntity(routineId: RoutineId, createdAt: Long, updatedAt: Long) = RoutineExerciseEntity(
@@ -127,6 +128,7 @@ internal fun RoutineExercise.toEntity(routineId: RoutineId, createdAt: Long, upd
     restSeconds = restSeconds,
     unit = unit?.name,
     notes = notes,
+    timedSeconds = timedSeconds,
     createdAt = createdAt,
     updatedAt = updatedAt,
 )
@@ -212,6 +214,8 @@ internal fun SessionExerciseEntity.toDomain() = SessionExercise(
     sortOrder = sortOrder,
     supersetGroup = supersetGroup,
     notes = notes,
+    restSeconds = restSeconds,
+    timedSeconds = timedSeconds,
 )
 
 internal fun SessionExercise.toEntity(createdAt: Long, updatedAt: Long) = SessionExerciseEntity(
@@ -222,6 +226,8 @@ internal fun SessionExercise.toEntity(createdAt: Long, updatedAt: Long) = Sessio
     sortOrder = sortOrder,
     supersetGroup = supersetGroup,
     notes = notes,
+    restSeconds = restSeconds,
+    timedSeconds = timedSeconds,
     createdAt = createdAt,
     updatedAt = updatedAt,
 )

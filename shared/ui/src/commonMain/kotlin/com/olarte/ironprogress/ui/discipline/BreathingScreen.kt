@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,10 +27,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,6 +46,8 @@ import com.olarte.ironprogress.ui.a11y.timerPhase
 import com.olarte.ironprogress.ui.components.ForjaDialog
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaMoreIcons
+import com.olarte.ironprogress.ui.components.ForjaNumber
+import com.olarte.ironprogress.ui.components.ForjaSegmented
 import com.olarte.ironprogress.ui.interval.StepButton
 import com.olarte.ironprogress.ui.interval.clock
 import com.olarte.ironprogress.ui.resources.Res
@@ -64,7 +70,6 @@ import com.olarte.ironprogress.ui.resources.breath_title
 import com.olarte.ironprogress.ui.resources.breath_warning
 import com.olarte.ironprogress.ui.resources.flow_pause
 import com.olarte.ironprogress.ui.resources.flow_resume
-import com.olarte.ironprogress.ui.settings.ChoiceChips
 import com.olarte.ironprogress.ui.settings.LocalAppSettings
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
@@ -125,36 +130,41 @@ fun BreathingScreen(
     Column(
         Modifier.fillMaxSize().background(colors.background)
             .background(Brush.radialGradient(listOf(colors.iceVeil, colors.background)))
-            .statusBarsPadding().navigationBarsPadding()
-            .verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
-        verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
+            .statusBarsPadding().navigationBarsPadding(),
     ) {
-        GuidedTopBar(
-            stringResource(Res.string.breath_title),
-            stringResource(Res.string.breath_left, clock(((leftMs + 999) / 1000).toInt())),
-            state.muted,
-            onClose,
-        ) { onIntent(GuidedIntent.ToggleMute) }
-
-        if (!state.started) {
-            ChoiceChips(BreathingPattern.all, { it == pattern }, { stringResource(it.labelRes()) }, onChoose)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3)) {
-                Text(
-                    stringResource(Res.string.breath_minutes),
-                    style = ForjaTheme.typography.body,
-                    color = colors.text1,
-                    modifier = Modifier.weight(1f),
-                )
-                StepButton("−", choice.minutes > 1) { onMinutes(-1) }
-                Text("${choice.minutes}", style = ForjaTheme.typography.largeFigure, color = colors.text1)
-                StepButton("+", choice.minutes < 30) { onMinutes(1) }
-            }
-        } else {
-            Text(stringResource(pattern.labelRes()), style = ForjaTheme.typography.label, color = colors.ice)
+        Box(Modifier.padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3)) {
+            GuidedTopBar(
+                stringResource(Res.string.breath_title),
+                stringResource(Res.string.breath_left, clock(((leftMs + 999) / 1000).toInt())),
+                state.muted,
+                onClose,
+            ) { onIntent(GuidedIntent.ToggleMute) }
         }
+        Column(
+            Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
+        ) {
+            if (!state.started) {
+                ForjaSegmented(BreathingPattern.all, pattern, { stringResource(it.labelRes()) }, onSelect = onChoose)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(stringResource(Res.string.breath_minutes), style = ForjaTheme.typography.caption, color = colors.text2)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4)) {
+                        StepButton("−", choice.minutes > 1) { onMinutes(-1) }
+                        ForjaNumber(
+                            "${choice.minutes}",
+                            ForjaTheme.typography.largeFigure,
+                            Modifier.widthIn(min = 64.dp),
+                            textAlign = TextAlign.Center,
+                        )
+                        StepButton("+", choice.minutes < 30) { onMinutes(1) }
+                    }
+                }
+            } else {
+                Text(stringResource(pattern.labelRes()), style = ForjaTheme.typography.label, color = colors.ice)
+            }
 
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Box(Modifier.widthIn(max = 300.dp).fillMaxWidth().aspectRatio(1f), contentAlignment = Alignment.Center) {
+            Box(Modifier.widthIn(max = 320.dp).fillMaxWidth().aspectRatio(1f), contentAlignment = Alignment.Center) {
                 BreathFigure(pattern, timer)
                 // Solo la fase es región viva: los segundos de abajo no se anuncian cada segundo.
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -163,41 +173,48 @@ fun BreathingScreen(
                         modifier = Modifier.timerPhase(),
                         style = ForjaTheme.typography.title1.copy(fontSize = 30.sp, lineHeight = 36.sp),
                         color = colors.ice,
+                        maxLines = 1,
                     )
-                    Text(
+                    ForjaNumber(
                         "${timer?.displaySecondsLeft ?: pattern.inhale}",
-                        style = ForjaTheme.typography.heroFigure.copy(fontSize = 72.sp, lineHeight = 76.sp),
-                        color = colors.text1,
+                        ForjaTheme.typography.heroFigure.copy(fontSize = 72.sp, lineHeight = 76.sp),
+                        Modifier.clearAndSetSemantics {},
                     )
                 }
             }
-        }
 
-        if (state.finished) {
-            Finished(state, onClose)
-            return@Column
-        }
-
-        if (state.started) InfoBox(stringResource(Res.string.breath_cycle), "${timer?.round ?: 1}", Modifier.fillMaxWidth())
-
-        Row(horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
-            Icon(ForjaMoreIcons.Info, contentDescription = null, tint = colors.gold, modifier = Modifier.size(20.dp))
-            Text(stringResource(Res.string.breath_warning), style = ForjaTheme.typography.body, color = colors.text1)
-        }
-        Text(stringResource(Res.string.breath_saves), style = ForjaTheme.typography.caption, color = colors.text2)
-
-        if (!state.started) {
-            PillButton(stringResource(Res.string.breath_start), primary = true, modifier = Modifier.fillMaxWidth()) {
-                if (pattern.warnsBeforeStart) confirming = true else onIntent(GuidedIntent.Start)
+            if (state.finished) {
+                Finished(state, onClose)
+                return@Column
             }
-        } else {
-            Row(horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3), verticalAlignment = Alignment.CenterVertically) {
-                RoundIconButton(
-                    if (state.paused) ForjaIcons.PlayFilled else ForjaMoreIcons.Pause,
-                    stringResource(if (state.paused) Res.string.flow_resume else Res.string.flow_pause),
-                ) { onIntent(GuidedIntent.TogglePause) }
-                PillButton(stringResource(Res.string.breath_finish), primary = true, modifier = Modifier.weight(1f)) {
-                    onIntent(GuidedIntent.Finish)
+
+            if (state.started) {
+                InfoBox(stringResource(Res.string.breath_cycle), "${timer?.round ?: 1}", Modifier.fillMaxWidth())
+            } else {
+                Text(
+                    stringResource(Res.string.breath_saves),
+                    style = ForjaTheme.typography.caption,
+                    color = colors.text2,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+        if (!state.finished) {
+            Box(Modifier.fillMaxWidth().padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3)) {
+                if (!state.started) {
+                    PillButton(stringResource(Res.string.breath_start), primary = true, modifier = Modifier.fillMaxWidth()) {
+                        if (pattern.warnsBeforeStart) confirming = true else onIntent(GuidedIntent.Start)
+                    }
+                } else {
+                    Row(horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3), verticalAlignment = Alignment.CenterVertically) {
+                        RoundIconButton(
+                            if (state.paused) ForjaIcons.PlayFilled else ForjaMoreIcons.Pause,
+                            stringResource(if (state.paused) Res.string.flow_resume else Res.string.flow_pause),
+                        ) { onIntent(GuidedIntent.TogglePause) }
+                        PillButton(stringResource(Res.string.breath_finish), primary = true, modifier = Modifier.weight(1f)) {
+                            onIntent(GuidedIntent.Finish)
+                        }
+                    }
                 }
             }
         }
@@ -234,20 +251,44 @@ private fun BreathFigure(pattern: BreathingPattern, timer: TimerState?) {
         val topLeft = Offset((size.width - side) / 2f, (size.height - side) / 2f)
         if (pattern == BreathingPattern.BOX) {
             val stroke = 8.dp.toPx()
-            drawRoundRect(colors.surface3, topLeft, Size(side, side), CornerRadius(28.dp.toPx()), style = Stroke(stroke))
-            val corners = listOf(topLeft, topLeft + Offset(side, 0f), topLeft + Offset(side, side), topLeft + Offset(0f, side))
+            val radius = 28.dp.toPx()
+            drawRoundRect(colors.surface3, topLeft, Size(side, side), CornerRadius(radius), style = Stroke(stroke))
             val sideIndex = when (kind) {
                 SegmentKind.INHALE -> 0
                 SegmentKind.HOLD_IN -> 1
                 SegmentKind.EXHALE -> 2
                 else -> 3
             }
-            val from = corners[sideIndex]
-            val to = corners[(sideIndex + 1) % 4]
-            drawLine(colors.ice, from, to, strokeWidth = stroke, cap = StrokeCap.Round)
-            val dot = from + (to - from) * progress
-            drawCircle(colors.ice.copy(alpha = 0.35f), radius = 22.dp.toPx(), center = dot)
-            drawCircle(colors.text1, radius = 11.dp.toPx(), center = dot)
+            // El camino arranca en el centro del lado de arriba a la izquierda y va en sentido horario;
+            // cada fase recorre un cuarto del borde.
+            val left = topLeft.x
+            val top = topLeft.y
+            val right = left + side
+            val bottom = top + side
+            val d = radius * 2
+            // Sentido horario desde arriba a la izquierda: cada cuarto es un lado con su esquina.
+            val outline = Path().apply {
+                moveTo(left + radius, top)
+                lineTo(right - radius, top)
+                arcTo(Rect(right - d, top, right, top + d), -90f, 90f, false)
+                lineTo(right, bottom - radius)
+                arcTo(Rect(right - d, bottom - d, right, bottom), 0f, 90f, false)
+                lineTo(left + radius, bottom)
+                arcTo(Rect(left, bottom - d, left + d, bottom), 90f, 90f, false)
+                lineTo(left, top + radius)
+                arcTo(Rect(left, top, left + d, top + d), 180f, 90f, false)
+                close()
+            }
+            val measure = PathMeasure().apply { setPath(outline, true) }
+            val length = measure.length
+            val start = length * sideIndex / 4f
+            val end = start + length / 4f * progress
+            val traced = Path()
+            if (end > start) measure.getSegment(start, end, traced, true)
+            drawPath(traced, colors.ice, style = Stroke(stroke, cap = StrokeCap.Round))
+            val dot = measure.getPosition(end.coerceAtMost(length - 0.01f))
+            drawCircle(colors.ice.copy(alpha = 0.35f), radius = 18.dp.toPx(), center = dot)
+            drawCircle(colors.text1, radius = 9.dp.toPx(), center = dot)
         } else {
             val scale = when (kind) {
                 SegmentKind.INHALE -> 0.55f + 0.45f * progress

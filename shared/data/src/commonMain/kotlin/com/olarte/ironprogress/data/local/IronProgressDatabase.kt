@@ -41,11 +41,12 @@ import kotlinx.coroutines.IO
         ScreeningAnswerEntity::class,
         GuardianConsentEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4),
     ],
 )
 @ConstructedBy(IronProgressDatabaseConstructor::class)
@@ -60,7 +61,7 @@ abstract class IronProgressDatabase : RoomDatabase() {
     abstract fun stageOneDao(): StageOneDao
 
     companion object {
-        const val SCHEMA_VERSION = 3
+        const val SCHEMA_VERSION = 4
         const val DATABASE_NAME = "ironprogress.db"
     }
 }

@@ -37,6 +37,8 @@ class StartSession(private val repository: SessionRepository, private val ids: I
                     sortOrder = exercises.size,
                     supersetGroup = planned.supersetGroup,
                     notes = planned.notes,
+                    restSeconds = planned.restSeconds,
+                    timedSeconds = planned.timedSeconds,
                 )
                 exercises += exercise
                 val previous = repository.previousSets(planned.exerciseId)

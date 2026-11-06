@@ -18,7 +18,7 @@ val uiModule = module {
     single { com.olarte.ironprogress.ui.rest.platformRestNotifications() }
     viewModel { WorkoutViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { TodayViewModel(get(), get(), get(), get(), get()) }
-    viewModel { PlanViewModel(get(), get()) }
+    viewModel { PlanViewModel(get(), get(), get(), get(), get()) }
     viewModel { (id: String?) -> RoutineEditorViewModel(get(), get(), get(), get(), id) }
     viewModel { (id: String?) -> ExerciseEditorViewModel(get(), get(), id) }
     viewModel { (id: String) -> com.olarte.ironprogress.ui.catalog.ExerciseDetailViewModel(get(), id) }

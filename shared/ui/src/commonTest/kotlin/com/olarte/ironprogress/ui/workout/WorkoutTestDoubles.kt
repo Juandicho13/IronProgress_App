@@ -70,7 +70,15 @@ internal class TestSessions : SessionRepository {
             data.value.map { if (it.session.id == session.id) it.copy(session = session) else it }
     }
     override suspend fun saveBlock(block: SessionBlock) = Unit
-    override suspend fun saveExercise(exercise: SessionExercise) = Unit
+    override suspend fun saveExercise(exercise: SessionExercise) {
+        data.value = data.value.map { detail ->
+            if (detail.exercises.any { it.id == exercise.id }) {
+                detail.copy(exercises = detail.exercises.map { if (it.id == exercise.id) exercise else it })
+            } else {
+                detail
+            }
+        }
+    }
     override suspend fun saveSet(set: WorkoutSet) {
         check(!failSave) { "Fallo de escritura de prueba" }
         if (set.isCompleted) completedWrites++

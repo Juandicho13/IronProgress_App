@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rest_skip_short">Saltar</string>
+    <string name="workout_other_exercises">Otros ejercicios</string>
+    <string name="workout_sets_progress">%1$d de %2$d series</string>
+    <string name="workout_timed_start">Empezar %1$s</string>
+    <string name="workout_timed_stop">Parar</string>
+    <string name="workout_edit_set">Corregir la serie %1$d</string>
+    <string name="workout_set_of">Serie %1$d de %2$d</string>
+    <string name="workout_previous_value">Anterior: %1$s</string>
+    <plurals name="workout_sets_left">
+        <item quantity="one">Falta %1$d serie</item>
+        <item quantity="other">Faltan %1$d series</item>
+    </plurals>
+    <string name="workout_mode_title">Cómo lo haces</string>
+    <string name="workout_mode_apply">Aplicar</string>
+    <string name="workout_mode_less">Menos tiempo</string>
+    <string name="workout_mode_more">Más tiempo</string>
+    <string name="workout_mode_rest">Series con descanso</string>
+    <string name="workout_mode_rest_hint">Después de cada serie corre el descanso</string>
+    <string name="workout_mode_no_rest">Series sin descanso</string>
+    <string name="workout_mode_no_rest_hint">La siguiente serie viene enseguida</string>
+    <string name="workout_mode_timed">Por tiempo</string>
+    <string name="workout_mode_timed_hint">Cada serie es una cuenta atrás</string>
+    <string name="workout_mode_superset">Superserie con el siguiente</string>
+    <string name="workout_mode_superset_hint">El descanso llega después de los dos ejercicios</string>
+    <string name="workout_mode_rest_seconds">Descanso</string>
+    <string name="workout_mode_timed_seconds">Cada serie</string>
+    <string name="workout_mode_summary_rest">Descanso %1$s</string>
+    <string name="workout_mode_summary_no_rest">Sin descanso</string>
+    <string name="workout_mode_summary_timed">Por tiempo · %1$s</string>
+    <string name="workout_mode_summary_superset">Superserie</string>
+    <string name="workout_mode_summary_circuit">Circuito</string>
+    <string name="plan_next_routine">Toca hoy · %1$s</string>
+    <plurals name="summary_working_sets">
+        <item quantity="one">%1$d serie de trabajo</item>
+        <item quantity="other">%1$d series de trabajo</item>
+    </plurals>
+</resources>

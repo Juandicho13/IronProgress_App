@@ -106,7 +106,11 @@ data class RoutineExercise(
     /** null usa la unidad del ejercicio o la general. */
     val unit: WeightUnit? = null,
     val notes: String = "",
-)
+    /** Segundos de cada serie cuando el ejercicio va por tiempo; null en series normales. */
+    val timedSeconds: Int? = null,
+) {
+    val mode: ExerciseMode get() = ExerciseMode.of(supersetGroup, restSeconds, timedSeconds)
+}
 
 /** Plantilla de cada serie objetivo. */
 data class SetTemplate(

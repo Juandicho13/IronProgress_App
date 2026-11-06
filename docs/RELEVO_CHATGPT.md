@@ -352,3 +352,19 @@ Juan probó la app en el iPhone y pidió arreglar el movimiento, el contraste en
 - **Idioma:** `LocalAppLanguageTag` (`ui/format/AppLanguage.kt`) da el idioma elegido en Ajustes o el preferido del teléfono. En iPhone `Locale.current` seguía al idioma del paquete y la fecha de Hoy salía en inglés.
 - **Capturas:** `ScreenShotsTest` (Robolectric, gráficos nativos) guarda Plan, editor de rutina, Ajustes, Progreso y Entreno libre en claro y oscuro con `-PshotsDir=/ruta`; sin esa propiedad se salta.
 
+## 28. Segunda ronda tras el gimnasio, 5 de noviembre de 2026
+
+Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
+
+- **Teclado:** `Modifier.clearFocusOnTap()` (`ui/components/FocusControls.kt`) en la raíz de la app, `ForjaScreen`, hojas, diálogos y los editores; tocar fuera cierra el teclado. `ForjaTextField` pone Listo en una línea y cierra el teclado con `dismissingKeyboardActions()`. Android usa `adjustResize` y las pantallas `imePadding()`.
+- **Teclado de Entreno:** Siguiente y las pestañas de campo ya no esperan a que termine de guardarse la tecla anterior (la cola de escrituras es FIFO). Antes Siguiente quedaba apagado un instante y las cifras de las reps caían en el peso ("2122 kg × 21"). La primera tecla sobre un valor ya escrito lo reemplaza.
+- **Entreno, una serie a la vez:** el ejercicio en curso muestra arriba las series hechas en filas cortas (tocarlas las corrige), la serie actual en una tarjeta con "Serie 2 de 4", el anterior para copiar, números grandes y RIR y RPE como chips opcionales, y abajo "Faltan N series". Los otros ejercicios van en filas debajo. La etiqueta del peso es solo "kg" o "lb". Al completar una serie, la siguiente vacía del mismo ejercicio arranca con esos valores.
+- **Modo por ejercicio** (`domain/routine/ExerciseMode.kt`): con descanso (segundos), sin descanso, por tiempo (segundos por serie, cuenta atrás que completa la serie sola) y superserie con el siguiente (`groupWithNext`). No hay columna de modo: sale de `restSeconds` (0 es sin descanso), `timedSeconds` (nuevo) y `supersetGroup`. Base de datos v4 con migración automática: `routine_exercises.timed_seconds`, `session_exercises.rest_seconds` y `session_exercises.timed_seconds`. Se elige en el editor de rutina (fila "Cómo lo haces") y en Entreno (chip bajo el nombre o ⋮).
+- **Descanso:** sin el anillo pequeño duplicado; -15 s, Saltar y +15 s en una fila del mismo alto; volver a las series en la barra de arriba.
+- **Live Activity (Swift, sin compilar aquí):** anillo azul que se vacía con `ProgressView(timerInterval:)` en la isla compacta, la mínima, la expandida y la pantalla bloqueada (estas dos con la cuenta atrás dentro); en Listo, check verde. ActivityKit no deja dibujar alrededor de la isla, así que el anillo va dentro, a la izquierda.
+- **Respiración:** patrones en un control segmentado de ancho completo (`ForjaSegmented`), minutos centrados, figura centrada; el recorrido de la cuadrada sigue el borde redondeado con `PathMeasure` (antes la línea se salía del cuadrado y parecía un deslizador roto). Sin el aviso de seguridad en la pantalla; la pregunta antes de empezar la Relajante 4-7-8 sigue.
+- **Números en una línea:** `ForjaNumber` (`ui/components/ForjaNumber.kt`) no parte nunca y se achica si no cabe. Usado en Entreno, Descanso, Respiración, Flujo, Intervalos, WOD y Resumen.
+- **Plan:** vuelve la semana en 7 círculos (mismos datos que Hoy) y la rutina que toca lleva "Toca hoy".
+- **Resumen:** Listo fijo abajo a todo el ancho; "1 serie de trabajo" con plurales.
+- **Capturas:** `ScreenShotsTest` suma Entreno con una serie hecha, Descanso, Respiración (antes y corriendo), Nuevo intervalo, Plan con la semana y Resumen.
+

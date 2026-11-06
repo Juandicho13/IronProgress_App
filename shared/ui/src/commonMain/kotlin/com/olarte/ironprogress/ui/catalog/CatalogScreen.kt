@@ -91,6 +91,7 @@ fun CatalogScreen(
     val typography = ForjaTheme.typography
     val searchFieldState = rememberTextFieldState(initialText = state.searchText)
     val searchInteraction = remember { MutableInteractionSource() }
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     val isSearchFocused by searchInteraction.collectIsFocusedAsState()
 
     LaunchedEffect(searchFieldState, onIntent) {
@@ -173,6 +174,11 @@ fun CatalogScreen(
                         textStyle = typography.body.copy(color = colors.text1),
                         cursorBrush = SolidColor(colors.ember),
                         interactionSource = searchInteraction,
+                        lineLimits = androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            imeAction = androidx.compose.ui.text.input.ImeAction.Search,
+                        ),
+                        onKeyboardAction = { focusManager.clearFocus() },
                     )
                 }
 

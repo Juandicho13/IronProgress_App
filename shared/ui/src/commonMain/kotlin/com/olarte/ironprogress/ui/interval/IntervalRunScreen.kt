@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.time.SegmentKind
 import com.olarte.ironprogress.ui.a11y.timerPhase
+import com.olarte.ironprogress.ui.components.ForjaNumber
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.interval_breathe
 import com.olarte.ironprogress.ui.resources.interval_close
@@ -239,15 +240,18 @@ private fun Ring(timer: com.olarte.ironprogress.domain.time.TimerState, color: C
             drawArc(color, -90f, 360f * progress, false, Offset(inset, inset), arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
         }
         if (timer.kind == SegmentKind.WORK && seconds in 1..5) {
-            Text(
+            ForjaNumber(
                 seconds.toString(),
-                fontSize = 156.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = colors.text1,
+                ForjaTheme.typography.heroFigure.copy(fontSize = 156.sp, lineHeight = 160.sp, fontWeight = FontWeight.ExtraBold),
                 textAlign = TextAlign.Center,
             )
         } else {
-            Text(clock(seconds), style = ForjaTheme.typography.heroFigure, color = colors.text1)
+            ForjaNumber(
+                clock(seconds),
+                ForjaTheme.typography.heroFigure,
+                Modifier.padding(horizontal = 24.dp),
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }

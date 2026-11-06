@@ -10,6 +10,8 @@ enum ForjaTokens {
     static let text1 = Color.white
     static let text2 = Color.white.opacity(0.64)
     static let surface3 = Color.white.opacity(0.14)
+    /// Verde de Listo: el descanso terminó y toca la serie.
+    static let ready = Color(red: 0x34 / 255.0, green: 0xC7 / 255.0, blue: 0x59 / 255.0)
 
     /// Cifras tabulares, como Archivo en la app (la extensión usa la del sistema).
     static func figure(_ size: CGFloat) -> Font {

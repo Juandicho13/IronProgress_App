@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.ExerciseId
@@ -40,6 +41,8 @@ import com.olarte.ironprogress.domain.voice.VoiceSettings
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.EditorField
 import com.olarte.ironprogress.ui.components.ForjaButtonStyle
+import com.olarte.ironprogress.ui.components.ForjaNumber
+import com.olarte.ironprogress.ui.components.clearFocusOnTap
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.interval_alternate
 import com.olarte.ironprogress.ui.resources.interval_cancel
@@ -106,7 +109,7 @@ fun IntervalEditorScreen(
     val type = ForjaTheme.typography
     val template = state.template
     Column(
-        Modifier.fillMaxSize().background(colors.background).statusBarsPadding().imePadding()
+        Modifier.fillMaxSize().background(colors.background).statusBarsPadding().imePadding().clearFocusOnTap()
             .verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
         verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp5),
     ) {
@@ -116,6 +119,8 @@ fun IntervalEditorScreen(
                 stringResource(if (editing) Res.string.interval_edit else Res.string.interval_new),
                 style = type.title3,
                 color = colors.text1,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                maxLines = 1,
                 modifier = Modifier.weight(1f).padding(horizontal = ForjaSpacing.esp2),
             )
             TextAction(stringResource(Res.string.interval_save), enabled = !state.saving) { onIntent(IntervalEditorIntent.Save) }
@@ -135,7 +140,7 @@ fun IntervalEditorScreen(
                     color = colors.text1,
                     modifier = Modifier.weight(1f),
                 )
-                Text(clock(template.roundSeconds), style = type.figure, color = colors.text2)
+                ForjaNumber(clock(template.roundSeconds), type.figure, color = colors.text2)
             }
             ProportionBar(template)
             StepRow(
@@ -239,11 +244,10 @@ private fun StepRow(
             Text(hint, style = ForjaTheme.typography.caption, color = colors.text2)
         }
         StepButton("−", canLower, onLower)
-        Text(
+        ForjaNumber(
             value,
-            style = ForjaTheme.typography.largeFigure,
-            color = colors.text1,
-            modifier = Modifier.width(88.dp).padding(horizontal = ForjaSpacing.esp2),
+            ForjaTheme.typography.largeFigure,
+            Modifier.width(104.dp).padding(horizontal = ForjaSpacing.esp1),
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
         StepButton("+", canRaise, onRaise)

@@ -14,41 +14,42 @@ struct IronProgressLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    RestRing(state: context.state, size: 44)
-                }
-                DynamicIslandExpandedRegion(.trailing) {
-                    Countdown(state: context.state, size: 28)
+                    RingWithTime(state: context.state, size: 64)
+                        .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.center) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(context.state.title).font(.headline).foregroundStyle(ForjaTokens.text1).lineLimit(1)
-                        Text(context.state.detail).font(.caption).foregroundStyle(ForjaTokens.text2).lineLimit(1)
+                        Text(context.state.detail).font(.caption).foregroundStyle(ForjaTokens.text2).lineLimit(2)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     Actions(state: context.state)
                 }
             } compactLeading: {
-                RestRing(state: context.state, size: 20)
+                RestRing(state: context.state, size: 22)
             } compactTrailing: {
-                Countdown(state: context.state, size: 14)
-                    .frame(maxWidth: 48)
+                Countdown(state: context.state, size: 15)
+                    .frame(maxWidth: 52)
             } minimal: {
-                RestRing(state: context.state, size: 20)
+                RestRing(state: context.state, size: 22)
             }
-            .keylineTint(context.state.ready ? ForjaTokens.ember : ForjaTokens.ice)
+            .keylineTint(context.state.ready ? ForjaTokens.ready : ForjaTokens.ice)
         }
     }
 }
 
-/// Anillo: hielo mientras descansa y brasa en Listo.
+/// Anillo azul que se va vaciando mientras descansa; en Listo, un círculo verde con el check.
+/// Lo anima el sistema con ProgressView(timerInterval:), sin actualizar la actividad cada segundo.
+/// ActivityKit no deja dibujar alrededor de la isla: el anillo va dentro, a la izquierda.
 private struct RestRing: View {
     let state: WorkoutActivityAttributes.ContentState
     let size: CGFloat
 
     var body: some View {
         Group {
-            if let endsAt = state.endsAt, endsAt > state.startedAt {
+            if !state.ready, let endsAt = state.endsAt, endsAt > state.startedAt {
                 ProgressView(timerInterval: state.startedAt...endsAt, countsDown: true) {
                     EmptyView()
                 } currentValueLabel: {
@@ -57,8 +58,27 @@ private struct RestRing: View {
                 .progressViewStyle(.circular)
                 .tint(ForjaTokens.ice)
             } else {
-                Circle()
-                    .stroke(ForjaTokens.ember, lineWidth: max(2, size / 8))
+                Image(systemName: "checkmark.circle.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(ForjaTokens.ready)
+            }
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+/// El anillo grande con la cuenta atrás en el centro: expandida, pantalla bloqueada y StandBy.
+private struct RingWithTime: View {
+    let state: WorkoutActivityAttributes.ContentState
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            RestRing(state: state, size: size)
+            if !state.ready {
+                Countdown(state: state, size: size * 0.28)
+                    .frame(width: size * 0.72)
             }
         }
         .frame(width: size, height: size)
@@ -75,11 +95,15 @@ private struct Countdown: View {
             Text(timerInterval: Date()...max(endsAt, Date()), countsDown: true)
                 .font(ForjaTokens.figure(size))
                 .foregroundStyle(ForjaTokens.ice)
-                .multilineTextAlignment(.trailing)
+                .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
         } else {
             Text(state.readyChip)
                 .font(ForjaTokens.figure(size))
-                .foregroundStyle(ForjaTokens.ember)
+                .foregroundStyle(ForjaTokens.ready)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
         }
     }
 }
@@ -96,10 +120,12 @@ private struct Actions: View {
                 }
                 .tint(ForjaTokens.ember)
             } else {
-                Button(intent: AdjustRestIntent(seconds: -15)) { Text("-15 s") }
-                Button(intent: AdjustRestIntent(seconds: 15)) { Text("+15 s") }
-                Button(intent: SkipRestIntent()) { Text("Saltar") }
+                Button(intent: AdjustRestIntent(seconds: -15)) { Text("-15 s").frame(maxWidth: .infinity) }
+                    .tint(ForjaTokens.surface3)
+                Button(intent: SkipRestIntent()) { Text("Saltar").frame(maxWidth: .infinity) }
                     .tint(ForjaTokens.ice)
+                Button(intent: AdjustRestIntent(seconds: 15)) { Text("+15 s").frame(maxWidth: .infinity) }
+                    .tint(ForjaTokens.surface3)
             }
         }
         .buttonStyle(.borderedProminent)
@@ -113,14 +139,13 @@ private struct LockScreenView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .center, spacing: 12) {
-                RestRing(state: state, size: 40)
+            HStack(alignment: .center, spacing: 14) {
+                RingWithTime(state: state, size: 72)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(state.title).font(.headline).foregroundStyle(ForjaTokens.text1).lineLimit(1)
-                    Text(state.detail).font(.subheadline).foregroundStyle(ForjaTokens.text2).lineLimit(1)
+                    Text(state.detail).font(.subheadline).foregroundStyle(ForjaTokens.text2).lineLimit(2)
                 }
-                Spacer(minLength: 8)
-                Countdown(state: state, size: 34)
+                Spacer(minLength: 0)
             }
             Actions(state: state)
         }
