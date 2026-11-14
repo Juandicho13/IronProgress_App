@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.progression.StagnationProposal
 import com.olarte.ironprogress.domain.progression.suggestionRecord
@@ -188,6 +189,7 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
     var confirmCancel by remember { mutableStateOf(false) }
     var effortInfo by remember { mutableStateOf(false) }
     var stagnationId by remember { mutableStateOf<SessionExerciseId?>(null) }
+    var ladderId by remember { mutableStateOf<SessionExerciseId?>(null) }
     val selected = detail?.exercises?.firstOrNull { it.id == state.selectedExerciseId }
     val currentSet = selected?.let { detail.setsOf(it.id).firstOrNull { set -> !set.isCompleted } }
     val block = detail?.blocks?.firstOrNull { it.id == selected?.blockId }
@@ -263,6 +265,7 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
                         onSetOptions = { optionsId = it },
                         onEffortInfo = { effortInfo = true },
                         onStagnation = { stagnationId = selected.id },
+                        onLadder = { ladderId = selected.id },
                     )
                 }
             }
@@ -440,6 +443,22 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
         )
     }
     if (effortInfo) EffortInfoSheet { effortInfo = false }
+    ladderId?.let { id ->
+        val record = detail?.setsOf(id)?.firstOrNull { !it.isCompleted }?.suggestionRecord
+        val name = record?.ladderTarget?.let { state.catalog[ExerciseId(it)]?.name?.resolve(language) }
+        if (record != null && name != null) {
+            LadderSheet(
+                name,
+                record.repsMin ?: record.reps ?: 0,
+                inRoutine = detail.session.routineId != null,
+                onChoose = { inRoutine ->
+                    ladderId = null
+                    onIntent(WorkoutIntent.ApplyLadder(id, inRoutine))
+                },
+                onDismiss = { ladderId = null },
+            )
+        }
+    }
     stagnationId?.let { id ->
         state.stagnation[id]?.let { stagnation ->
             StagnationSheet(
@@ -607,6 +626,7 @@ private fun CurrentExercise(
     onSetOptions: (WorkoutSetId) -> Unit,
     onEffortInfo: () -> Unit,
     onStagnation: () -> Unit = {},
+    onLadder: () -> Unit = {},
 ) {
     val detail = state.session ?: return
     val exercise = detail.exercises.firstOrNull { it.id == exerciseId } ?: return
@@ -681,6 +701,7 @@ private fun CurrentExercise(
                 onIntent = onIntent,
                 onOptions = { onSetOptions(current.id) },
                 onEffortInfo = onEffortInfo,
+                onLadder = onLadder,
             )
             if (state.invalidSetId == current.id) {
                 Text(stringResource(Res.string.workout_invalid), color = colors.danger, style = typography.body2)
@@ -757,6 +778,7 @@ private fun CurrentSetCard(
     onIntent: (WorkoutIntent) -> Unit,
     onOptions: () -> Unit,
     onEffortInfo: () -> Unit,
+    onLadder: () -> Unit = {},
 ) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
@@ -811,7 +833,16 @@ private fun CurrentSetCard(
             }
         }
         set.suggestionRecord?.let { record ->
-            SuggestionLine(record, record.matches(set), state.proMode, unit, enabled) { onIntent(WorkoutIntent.ApplySuggestion(set.id)) }
+            val ladderName = record.ladderTarget?.let { state.catalog[ExerciseId(it)]?.name?.resolve(appLanguage()) }
+            SuggestionLine(
+                record,
+                record.matches(set),
+                state.proMode,
+                unit,
+                enabled,
+                ladderName = ladderName,
+                onLadder = onLadder,
+            ) { onIntent(WorkoutIntent.ApplySuggestion(set.id)) }
         }
         if (work != null) {
             val left = (work.remainingMs(state.workNowMs) + 999) / 1000

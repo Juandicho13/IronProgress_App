@@ -174,4 +174,63 @@ class ProgressionShotsTest {
             }
         }
     }
+
+    private val pushUp = testBench.copy(
+        id = com.olarte.ironprogress.domain.catalog.ExerciseId("push-up"),
+        name = com.olarte.ironprogress.domain.catalog.LocalizedText("Flexiones", "Push-ups"),
+        trackingType = com.olarte.ironprogress.domain.catalog.TrackingType.REPS,
+        equipment = com.olarte.ironprogress.domain.catalog.Equipment.BODYWEIGHT,
+    )
+    private val decline = pushUp.copy(
+        id = com.olarte.ironprogress.domain.catalog.ExerciseId("decline-push-up"),
+        name = com.olarte.ironprogress.domain.catalog.LocalizedText("Flexiones declinadas", "Decline push-ups"),
+    )
+
+    private fun pushUpState(suggestion: Suggestion): WorkoutState {
+        val detail = pressSession(suggestion).let { detail ->
+            detail.copy(
+                session = detail.session.copy(routineId = com.olarte.ironprogress.domain.routine.RoutineId("r")),
+                exercises = detail.exercises.map { it.copy(exerciseId = pushUp.id) },
+                sets = detail.sets.map { it.copy(weightKg = null) },
+            )
+        }
+        return state(detail, pro = false).copy(catalog = mapOf(pushUp.id to pushUp, decline.id to decline))
+    }
+
+    @Test
+    fun ladderHarder() {
+        val ladder = Suggestion(SuggestionReason.LADDER_HARDER, null, listOf(15, 15, 15), RepRange(8, 15, 2), ladderTarget = decline.id)
+        val state = pushUpState(ladder)
+        shoot("escalera") { WorkoutScreen(state, 754, {}, onMinimize = {}) }
+    }
+
+    @Test
+    fun ladderOneMore() {
+        val ladder = Suggestion(SuggestionReason.LADDER_ONE_MORE, null, listOf(15, 15, 15), RepRange(8, 15, 2), ladderTarget = decline.id)
+        val state = pushUpState(ladder)
+        shoot("escalera-una-mas") { WorkoutScreen(state, 754, {}, onMinimize = {}) }
+    }
+
+    @Test
+    fun ladderOptions() {
+        shoot("escalera-opciones") {
+            androidx.compose.foundation.layout.Column(
+                androidx.compose.ui.Modifier.fillMaxSize().background(ForjaTheme.colors.background),
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.Bottom,
+            ) {
+                androidx.compose.foundation.layout.Column(
+                    androidx.compose.ui.Modifier.background(ForjaTheme.colors.surface1, ForjaRadius.shapeXlTop)
+                        .padding(top = ForjaSpacing.esp5),
+                ) {
+                    androidx.compose.material3.Text(
+                        "Cambiar a Flexiones declinadas",
+                        androidx.compose.ui.Modifier.padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp2),
+                        style = ForjaTheme.typography.title3,
+                        color = ForjaTheme.colors.text1,
+                    )
+                    com.olarte.ironprogress.ui.workout.LadderOptions(8, inRoutine = true, {}, {})
+                }
+            }
+        }
+    }
 }

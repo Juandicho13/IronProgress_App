@@ -161,6 +161,12 @@ sealed interface WorkoutIntent {
 
     /** "Ahora no": el aviso de estancamiento no vuelve a salir en esta sesión. */
     data class DismissStagnation(val id: SessionExerciseId) : WorkoutIntent
+
+    /**
+     * Escalera (F2-12): cambia el ejercicio por la variante que propuso el motor; lo hecho se queda.
+     * Con [inRoutine] también la cambia en la rutina.
+     */
+    data class ApplyLadder(val id: SessionExerciseId, val inRoutine: Boolean) : WorkoutIntent
 }
 
 sealed interface WorkoutEffect {

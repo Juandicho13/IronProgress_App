@@ -446,6 +446,7 @@ class WorkoutViewModel(
                 mutableState.update { it.copy(stagnation = it.stagnation - intent.id) }
             }
             is WorkoutIntent.ChangeRange -> enqueue { changeRange(intent.id) }
+            is WorkoutIntent.ApplyLadder -> enqueue { applyLadder(intent.id, intent.inRoutine) }
             is WorkoutIntent.DismissStagnation -> mutableState.update { it.copy(stagnationDismissed = it.stagnationDismissed + intent.id) }
             is WorkoutIntent.ApplySuggestion -> edit(intent.id) { set ->
                 val record = set.suggestionRecord ?: return@edit set
@@ -536,6 +537,32 @@ class WorkoutViewModel(
             sessions.saveSet(set.copy(reps = range.min, suggestion = record?.encode() ?: set.suggestion))
         }
         mutableState.update { it.copy(stagnation = it.stagnation - id) }
+    }
+
+    /**
+     * Cambia el ejercicio por la variante de la escalera que trae su serie pendiente (F2-12). Las
+     * series pendientes pasan a la variante con el mínimo del rango; con [inRoutine] la rutina
+     * también cambia.
+     */
+    private suspend fun applyLadder(id: SessionExerciseId, inRoutine: Boolean) {
+        val detail = active()
+        val exercise = detail.exercises.firstOrNull { it.id == id } ?: return
+        val record = detail.setsOf(id).firstOrNull { !it.isCompleted }?.suggestionRecord ?: return
+        val target = record.ladderTarget?.let(::ExerciseId) ?: return
+        val change = detail.substitute(id, target, ids) ?: return
+        change.exercises.forEach { sessions.saveExercise(it) }
+        val startReps = record.repsMin ?: record.reps
+        change.sets.forEach { set -> sessions.saveSet(if (set.setType.countsAsWorking) set.copy(reps = startReps) else set) }
+        if (inRoutine) {
+            detail.session.routineId?.let { routines.findRoutine(it) }?.let { routine ->
+                val planned = routine.exercises.firstOrNull { it.exerciseId == exercise.exerciseId }
+                if (planned != null) {
+                    val swapped = routine.exercises.map { if (it.id == planned.id) it.copy(exerciseId = target) else it }
+                    routines.saveRoutine(routine.copy(exercises = swapped))
+                }
+            }
+        }
+        mutableState.update { it.copy(selectedExerciseId = change.selected) }
     }
 
     /** Marca la sesión como descartada: no sale en el historial ni cuenta en Hoy ni en la racha. */

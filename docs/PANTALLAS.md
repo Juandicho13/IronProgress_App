@@ -98,6 +98,8 @@ Relojes:
 
 **Alcance implementado en F2-05:** si el ejercicio está estancado (HANDOFF 11.3), bajo el chip de modo sale una fila tranquila en surface2 con el ícono de progreso en hielo: "Llevas 4 sesiones sin mejorar" (o "Dos sesiones seguidas por debajo de 8 reps") y "Es normal. Toca para ver qué probar". Abre la hoja "Para volver a progresar" con las propuestas numeradas en el orden de las reglas: 1. Descarga hoy (40 % menos series con el mismo peso; quita las pendientes del final y marca la sesión como descarga), 2. Cambiar a 5 a 8 reps (o 10 a 15; cambia la rutina y las series pendientes; no sale en un entreno libre), 3. Cambiar por otro ejercicio (abre el selector de sustituto). "Ahora no" la esconde hasta la próxima sesión. "Revisa tu recuperación" va primero cuando haya días bajos, con el ajuste de F4.
 
+**Alcance implementado en F2-12:** en ejercicios sin peso que subir, la franja de sugerencia propone la escalera: "Pasa a Flexiones declinadas" con "Dos sesiones en el tope: prueba la variante más difícil desde 8 reps" (o la más fácil tras dos sesiones bajo el mínimo) y "Cambiar" a la derecha. Cambiar abre una hoja con "Solo hoy" y, si el entreno viene de una rutina, "Hoy y en la rutina"; lo ya hecho se queda y las series pendientes pasan a la variante en el mínimo del rango. Con una sola sesión en el tope dice "Una sesión más en el tope y pasas a Flexiones declinadas". Si no cambia, sigue con su ejercicio en el tope.
+
 ### 1.3 Teclado numérico (`Teclado.dc.html`)
 
 - **Para qué:** cambiar peso, reps o RIR sin el teclado del sistema.

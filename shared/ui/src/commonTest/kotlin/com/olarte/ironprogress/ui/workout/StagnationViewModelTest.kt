@@ -6,6 +6,7 @@ import com.olarte.ironprogress.domain.common.IdGenerator
 import com.olarte.ironprogress.domain.progression.StagnationKind
 import com.olarte.ironprogress.domain.progression.StagnationProposal
 import com.olarte.ironprogress.domain.progression.SuggestionReason
+import com.olarte.ironprogress.domain.progression.recordFor
 import com.olarte.ironprogress.domain.progression.suggestionRecord
 import com.olarte.ironprogress.domain.routine.BlockFormat
 import com.olarte.ironprogress.domain.routine.BlockId
@@ -171,6 +172,78 @@ class StagnationViewModelTest {
             val sets = sessions.data.value.first { it.session.status == SessionStatus.IN_PROGRESS }.setsOf(id)
             assertTrue(sets.all { it.reps == 5 })
             assertNull(model.state.value.stagnation[id])
+        }
+    }
+
+    private val pushUp = testBench.copy(
+        id = com.olarte.ironprogress.domain.catalog.ExerciseId("push-up"),
+        name = com.olarte.ironprogress.domain.catalog.LocalizedText("Flexiones", "Push-ups"),
+        trackingType = com.olarte.ironprogress.domain.catalog.TrackingType.REPS,
+        equipment = com.olarte.ironprogress.domain.catalog.Equipment.BODYWEIGHT,
+    )
+    private val decline = pushUp.copy(
+        id = com.olarte.ironprogress.domain.catalog.ExerciseId("decline-push-up"),
+        name = com.olarte.ironprogress.domain.catalog.LocalizedText("Flexiones declinadas", "Decline push-ups"),
+    )
+
+    private inner class Calisthenics : com.olarte.ironprogress.domain.catalog.ExerciseRepository {
+        override fun observeExercises() = MutableStateFlow(listOf(pushUp, decline))
+        override suspend fun findExercise(id: com.olarte.ironprogress.domain.catalog.ExerciseId) =
+            listOf(pushUp, decline).firstOrNull { it.id == id }
+        override suspend fun saveCustomExercise(exercise: com.olarte.ironprogress.domain.catalog.Exercise) = Unit
+        override suspend fun setArchived(id: com.olarte.ironprogress.domain.catalog.ExerciseId, archived: Boolean) = Unit
+    }
+
+    @Test
+    fun theLadderSwapsTheExerciseTodayAndInTheRoutine() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val store = ViewModelStore()
+        try {
+            var n = 0
+            val routine = RoutineDetail(
+                Routine(RoutineId("r"), null, "Calistenia"),
+                listOf(WorkoutBlock(BlockId("b"), 0, BlockFormat.SETS)),
+                emptyList(),
+                emptyList(),
+            ).addExercise(IdGenerator { "t${n++}" }, BlockId("b"), pushUp.id, sets = 2, repsMin = 8, repsMax = 15)
+            val routines = OneRoutine(routine)
+            val sessions = TestSessions()
+            var m = 0
+            val ids = IdGenerator { "x${m++}" }
+            val clock = TestClock()
+            val model = WorkoutViewModel(
+                sessions,
+                Calisthenics(),
+                routines,
+                StartSession(sessions, ids, clock),
+                CompleteSet(sessions, clock),
+                AddSessionExercise(sessions, ids),
+                ids,
+                clock,
+                com.olarte.ironprogress.ui.rest.RestNotifications { },
+            ).also { store.put("model", it) }
+            val detail = StartSession(sessions, ids, clock)(routine)
+            val id = detail.exercises.single().id
+            val record = com.olarte.ironprogress.domain.progression.Suggestion(
+                SuggestionReason.LADDER_HARDER,
+                null,
+                listOf(8, 8),
+                com.olarte.ironprogress.domain.progression.RepRange(8, 15),
+                ladderTarget = decline.id,
+            )
+            detail.setsOf(id).forEachIndexed { index, set ->
+                sessions.saveSet(set.copy(reps = 15, suggestion = record.recordFor(index).encode()))
+            }
+            runCurrent()
+            model.onIntent(WorkoutIntent.ApplyLadder(id, inRoutine = true))
+            runCurrent()
+            val now = sessions.data.value.first { it.session.status == SessionStatus.IN_PROGRESS }
+            assertEquals(decline.id, now.exercises.single().exerciseId)
+            assertTrue(now.sets.all { it.reps == 8 && it.weightKg == null })
+            assertEquals(decline.id, routines.detail.exercises.single().exerciseId)
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
         }
     }
 }

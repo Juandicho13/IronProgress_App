@@ -1,6 +1,8 @@
 package com.olarte.ironprogress.domain.progression
 
 import com.olarte.ironprogress.domain.catalog.Equipment
+import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.catalog.ExerciseProgression
 import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.TrackingType
 import com.olarte.ironprogress.domain.catalog.WeightUnit
@@ -67,6 +69,15 @@ enum class SuggestionReason {
 
     /** Descarga elegida ante un estancamiento (F2-05): menos series con el mismo peso. No la da el motor. */
     DELOAD_SETS,
+
+    /** Sin peso que subir, dos sesiones seguidas en el tope: pasar a la variante más difícil (F2-12). */
+    LADDER_HARDER,
+
+    /** Sin peso que subir, dos sesiones seguidas bajo el mínimo: pasar a la variante más fácil (F2-12). */
+    LADDER_EASIER,
+
+    /** Una sesión en el tope: una más y pasa a la variante más difícil (F2-12). */
+    LADDER_ONE_MORE,
 }
 
 /** Lo que se hizo la última vez, para la línea de explicación ("3 × 12 con 60 kg y RIR 2"). */
@@ -82,6 +93,8 @@ data class Suggestion(
     val reps: List<Int?>,
     val range: RepRange,
     val previous: PreviousSummary? = null,
+    /** Variante a la que propone pasar la escalera (F2-12). */
+    val ladderTarget: ExerciseId? = null,
 )
 
 /** Todo lo que el motor necesita saber de un ejercicio para proponer la carga de hoy. */
@@ -99,6 +112,8 @@ data class ProgressionInput(
     val young: Boolean = false,
     /** Día con ajuste activo (11.6): no subir peso. Llega en F4; mientras tanto siempre es false. */
     val adjustmentActive: Boolean = false,
+    /** La escalera del ejercicio (11.10): variantes más fácil y más difícil, si las hay. */
+    val ladder: ExerciseProgression? = null,
 )
 
 /** Reglas del modo joven que no dependen de una sesión concreta (11.11). */
@@ -159,8 +174,20 @@ object DoubleProgression {
         val atMin = List<Int?>(planned) { min }
 
         if (!hasWeight) {
+            // Escalera (11.10, F2-12): sin peso que subir, se propone cambiar de variante. Las reps
+            // son para el ejercicio de hoy si no se cambia; la variante nueva empieza en el mínimo.
+            val atTop = lastStatus.allTop && lastStatus.rirOk
+            val harder = input.ladder?.harder
+            val easier = input.ladder?.easier
+            fun ladder(reason: SuggestionReason, target: ExerciseId, reps: List<Int?>) =
+                Suggestion(reason, null, reps, range, previous, target)
             return when {
-                lastStatus.allTop && lastStatus.rirOk -> keep(SuggestionReason.AT_TOP, List(planned) { top })
+                atTop && before?.allTop == true && before.rirOk && harder != null ->
+                    ladder(SuggestionReason.LADDER_HARDER, harder, List(planned) { top })
+                lastStatus.anyBelowMin && before?.anyBelowMin == true && easier != null ->
+                    ladder(SuggestionReason.LADDER_EASIER, easier, oneMore)
+                atTop && harder != null -> ladder(SuggestionReason.LADDER_ONE_MORE, harder, List(planned) { top })
+                atTop -> keep(SuggestionReason.AT_TOP, List(planned) { top })
                 lastStatus.anyBelowMin -> keep(SuggestionReason.AIM_MIN, oneMore)
                 else -> keep(SuggestionReason.ADD_REP, oneMore)
             }

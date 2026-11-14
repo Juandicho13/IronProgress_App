@@ -62,6 +62,7 @@ class StartSession(
                         history = repository.performances(planned.exerciseId),
                         unit = exercise.preferredUnit ?: planned.unit ?: WeightUnit.KG,
                         timed = planned.timedSeconds != null,
+                        ladder = catalog.findFacts(planned.exerciseId)?.progression,
                     )
                 }?.takeIf { it.reason != SuggestionReason.SAME_AS_LAST }
                 val working = templates.filter { it.setType.countsAsWorking }

@@ -69,6 +69,7 @@ fun Suggestion.recordFor(index: Int): SuggestionRecord = SuggestionRecord(
     previousMaxReps = previous?.maxReps,
     previousWeightKg = previous?.weightKg,
     previousRir = previous?.minRir,
+    ladderTarget = ladderTarget?.value,
 )
 
 /** Lo que sugirió el motor para esta serie, si lo hay. */

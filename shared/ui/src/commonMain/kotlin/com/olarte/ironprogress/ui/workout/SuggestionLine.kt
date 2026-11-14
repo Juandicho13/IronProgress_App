@@ -28,9 +28,12 @@ import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.ladder_change
+import com.olarte.ironprogress.ui.resources.ladder_change_description
 import com.olarte.ironprogress.ui.resources.suggest_apply
 import com.olarte.ironprogress.ui.resources.suggest_apply_description
 import com.olarte.ironprogress.ui.resources.suggest_first
+import com.olarte.ironprogress.ui.resources.suggest_ladder
 import com.olarte.ironprogress.ui.resources.suggest_load
 import com.olarte.ironprogress.ui.resources.suggest_reps
 import com.olarte.ironprogress.ui.resources.why_add_rep
@@ -43,6 +46,9 @@ import com.olarte.ironprogress.ui.resources.why_first
 import com.olarte.ironprogress.ui.resources.why_first_pro
 import com.olarte.ironprogress.ui.resources.why_increase
 import com.olarte.ironprogress.ui.resources.why_increase_pro
+import com.olarte.ironprogress.ui.resources.why_ladder_easier
+import com.olarte.ironprogress.ui.resources.why_ladder_harder
+import com.olarte.ironprogress.ui.resources.why_ladder_one_more
 import com.olarte.ironprogress.ui.resources.why_previous_range
 import com.olarte.ironprogress.ui.resources.why_previous_sets
 import com.olarte.ironprogress.ui.resources.why_repeat_hard
@@ -66,15 +72,18 @@ internal fun SuggestionLine(
     pro: Boolean,
     unit: WeightUnit,
     enabled: Boolean,
+    ladderName: String? = null,
+    onLadder: () -> Unit = {},
     onApply: () -> Unit,
 ) {
     if (record.reason == SuggestionReason.SAME_AS_LAST) return
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val formats = rememberFormats()
-    val title = record.title(formats, unit)
-    val why = record.explanation(pro, formats, unit)
-    val canApply = !matches && (record.weightKg != null || record.reps != null)
+    val switch = record.reason == SuggestionReason.LADDER_HARDER || record.reason == SuggestionReason.LADDER_EASIER
+    val title = if (switch && ladderName != null) stringResource(Res.string.suggest_ladder, ladderName) else record.title(formats, unit)
+    val why = record.explanation(pro, formats, unit, ladderName)
+    val canApply = switch || (!matches && (record.weightKg != null || record.reps != null))
     Row(
         Modifier.fillMaxWidth().clip(ForjaRadius.shapeM).background(colors.emberVeil)
             .padding(horizontal = ForjaSpacing.esp3, vertical = ForjaSpacing.esp2),
@@ -89,15 +98,20 @@ internal fun SuggestionLine(
             }
         }
         if (canApply) {
-            val description = stringResource(Res.string.suggest_apply_description)
+            val description = stringResource(if (switch) Res.string.ladder_change_description else Res.string.suggest_apply_description)
             Box(
                 Modifier.heightIn(min = ForjaMeasures.minTouch).clip(CircleShape)
-                    .clickable(enabled = enabled, role = Role.Button, onClick = onApply)
+                    .clickable(enabled = enabled, role = Role.Button, onClick = if (switch) onLadder else onApply)
                     .semantics { contentDescription = description }
                     .padding(horizontal = ForjaSpacing.esp2),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(stringResource(Res.string.suggest_apply), style = typography.label, color = colors.emberInk, maxLines = 1)
+                Text(
+                    stringResource(if (switch) Res.string.ladder_change else Res.string.suggest_apply),
+                    style = typography.label,
+                    color = colors.emberInk,
+                    maxLines = 1,
+                )
             }
         }
     }
@@ -117,36 +131,41 @@ private fun SuggestionRecord.title(formats: Formats, unit: WeightUnit): String {
 
 /** La línea del porqué, con los números de la última vez cuando hay. */
 @Composable
-internal fun SuggestionRecord.explanation(pro: Boolean, formats: Formats, unit: WeightUnit): String = when (reason) {
-    SuggestionReason.INCREASE -> {
-        val previous = previousText()
-        val rir = previousRir
-        val weight = previousWeightKg
-        if (pro && previous != null && rir != null && weight != null) {
-            stringResource(Res.string.why_increase_pro, previous, formats.weight(weight, unit), rir)
-        } else {
-            stringResource(Res.string.why_increase)
+internal fun SuggestionRecord.explanation(pro: Boolean, formats: Formats, unit: WeightUnit, ladderName: String? = null): String =
+    when (reason) {
+        SuggestionReason.INCREASE -> {
+            val previous = previousText()
+            val rir = previousRir
+            val weight = previousWeightKg
+            if (pro && previous != null && rir != null && weight != null) {
+                stringResource(Res.string.why_increase_pro, previous, formats.weight(weight, unit), rir)
+            } else {
+                stringResource(Res.string.why_increase)
+            }
         }
-    }
-    SuggestionReason.REPEAT_HARD -> {
-        val rir = previousRir
-        val top = repsMax
-        if (pro && rir != null && top != null) {
-            stringResource(Res.string.why_repeat_hard_pro, top, rir)
-        } else {
-            stringResource(Res.string.why_repeat_hard)
+        SuggestionReason.REPEAT_HARD -> {
+            val rir = previousRir
+            val top = repsMax
+            if (pro && rir != null && top != null) {
+                stringResource(Res.string.why_repeat_hard_pro, top, rir)
+            } else {
+                stringResource(Res.string.why_repeat_hard)
+            }
         }
+        SuggestionReason.ADD_REP -> stringResource(Res.string.why_add_rep, repsMax ?: reps ?: 0)
+        SuggestionReason.AIM_MIN -> stringResource(Res.string.why_aim_min, repsMin ?: reps ?: 0)
+        SuggestionReason.DELOAD -> stringResource(Res.string.why_deload, repsMin ?: reps ?: 0)
+        SuggestionReason.FIRST_TIME -> stringResource(if (pro) Res.string.why_first_pro else Res.string.why_first)
+        SuggestionReason.ADJUSTMENT_HOLD -> stringResource(Res.string.why_adjustment)
+        SuggestionReason.YOUNG_WAIT -> stringResource(Res.string.why_young_wait)
+        SuggestionReason.AT_TOP -> stringResource(Res.string.why_at_top)
+        SuggestionReason.DELOAD_SETS -> stringResource(Res.string.why_deload_sets)
+        SuggestionReason.LADDER_HARDER -> stringResource(Res.string.why_ladder_harder, repsMin ?: reps ?: 0)
+        SuggestionReason.LADDER_EASIER -> stringResource(Res.string.why_ladder_easier, repsMin ?: reps ?: 0)
+        SuggestionReason.LADDER_ONE_MORE ->
+            ladderName?.let { stringResource(Res.string.why_ladder_one_more, it) } ?: stringResource(Res.string.why_at_top)
+        SuggestionReason.SAME_AS_LAST -> ""
     }
-    SuggestionReason.ADD_REP -> stringResource(Res.string.why_add_rep, repsMax ?: reps ?: 0)
-    SuggestionReason.AIM_MIN -> stringResource(Res.string.why_aim_min, repsMin ?: reps ?: 0)
-    SuggestionReason.DELOAD -> stringResource(Res.string.why_deload, repsMin ?: reps ?: 0)
-    SuggestionReason.FIRST_TIME -> stringResource(if (pro) Res.string.why_first_pro else Res.string.why_first)
-    SuggestionReason.ADJUSTMENT_HOLD -> stringResource(Res.string.why_adjustment)
-    SuggestionReason.YOUNG_WAIT -> stringResource(Res.string.why_young_wait)
-    SuggestionReason.AT_TOP -> stringResource(Res.string.why_at_top)
-    SuggestionReason.DELOAD_SETS -> stringResource(Res.string.why_deload_sets)
-    SuggestionReason.SAME_AS_LAST -> ""
-}
 
 /** "3 × 12" o "3 series de 10 a 12"; null si no hay datos de la última vez. */
 @Composable

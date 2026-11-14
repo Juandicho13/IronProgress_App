@@ -36,4 +36,16 @@
     <string name="stagnation_substitute">Swap for another exercise</string>
     <string name="stagnation_substitute_hint">Same muscles, a new stimulus</string>
     <string name="stagnation_later">Not now</string>
+    <string name="suggest_ladder">Move to %1$s</string>
+    <string name="why_ladder_harder">Two sessions at the top: try the harder variation from %1$d reps</string>
+    <string name="why_ladder_easier">It is getting tough: try the easier variation from %1$d reps</string>
+    <string name="why_ladder_one_more">One more session at the top and you move to %1$s</string>
+    <string name="ladder_change">Switch</string>
+    <string name="ladder_change_description">Switch to the suggested variation</string>
+    <string name="ladder_title">Switch to %1$s</string>
+    <string name="ladder_body">You start at %1$d reps. What you already did today stays as it is.</string>
+    <string name="ladder_today">Today only</string>
+    <string name="ladder_today_hint">The routine stays the same</string>
+    <string name="ladder_routine">Today and in the routine</string>
+    <string name="ladder_routine_hint">Next time the new variation is already there</string>
 </resources>

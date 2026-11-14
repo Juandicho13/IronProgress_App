@@ -2,6 +2,7 @@ package com.olarte.ironprogress.domain.progression
 
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.catalog.ExerciseProgression
 import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.routine.SetTemplate
@@ -33,6 +34,7 @@ fun suggestToday(
     unit: WeightUnit,
     timed: Boolean = false,
     young: Boolean = false,
+    ladder: ExerciseProgression? = null,
 ): Suggestion? {
     if (timed || SetField.REPS !in exercise.trackingType.fields) return null
     val working = templates.count { it.setType.countsAsWorking }
@@ -46,6 +48,7 @@ fun suggestToday(
             plannedSets = working,
             history = history,
             young = young,
+            ladder = ladder,
         ),
     )
 }

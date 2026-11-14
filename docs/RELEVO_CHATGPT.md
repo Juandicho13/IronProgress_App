@@ -422,3 +422,10 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Entreno:** `WorkoutViewModel.analyze` revisa cada ejercicio una vez por sesión (historial con `performances`, rango de la rutina) y guarda el resultado en `WorkoutState.stagnation`. `StagnationRow` y `StagnationSheet` en `ui/workout/StagnationCard.kt`. Intenciones `Deload`, `ChangeRange` (guarda la rutina y pone el nuevo mínimo en las pendientes), `DismissStagnation`; el sustituto usa `Substitute` de F1-12. `TestSessions.deleteSet` ahora borra de verdad.
 - Pruebas: `StagnationTest`, `DeloadTest`, `StagnationViewModelTest`. Capturas `scratchpad/shotsF2a/estancamiento-*`.
 
+## 43. F2-12 Escaleras de progresión, 14 de noviembre de 2026
+
+- **Motor:** `ProgressionInput.ladder` (la `ExerciseProgression` del ejercicio, que `StartSession` lee con `ExerciseRepository.findFacts`). En la rama sin peso que subir (sin peso, peso 0, o asistida que ya no tiene ayuda): dos sesiones seguidas con todas las series en el tope y el RIR objetivo, `LADDER_HARDER` hacia `harder`; dos sesiones seguidas con alguna serie bajo el mínimo, `LADDER_EASIER` hacia `easier`; una sola en el tope y hay variante más difícil, `LADDER_ONE_MORE`. Sin escalón disponible sigue como antes (AT_TOP, AIM_MIN, ADD_REP). Los ejercicios con peso nunca saltan de variante. Las reps sugeridas son para seguir con el ejercicio de hoy (el tope, o una más bajo el mínimo); el mínimo del rango queda en el registro para la variante nueva.
+- **Registro:** `Suggestion.ladderTarget` va a `SuggestionRecord.ladderTarget` (`to`).
+- **Entreno:** la franja muestra "Pasa a X" y "Cambiar"; `LadderSheet` (`ui/workout/LadderSheet.kt`) ofrece "Solo hoy" y, con rutina, "Hoy y en la rutina". `WorkoutIntent.ApplyLadder` usa `substitute` de F1-12 (lo hecho se queda, las pendientes pasan a la variante) y pone el mínimo del rango; con rutina cambia el `exerciseId` de ese ejercicio en la rutina.
+- Pruebas: `LadderTest` y la prueba de escalera en `StagnationViewModelTest`. Capturas `scratchpad/shotsF2a/escalera-*`.
+
