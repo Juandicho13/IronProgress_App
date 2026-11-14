@@ -7,6 +7,7 @@ import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.routine.SetType
 import com.olarte.ironprogress.domain.session.WeightUnits
 import com.olarte.ironprogress.domain.session.WorkoutSet
+import kotlinx.serialization.Serializable
 
 /** Rango de reps de las series de trabajo y el RIR objetivo, tal como está en la rutina. */
 data class RepRange(val min: Int? = null, val max: Int? = null, val targetRir: Int? = null) {
@@ -28,7 +29,11 @@ data class PastPerformance(val sets: List<WorkoutSet>, val deload: Boolean = fal
     val working: List<WorkoutSet> get() = sets.filter { it.isCompleted && it.setType.countsAsWorking }
 }
 
-/** Por qué el motor propone lo que propone. Cada uno tiene su línea de explicación en recursos. */
+/**
+ * Por qué el motor propone lo que propone. Cada uno tiene su línea de explicación en recursos. Se
+ * guarda por nombre dentro de `WorkoutSet.suggestion`: no se renombran.
+ */
+@Serializable
 enum class SuggestionReason {
     /** Todas las series llegaron al tope con el RIR objetivo: sube un salto y vuelve al mínimo. */
     INCREASE,

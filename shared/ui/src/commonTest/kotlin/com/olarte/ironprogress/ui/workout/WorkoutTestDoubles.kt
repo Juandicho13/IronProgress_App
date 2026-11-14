@@ -94,7 +94,9 @@ internal class TestSessions : SessionRepository {
                 }
             }
     }
-    override suspend fun deleteSet(id: WorkoutSetId) = Unit
+    override suspend fun deleteSet(id: WorkoutSetId) {
+        data.value = data.value.map { detail -> detail.copy(sets = detail.sets.filterNot { it.id == id }) }
+    }
 }
 
 internal val testBench =

@@ -144,6 +144,9 @@ sealed interface WorkoutIntent {
 
     /** Cancela el entreno: no se guarda nada ni cuenta en Hoy ni en la racha. */
     data object Cancel : WorkoutIntent
+
+    /** Vuelve a poner en la serie el peso y las reps que sugirió el motor (F2-02). */
+    data class ApplySuggestion(val id: WorkoutSetId) : WorkoutIntent
 }
 
 sealed interface WorkoutEffect {

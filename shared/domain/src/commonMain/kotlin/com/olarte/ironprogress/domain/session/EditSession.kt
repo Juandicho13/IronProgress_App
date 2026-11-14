@@ -1,9 +1,12 @@
 package com.olarte.ironprogress.domain.session
 
 import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.catalog.ExerciseRepository
 import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.TrackingType
 import com.olarte.ironprogress.domain.common.IdGenerator
+import com.olarte.ironprogress.domain.progression.SuggestionReason
+import com.olarte.ironprogress.domain.progression.SuggestionRecord
 import com.olarte.ironprogress.domain.routine.BlockFormat
 
 /** Copia únicamente medidas, nunca identidad, nota ni estado de completado. */
@@ -55,8 +58,15 @@ fun WorkoutSet.hasRequiredMeasurements(type: TrackingType): Boolean = type.field
     }
 }
 
-/** Agrega el primer registro de un ejercicio a una sesión libre o de rutina. */
-class AddSessionExercise(private val repository: SessionRepository, private val ids: IdGenerator) {
+/**
+ * Agrega el primer registro de un ejercicio a una sesión libre o de rutina. Si nunca se ha hecho y
+ * se mide en reps, la serie lleva la sugerencia de primera vez (F2-02).
+ */
+class AddSessionExercise(
+    private val repository: SessionRepository,
+    private val ids: IdGenerator,
+    private val exercises: ExerciseRepository? = null,
+) {
     suspend operator fun invoke(sessionId: SessionId, exerciseId: ExerciseId): SessionExerciseId {
         val detail = requireNotNull(repository.findSession(sessionId))
         require(detail.session.status == SessionStatus.IN_PROGRESS)
@@ -70,8 +80,13 @@ class AddSessionExercise(private val repository: SessionRepository, private val 
             (detail.exercises.maxOfOrNull { it.sortOrder } ?: -1) + 1,
         )
         val previous = repository.previousSets(exerciseId).firstOrNull { it.setType.countsAsWorking }
+        val firstTime = previous == null && exercises?.findExercise(exerciseId)?.trackingType?.fields?.contains(SetField.REPS) == true
         val set = WorkoutSet(WorkoutSetId(ids.newId()), exercise.id, 0).let {
-            if (previous == null) it else it.copyMeasurements(previous)
+            when {
+                previous != null -> it.copyMeasurements(previous)
+                firstTime -> it.copy(suggestion = SuggestionRecord(SuggestionReason.FIRST_TIME).encode())
+                else -> it
+            }
         }
         repository.appendExercise(block, exercise, listOf(set))
         return exercise.id

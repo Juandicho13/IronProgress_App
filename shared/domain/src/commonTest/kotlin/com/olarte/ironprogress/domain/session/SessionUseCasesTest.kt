@@ -224,6 +224,101 @@ class SessionUseCasesTest {
         }
     }
 
+    /** Catálogo mínimo: todo es un ejercicio con barra de peso y reps. */
+    private class BarbellCatalog : com.olarte.ironprogress.domain.catalog.ExerciseRepository {
+        override fun observeExercises(): Flow<List<com.olarte.ironprogress.domain.catalog.Exercise>> = MutableStateFlow(emptyList())
+
+        override suspend fun saveCustomExercise(exercise: com.olarte.ironprogress.domain.catalog.Exercise) = Unit
+
+        override suspend fun findExercise(id: ExerciseId) = com.olarte.ironprogress.domain.catalog.Exercise(
+            id = id,
+            name = com.olarte.ironprogress.domain.catalog.LocalizedText(id.value, id.value),
+            trackingType = com.olarte.ironprogress.domain.catalog.TrackingType.WEIGHT_REPS,
+            equipment = com.olarte.ironprogress.domain.catalog.Equipment.BARBELL,
+            pattern = com.olarte.ironprogress.domain.catalog.MovementPattern.HORIZONTAL_PUSH,
+            muscles = listOf(
+                com.olarte.ironprogress.domain.catalog.ExerciseMuscle(
+                    com.olarte.ironprogress.domain.catalog.Muscle.CHEST,
+                    com.olarte.ironprogress.domain.catalog.MuscleRole.PRIMARY,
+                ),
+            ),
+        )
+
+        override suspend fun setArchived(id: ExerciseId, archived: Boolean) = Unit
+    }
+
+    @Test
+    fun withTheCatalogWorkingSetsStartWithTheSuggestionAndKeepIt() = runTest {
+        val repo = FakeSessionRepository()
+        val ids = ids()
+        val clock = FakeClock(start)
+        val routine = routine(ids)
+        val begin = StartSession(repo, ids, clock, BarbellCatalog())
+        val first = begin(routine)
+        // Primera vez: sin peso, reps en el mínimo del rango y el registro de primera vez.
+        assertNull(first.sets.first().weightKg)
+        assertEquals(8, first.sets.first().reps)
+        assertEquals(
+            com.olarte.ironprogress.domain.progression.SuggestionReason.FIRST_TIME,
+            com.olarte.ironprogress.domain.progression.SuggestionRecord.decode(first.sets.first().suggestion)?.reason,
+        )
+        val bench = first.exercises.first()
+        first.setsOf(bench.id).forEach { CompleteSet(repo, clock)(it.copy(weightKg = 60.0, reps = 12, rir = 2)) }
+        EndSession(repo, clock)(first.session)
+        clock.now += 5.minutes
+
+        val second = begin(routine)
+        val sets = second.setsOf(second.exercises.first().id)
+        assertEquals(listOf(62.5, 62.5, 62.5), sets.map { it.weightKg })
+        assertEquals(listOf(8, 8, 8), sets.map { it.reps })
+        val record = com.olarte.ironprogress.domain.progression.SuggestionRecord.decode(sets.first().suggestion)
+        assertEquals(com.olarte.ironprogress.domain.progression.SuggestionReason.INCREASE, record?.reason)
+        assertEquals(60.0, record?.previousWeightKg)
+        assertEquals(3, record?.previousSets)
+        // El remo no se hizo: sigue en primera vez.
+        assertNull(second.setsOf(second.exercises[1].id).first().weightKg)
+    }
+
+    @Test
+    fun withoutTheCatalogNothingChanges() = runTest {
+        val repo = FakeSessionRepository()
+        val ids = ids()
+        val detail = StartSession(repo, ids, FakeClock(start))(routine(ids))
+        assertNull(detail.sets.first().suggestion)
+    }
+
+    @Test
+    fun historyGoesFromNewestToOldestAndSkipsOtherExercises() = runTest {
+        val repo = FakeSessionRepository()
+        val ids = ids()
+        val clock = FakeClock(start)
+        val routine = routine(ids)
+        repeat(3) { round ->
+            val detail = StartSession(repo, ids, clock)(routine)
+            val bench = detail.exercises.first()
+            CompleteSet(repo, clock)(detail.setsOf(bench.id).first().copy(weightKg = 50.0 + round, reps = 10))
+            EndSession(repo, clock)(detail.session)
+            clock.now += 5.minutes
+        }
+        val history = repo.exerciseHistory(ExerciseId("bench-press"))
+        assertEquals(listOf(52.0, 51.0, 50.0), history.map { it.single().weightKg })
+        assertEquals(2, repo.exerciseHistory(ExerciseId("bench-press"), limit = 2).size)
+        assertEquals(emptyList(), repo.exerciseHistory(ExerciseId("barbell-row")))
+    }
+
+    @Test
+    fun aNewExerciseInAFreeSessionGetsTheFirstTimeHint() = runTest {
+        val repo = FakeSessionRepository()
+        val ids = ids()
+        val session = StartSession(repo, ids, FakeClock(start))()
+        val id = AddSessionExercise(repo, ids, BarbellCatalog())(session.session.id, ExerciseId("squat"))
+        val set = repo.findSession(session.session.id)!!.setsOf(id).single()
+        assertEquals(
+            com.olarte.ironprogress.domain.progression.SuggestionReason.FIRST_TIME,
+            com.olarte.ironprogress.domain.progression.SuggestionRecord.decode(set.suggestion)?.reason,
+        )
+    }
+
     private suspend fun FakeSessionRepository.observeActiveSessionValue(): SessionDetail? =
         sessions.value.values.firstOrNull { it.status == SessionStatus.IN_PROGRESS }?.let { findSession(it.id) }
 }

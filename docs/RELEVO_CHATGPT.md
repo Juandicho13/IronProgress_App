@@ -406,3 +406,11 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Modo joven** (`YoungRules`, detrás de `ProgressionInput.young`; la interfaz es F1-26): sin series al fallo, RIR objetivo 2 o más, 1RM no se muestra, sube solo tras dos sesiones seguidas en el tope (YOUNG_WAIT) y con el salto más pequeño del equipo.
 - Las líneas de explicación de cada regla están en `strings_f2a.xml` (español e inglés).
 
+## 41. F2-02 Sugerencia en la serie, 14 de noviembre de 2026
+
+- **Dónde se calcula:** `StartSession` recibe el catálogo (`ExerciseRepository`, opcional para no romper las pruebas viejas) y para cada ejercicio de la rutina llama a `suggestToday` (`domain/progression/ProgressionHistory.kt`) con el rango de la primera serie de trabajo (`workingRange`), las últimas 8 veces del ejercicio (`SessionRepository.exerciseHistory`, versión por defecto que recorre las sesiones terminadas; `performances` marca las descargas) y la unidad del ejercicio. Las series por tiempo y los ejercicios sin reps no llevan sugerencia, y "como la última vez" tampoco se guarda (ya está la línea Anterior).
+- **Qué se guarda:** `SuggestionRecord` como JSON en `WorkoutSet.suggestion` (la columna ya existía, sin migración): motivo, peso y reps sugeridos, rango, lo de la última vez, y los campos de escalera (`to`) y descarga (`dl`) que usan F2-12 y F2-05. Los nombres son estables; `decode` ignora campos nuevos y devuelve null ante lo que no entiende. `kotlinx-serialization-json` pasó a ser dependencia de `shared:domain`.
+- **Entreno:** `SuggestionLine` (en `ui/workout`) dentro de la tarjeta de la serie. "Usar" (`WorkoutIntent.ApplySuggestion`) vuelve a poner peso y reps. Al completar, `carryWeightForward` pasa el peso real a la siguiente serie solo si esa sigue tal como la sugirió el motor.
+- **Entreno libre:** `AddSessionExercise` con el catálogo deja la pista de primera vez cuando el ejercicio nunca se hizo.
+- Pruebas: `SuggestionRecordTest`, cuatro nuevas en `SessionUseCasesTest` y `SuggestionViewModelTest`. Capturas en `scratchpad/shotsF2a/sugerencia-*`.
+

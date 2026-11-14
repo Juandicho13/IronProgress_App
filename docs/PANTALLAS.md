@@ -94,6 +94,8 @@ Relojes:
 
 **Alcance de la tercera ronda (5 nov 2026):** arriba, "Ejercicio 2 de 3" y una barra por ejercicio que se toca para ir a él; el ejercicio lleva su número y la lista "Ejercicios" sale numerada en el orden de la rutina con el de ahora resaltado. Sin modo Pro solo se ven peso y reps; con él, RIR y RPE y un ícono que explica qué son. Cada serie arranca rellena con la anterior o con la última vez, así completar es un toque. Deslizar para terminar aparece cuando ya hay una serie hecha; el menú ⋮ de arriba tiene Cancelar entreno con confirmación.
 
+**Alcance implementado en F2-02:** la serie actual muestra la sugerencia del motor de progresión en una franja emberVeil con una flecha: "Hoy: 62,5 kg × 8" y debajo su porqué en una línea (en modo básico sin hablar de RIR: "Subes: la última vez llegaste al tope en todas las series"; en Pro con los números: "Hiciste 3 × 12 con 60 kg y RIR 2: hoy subes un salto"). Si la serie ya no coincide con la sugerencia aparece "Usar" a la derecha, que la vuelve a poner. La primera vez con un ejercicio dice "Primera vez con este ejercicio" y pide un peso que deje 2 reps de sobra. Al empezar una rutina las series de trabajo ya traen el peso y las reps sugeridos, y la sugerencia queda guardada en `WorkoutSet.suggestion`; si una serie se hace con otro peso, la siguiente que nadie tocó sigue ese peso.
+
 ### 1.3 Teclado numérico (`Teclado.dc.html`)
 
 - **Para qué:** cambiar peso, reps o RIR sin el teclado del sistema.

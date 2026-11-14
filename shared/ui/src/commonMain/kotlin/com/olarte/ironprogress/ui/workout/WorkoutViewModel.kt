@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
 import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.common.IdGenerator
+import com.olarte.ironprogress.domain.progression.carryWeightForward
+import com.olarte.ironprogress.domain.progression.suggestionRecord
 import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.RoutineRepository
 import com.olarte.ironprogress.domain.routine.SetType
@@ -421,6 +423,10 @@ class WorkoutViewModel(
                     notifyRestDeadline(null)
                 }
             }
+            is WorkoutIntent.ApplySuggestion -> edit(intent.id) { set ->
+                val record = set.suggestionRecord ?: return@edit set
+                set.copy(weightKg = record.weightKg ?: set.weightKg, reps = record.reps ?: set.reps)
+            }
             is WorkoutIntent.ChangeType -> edit(intent.id) { it.copy(setType = intent.type) }
             is WorkoutIntent.ChangeNote -> edit(intent.id) { it.copy(notes = intent.note) }
         }
@@ -588,9 +594,15 @@ class WorkoutViewModel(
             if (state.value.work?.setId == id) mutableState.update { it.copy(work = null) }
             // La siguiente serie arranca con lo que se acaba de hacer en lo que tenga vacío: si ya
             // trae las reps objetivo de la rutina, se quedan y solo se copia el peso.
+            // Si la siguiente sigue tal como la sugirió el motor y aquí se usó otro peso, sigue ese peso.
             detail.setsOf(exercise.id).firstOrNull { !it.isCompleted && it.id != id }
                 ?.let { next ->
-                    if (next.isBlank()) next.copyMeasurements(completed).copy(rir = null, rpe = null) else next.fillMissingFrom(completed)
+                    val filled = if (next.isBlank()) {
+                        next.copyMeasurements(completed).copy(rir = null, rpe = null)
+                    } else {
+                        next.fillMissingFrom(completed)
+                    }
+                    carryWeightForward(completed, filled) ?: filled
                 }
                 ?.let { sessions.saveSet(it) }
             completing.remove(id)

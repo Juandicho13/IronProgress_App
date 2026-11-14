@@ -31,6 +31,23 @@ interface SessionRepository {
         return emptyList()
     }
 
+    /**
+     * Las últimas [limit] veces que se hizo el ejercicio en sesiones terminadas, de la más reciente
+     * a la más antigua: sus series hechas, en orden (F2-01). Si salió dos veces en una sesión, van
+     * juntas.
+     */
+    suspend fun exerciseHistory(exerciseId: ExerciseId, limit: Int = 8): List<List<WorkoutSet>> {
+        val result = mutableListOf<List<WorkoutSet>>()
+        for (session in observeFinishedSessions().first().sortedByDescending { it.endedAt }) {
+            if (result.size >= limit) break
+            val detail = findSession(session.id) ?: continue
+            val sets = detail.exercises.filter { it.exerciseId == exerciseId }.sortedBy { it.sortOrder }
+                .flatMap { exercise -> detail.setsOf(exercise.id).filter { it.isCompleted } }
+            if (sets.isNotEmpty()) result += sets
+        }
+        return result
+    }
+
     suspend fun saveSession(session: WorkoutSession)
 
     suspend fun saveBlock(block: SessionBlock)

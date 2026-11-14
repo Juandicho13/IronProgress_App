@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.WeightUnit
+import com.olarte.ironprogress.domain.progression.suggestionRecord
 import com.olarte.ironprogress.domain.routine.BlockFormat
 import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.SetType
@@ -780,6 +781,9 @@ private fun CurrentSetCard(
                     maxLines = 1,
                 )
             }
+        }
+        set.suggestionRecord?.let { record ->
+            SuggestionLine(record, record.matches(set), state.proMode, unit, enabled) { onIntent(WorkoutIntent.ApplySuggestion(set.id)) }
         }
         if (work != null) {
             val left = (work.remainingMs(state.workNowMs) + 999) / 1000
