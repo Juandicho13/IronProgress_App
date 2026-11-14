@@ -413,6 +413,7 @@ Comando: `./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidH
 | 2026-11-14 | F2-10 · resúmenes mensual y anual | `feat/f2-claude` | `PeriodSummaries` (entrenos, tiempo, volumen, días, mejor racha, récords del periodo, músculos y ejercicio favorito, con el periodo anterior); tarjeta del mes arriba de Músculos y pantalla Resumen con Mes y Año, flechas y deslizar | Ver el resumen de noviembre con datos reales |
 | 2026-11-14 | F2-15 · récord en la Live Activity y la Live Update | `feat/f2-claude` | `recordText` en `RestNotificationContent` y `record` en `WorkoutActivityState`, calculado una vez por serie con `DetectRecords`; subtexto y primera línea en Android, línea dorada con trofeo y borde de la isla en oro en iPhone | Compilar el Swift en el Mac y batir un récord con el teléfono bloqueado |
 | 2026-11-14 | Arreglo · franja del récord | `feat/f2-claude` | La franja dorada abre su espacio debajo de la barra de arriba del entreno y del descanso en vez de tapar la flecha de volver | Verla en el teléfono al batir un récord |
+| 2026-11-14 | F2-11 · cobertura de los motores con Kover | `feat/f2-claude` | Kover 0.9.9 en `shared:domain` con filtro en progresión, tiempo, voz y récords o series por músculo; `koverVerify` exige 90 % de líneas (hoy 96,9 %) y el CI lo corre y guarda el reporte | Ver el paso de cobertura en verde en GitHub Actions |
 
 ---
 

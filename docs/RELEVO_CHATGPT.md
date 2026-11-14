@@ -482,3 +482,11 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 
 - `RecordBanner` dejó de ser una capa a pantalla completa: ahora es un bloque que se abre con `expandVertically` dentro de la columna, debajo de la barra de arriba de Entreno (`WorkoutRecordBanner`) y del descanso. Antes tapaba la flecha de volver del descanso.
 
+## 58. F2-11 · cobertura de los motores con Kover, 14 de noviembre de 2026
+
+- `shared/domain/build.gradle.kts` aplica Kover (ya estaba declarado en la raíz) y filtra los paquetes de los motores: `progression`, `time`, `voice` y `progress`.
+- `./gradlew :shared:domain:koverVerify` falla si la cobertura de líneas de esos paquetes baja del 90 %. Hoy da 96,9 %.
+- `./gradlew :shared:domain:koverHtmlReport` deja el reporte navegable en `shared/domain/build/reports/kover/html`.
+- El CI corre `koverVerify` y `koverXmlReport` después de las pruebas y sube el reporte como artefacto `cobertura-motores`.
+- Cuando exista el motor de adaptación (F4-05), su paquete se agrega al filtro.
+

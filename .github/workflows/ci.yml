@@ -40,6 +40,16 @@ jobs:
       - name: Correr pruebas unitarias de dominio y datos
         run: ./gradlew :shared:domain:testAndroidHostTest :shared:data:testAndroidHostTest :shared:ui:testAndroidHostTest :shared:testAndroidHostTest
 
+      - name: Cobertura de los motores con Kover (90 % o mas)
+        run: ./gradlew :shared:domain:koverVerify :shared:domain:koverXmlReport
+
+      - name: Guardar el reporte de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-motores
+          path: shared/domain/build/reports/kover/
+
       - name: Compilar APK debug de telefono y reloj
         run: ./gradlew :androidApp:assembleDebug :wearApp:assembleDebug
 
