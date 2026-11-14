@@ -153,6 +153,8 @@ fun RestScreen(state: WorkoutState, onIntent: (WorkoutIntent) -> Unit) {
             backDescription = stringResource(Res.string.rest_minimize),
             backIcon = ForjaMoreIcons.ChevronLeft,
         )
+        // El récord sale justo al completar, ya en el descanso: debajo de su barra (F2-03).
+        com.olarte.ironprogress.ui.workout.WorkoutRecordBanner(state, onIntent)
         Column(
             Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = ForjaSpacing.esp5),
             horizontalAlignment = Alignment.CenterHorizontally,

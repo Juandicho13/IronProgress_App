@@ -14,6 +14,9 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var startedAt: Date
         var ready: Bool
         var readyChip: String
+        /// "Récord: Press 99 kg" en el descanso que siguió al récord (F2-15). Opcional: las
+        /// actividades que ya estaban en curso al actualizar la app lo leen como nil.
+        var record: String?
     }
 
     var sessionId: String

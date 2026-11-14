@@ -75,6 +75,7 @@ object RestNotificationHelper {
         readyTextWithTarget = { exercise, target ->
             context.getString(R.string.rest_notification_ready_text_with_target, exercise, target)
         },
+        recordLine = { exercise, value -> context.getString(R.string.rest_notification_record, exercise, value) },
     )
 
     fun buildNotification(context: Context, content: RestNotificationContent): Notification {
@@ -84,13 +85,16 @@ object RestNotificationHelper {
             .setSmallIcon(R.drawable.ic_timer)
             .setContentTitle(content.title)
             .setContentText(content.collapsedText)
-            .setStyle(Notification.BigTextStyle().bigText(content.expandedText))
+            .setStyle(Notification.BigTextStyle().bigText(listOfNotNull(content.recordText, content.expandedText).joinToString("\n")))
             .setOngoing(content.ongoing)
             .setOnlyAlertOnce(true)
             .setAutoCancel(!content.ongoing)
             .setCategory(Notification.CATEGORY_WORKOUT)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setContentIntent(openWorkoutPendingIntent(context, content.sessionId.value))
+
+        // Récord de la serie que abrió el descanso (F2-15): arriba, junto al nombre de la app.
+        content.recordText?.let { builder.setSubText(it) }
 
         val endsAtMs = content.endsAtMs
         if (content.showChronometer && endsAtMs != null) {

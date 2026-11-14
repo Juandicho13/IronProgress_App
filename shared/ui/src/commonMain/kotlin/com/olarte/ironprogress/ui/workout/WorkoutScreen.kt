@@ -229,6 +229,8 @@ fun WorkoutScreen(
         if (detail != null && ordered.isNotEmpty()) {
             ExerciseStepper(detail, ordered, selected?.id, enabled) { onIntent(WorkoutIntent.SelectExercise(it)) }
         }
+        // Récord en vivo (F2-03): debajo de la barra de arriba, sin tapar nada.
+        WorkoutRecordBanner(state, onIntent)
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
@@ -389,14 +391,6 @@ fun WorkoutScreen(
         enter = slideInVertically(ForjaTheme.motion.spatial()) { it } + fadeIn(ForjaTheme.motion.effect()),
         exit = slideOutVertically(ForjaTheme.motion.spatial()) { it } + fadeOut(ForjaTheme.motion.effect()),
     ) { RestScreen(state, onIntent) }
-    // Récord en vivo (F2-03): encima del entreno y del descanso, que sale justo al completar.
-    val record = state.record
-    com.olarte.ironprogress.ui.progress.RecordBanner(
-        hit = record,
-        exerciseName = record?.let { state.catalog[it.exerciseId]?.name?.resolve(language) ?: it.exerciseId.value }.orEmpty(),
-        unit = record?.let { state.catalog[it.exerciseId]?.preferredUnit } ?: com.olarte.ironprogress.domain.catalog.WeightUnit.KG,
-        onDismiss = { onIntent(WorkoutIntent.DismissRecord) },
-    )
     optionsId?.let { id ->
         detail?.sets?.firstOrNull { it.id == id }?.let { set ->
             SetOptions(set, detail.setsOf(set.sessionExerciseId).indexOf(set) + 1, onIntent) { optionsId = null }

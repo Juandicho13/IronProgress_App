@@ -41,6 +41,13 @@ val sharedAppModule: Module = module {
     single<RoutineDao> { get<IronProgressDatabase>().routineDao() }
     single<SessionDao> { get<IronProgressDatabase>().sessionDao() }
     single<StageOneDao> { get<IronProgressDatabase>().stageOneDao() }
+    single { get<IronProgressDatabase>().bodyDao() }
+    single<com.olarte.ironprogress.domain.body.BodyRepository> {
+        com.olarte.ironprogress.data.body.RoomBodyRepository(get(), get())
+    }
+    factory { com.olarte.ironprogress.domain.body.LogBodyWeight(get(), get(), get()) }
+    factory { com.olarte.ironprogress.domain.body.LogBodyMeasurement(get(), get(), get()) }
+    factory { com.olarte.ironprogress.domain.body.AddProgressPhoto(get(), get(), get()) }
 
     single { RoomExerciseRepository(get()) }
     single<ExerciseRepository> { get<RoomExerciseRepository>() }

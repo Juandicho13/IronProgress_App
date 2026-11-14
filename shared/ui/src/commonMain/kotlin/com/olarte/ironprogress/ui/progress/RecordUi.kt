@@ -1,22 +1,20 @@
 package com.olarte.ironprogress.ui.progress
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -116,20 +114,22 @@ fun roundForDisplay(kg: Double, unit: WeightUnit): Double = when (unit) {
 }
 
 /**
- * Aviso de récord en vivo (F2-03): una franja dorada arriba, sobre el entreno y el descanso. Se
- * anuncia a los lectores de pantalla y se cierra sola o al tocarla.
+ * Aviso de récord en vivo (F2-03): una franja dorada dentro de la pantalla, justo debajo de la
+ * barra de arriba del entreno o del descanso. Abre su espacio y empuja el contenido, así nunca tapa
+ * un botón. Se anuncia a los lectores de pantalla y se cierra sola o al tocarla.
  */
 @Composable
-fun RecordBanner(hit: RecordHit?, exerciseName: String, unit: WeightUnit, onDismiss: () -> Unit) {
+fun RecordBanner(hit: RecordHit?, exerciseName: String, unit: WeightUnit, modifier: Modifier = Modifier, onDismiss: () -> Unit) {
     // Guarda el último para que la salida se anime con el mismo texto.
     var shown by remember { mutableStateOf(hit) }
     if (hit != null) shown = hit
-    Box(Modifier.fillMaxSize().statusBarsPadding().padding(top = ForjaSpacing.esp2), contentAlignment = Alignment.TopCenter) {
-        AnimatedVisibility(
-            visible = hit != null,
-            enter = slideInVertically(ForjaTheme.motion.spatial()) { -it } + fadeIn(ForjaTheme.motion.effect()),
-            exit = slideOutVertically(ForjaTheme.motion.spatial()) { -it } + fadeOut(ForjaTheme.motion.effect()),
-        ) {
+    AnimatedVisibility(
+        visible = hit != null,
+        modifier = modifier.fillMaxWidth(),
+        enter = expandVertically(ForjaTheme.motion.spatial()) + fadeIn(ForjaTheme.motion.effect()),
+        exit = shrinkVertically(ForjaTheme.motion.spatial()) + fadeOut(ForjaTheme.motion.effect()),
+    ) {
+        Box(Modifier.fillMaxWidth().padding(vertical = ForjaSpacing.esp2), contentAlignment = Alignment.TopCenter) {
             shown?.let { RecordBannerContent(it, exerciseName, unit, onDismiss) }
         }
     }

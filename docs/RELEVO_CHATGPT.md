@@ -455,3 +455,30 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Comparación (`isBetter`):** AMRAP más rondas y a igual rondas más reps; EMOM más rondas; por tiempo y rondas menos segundos; intervalos más reps por ronda de media (`averageReps`, null si todo quedó en 0). `isFormatRecord` exige una marca anterior: la primera vez es "primera marca".
 - **Dónde se busca:** bloques funcionales por nombre y formato en las sesiones FUNCTIONAL (`FindWodBest.of`); intervalos por nombre en las sesiones HIIT (`FindIntervalBest`). La marca se lee antes de guardar la de hoy.
 - **Pantallas:** `FormatBestToBeat` y `FormatResultNote` en `ui/progress/RecordUi.kt`, usadas por el bloque funcional (al armarlo y al terminar) y por los intervalos (editor y fin). Mientras corre el bloque sigue "Tu marca" a la derecha; al terminar no se repite.
+
+## 54. F2-09 · peso corporal, medidas y fotos, 14 de noviembre de 2026
+
+- **Base versión 5:** tablas nuevas `body_weights`, `body_measurements` y `progress_photos` (con `user_id`, fechas y `deleted_at` para F3), `AutoMigration(4, 5)` y la prueba `version4KeepsTheHistoryAndAddsBodyTracking`. Esquema `5.json` exportado. Si otra rama también sube a la 5, juntar las entidades en una sola versión 5 y volver a exportar el esquema.
+- **Dominio (`domain/body`):** `LogBodyWeight` (20 a 400 kg, redondeo a 10 g), `LogBodyMeasurement` (10 a 300 cm; "Otra" exige nombre), `AddProgressPhoto`, `BodyTrends.weightChange` (último menos el más reciente con 30 días o más; si no hay, el primero) y `BodyTrends.latestMeasures`.
+- **Copia de seguridad:** `body_weights` y `body_measurements` entran en `USER_TABLES`; `progress_photos` no (las fotos se quedan en el teléfono).
+- **Fotos:** `PhotoStore` (expect/actual). Android: Photo Picker y `ImageDecoder` (respeta la orientación) a JPEG de 1600 px en `filesDir/progress_photos`. iPhone: `PHPickerViewController` y `UIGraphicsImageRenderer` a JPEG de 1600 px en Application Support. Sin permiso de fotos en ninguno. `PhotoStore.ios.kt` sin compilar aquí: probar añadir, ver, comparar y borrar en el Mac.
+- **Ajustes:** `AppSettings.youngMode` (falso por defecto) para las reglas del modo joven hasta que llegue F1-26; hoy solo quita la tarjeta de fotos.
+- **Unidades:** con libras en el perfil, peso en lb y medidas en pulgadas (`BodyUnits`).
+
+## 55. F2-10 · resúmenes mensual y anual, 14 de noviembre de 2026
+
+- **Dominio:** `Period` (mes o año del calendario local, con anterior y siguiente) y `PeriodSummaries.summarize(detalles, catálogo, periodo, epochDay)`. Los días se cuentan con el día civil local (`localEpochDay`), así una sesión que termina pasada la medianoche cuenta en el día siguiente.
+- **Récords del periodo:** se repite toda la historia en orden con `Records.replay` y se queda el último récord de cada ejercicio y tipo batido dentro del periodo.
+- **Mejor racha:** semanas seguidas (lunes a domingo) con al menos un entreno dentro del periodo.
+- **Pantalla:** `PeriodSummaryViewModel` con clave de entrada (`MONTH:2026:11`, `YEAR:2026`, vacío para el mes actual); la tarjeta de Progreso usa su propio ViewModel a nivel de la app (`PERIOD_CARD_KEY`) para no cargar de nuevo al volver a la pestaña.
+
+## 56. F2-15 · récord en la Live Activity y la Live Update, 14 de noviembre de 2026
+
+- **Kotlin:** `RestBackgroundActions` calcula el récord de la serie que abrió el descanso con `DetectRecords` una sola vez por serie (caché por id) y lo pasa a `buildRestNotificationContent`, que arma `recordText` con `RestNotificationStrings.recordLine` ("Récord: Press banca 99 kg"; reps y volumen con su unidad). `WorkoutActivityState.record` lo lleva a Swift.
+- **Android:** `setSubText(recordText)` y primera línea del texto expandido. Cadena `rest_notification_record` en los recursos de androidApp.
+- **iPhone:** `ContentState.record: String?` (opcional, así las actividades en curso al actualizar no fallan), `RecordLine` con `trophy.fill` en `ForjaTokens.gold` en la expandida y en la pantalla bloqueada, y `keylineTint` en oro mientras dura ese descanso. Sin compilar aquí: revisar en el Mac.
+
+## 57. Arreglo · franja del récord, 14 de noviembre de 2026
+
+- `RecordBanner` dejó de ser una capa a pantalla completa: ahora es un bloque que se abre con `expandVertically` dentro de la columna, debajo de la barra de arriba de Entreno (`WorkoutRecordBanner`) y del descanso. Antes tapaba la flecha de volver del descanso.
+

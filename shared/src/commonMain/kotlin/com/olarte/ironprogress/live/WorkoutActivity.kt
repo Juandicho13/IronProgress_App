@@ -21,6 +21,8 @@ data class WorkoutActivityState(
     val endsAtEpochMs: Long,
     val ready: Boolean,
     val readyChip: String,
+    /** "Récord: Press 99 kg" en oro durante el descanso que siguió al récord (F2-15). */
+    val record: String? = null,
 )
 
 /**
@@ -85,4 +87,5 @@ fun RestNotificationContent.toActivityState(): WorkoutActivityState = WorkoutAct
     endsAtEpochMs = if (phase == RestPhase.RESTING) endsAtMs ?: 0L else 0L,
     ready = phase == RestPhase.READY,
     readyChip = shortCriticalText.orEmpty(),
+    record = recordText,
 )

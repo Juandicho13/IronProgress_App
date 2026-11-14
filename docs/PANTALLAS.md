@@ -139,6 +139,8 @@ Relojes:
   5. Barra inferior de descanso: "-15", el anillo de 40 en hielo con el tiempo ("1:48") y el pulso ("138"), "+15" y **Saltar** (`skip_next`).
 - **Toques:** ajustar el descanso 1; saltar 1. Al terminar el descanso vibra con el patrón 0, 180, 90, 180 ms y la barra vuelve a ser Completar serie.
 
+**Franja del récord (arreglo del 14 de noviembre):** la franja dorada ya no flota encima de la pantalla: abre su espacio justo debajo de la barra de arriba del entreno y del descanso y empuja el contenido, así nunca tapa la flecha de volver ni otro botón.
+
 ### 1.5 Terminar (`Terminar.dc.html`)
 
 - **Para qué:** cerrar el último ejercicio y terminar con un gesto que no se hace por error.
@@ -172,11 +174,23 @@ Relojes:
   2. Tarjeta **Series por músculo**, "Últimos 7 días · 17 al 23 sep": una fila por músculo (columnas 86 / 1fr / 52) con la barra de series en `ember`, la banda del rango objetivo (10 a 20) en `surface3` detrás y el número a la derecha; si está por debajo, la palabra "bajo" en `text3`. Eje 0, 10 y 20. Pie: "Rango objetivo: 10 a 20 series".
 - **Reglas:** las series cuentan los últimos 7 días, no la semana de calendario; el primario suma 1 y el secundario 0,5.
 
-**Alcance actual de Progreso:** Músculos muestra las series reales de los últimos 7 días (primario 1, secundario 0,5) con la banda de 10 a 20; sin entrenos, "Aún no hay entrenos". El mapa de recuperación espera a F2-08 y Cuerpo al seguimiento del cuerpo; no se muestran datos de ejemplo.
+**Alcance actual de Progreso:** Músculos muestra las series reales de los últimos 7 días (primario 1, secundario 0,5) con la banda de 10 a 20; sin entrenos, "Aún no hay entrenos". El mapa de recuperación espera a F2-08; Cuerpo llegó con F2-09 (abajo). No se muestran datos de ejemplo.
 
 **Alcance implementado en F2-07:** series efectivas con porcentajes (11.10): cada serie suma a un músculo su porcentaje entre el del músculo principal del ejercicio (press banca: pecho 1, tríceps 0,45, hombro 0,36); sin porcentajes, primario 1 y secundario 0,5. Cada fila lleva semáforo frente al rango de 10 a 20: barra y punto en hielo con "Bajo", en ember con "En rango" y en peligro con "Alto"; el estado siempre va con palabra, no solo con color, y la fila se lee entera con lector de pantalla. La escala llega a 24 para que lo alto se vea por encima de la banda. Pie con el rango y una línea que explica cómo cuentan las series.
 
 **Alcance implementado en F1-23:** el botón Historial de Progreso abre el historial, sin diseño propio en el lienzo y hecho con las piezas de Forja (tarjetas surface1, chips, botones de 48). Arriba, Calendario o Lista. El calendario muestra el mes de lunes a domingo, con los días entrenados en emberVeil y el día elegido en ember; debajo, las sesiones de ese día. La lista trae todas las sesiones terminadas, de la más nueva a la más vieja, con fecha, rutina, duración, volumen y series. Tocar una sesión abre su detalle: tocar una serie la corrige (peso y reps) o la borra, y cada bloque con tiempo se puede borrar. Las sesiones descartadas no salen.
+
+**Alcance implementado en F2-09 (Cuerpo):** sin diseño propio en el lienzo; hecho con las piezas de Forja. Sin nada registrado, una tarjeta vacía centrada con "Registrar peso" (primario) y "Añadir medida" y "Añadir foto" del mismo ancho. Con datos, tres tarjetas:
+1. **Peso corporal:** el último peso grande y centrado, el cambio en 30 días debajo en text2 (sin color de bueno o malo), la gráfica del peso (la misma `ProgressChart`, sin récord) con dos o más registros, los tres últimos registros (tocar uno pide confirmación para borrarlo) y "Registrar peso" a lo ancho.
+2. **Medidas:** cintura, pecho, brazo, muslo, cadera y medidas propias con nombre; cada fila con la última medida y el cambio frente a la anterior. Tocar una fila anota otra de esa medida; "Añadir medida" abre la hoja con el tipo.
+3. **Fotos de progreso:** "Solo se guardan en este teléfono", miniaturas 3:4 en tres columnas (la más nueva primero, hasta 9) con la fecha abajo, "Añadir foto" y "Comparar" del mismo ancho. Tocar una foto la abre en grande con "Borrar foto" (pide confirmación). Comparar abre Antes y Después lado a lado con los días entre las dos; se toca un lado y se elige otra foto en la tira de abajo.
+- Las hojas para anotar tienen un campo numérico centrado (acepta coma o punto), aviso si el número está fuera de lo normal y Cancelar y Guardar del mismo ancho.
+- Con libras en la bienvenida, el peso va en lb y las medidas en pulgadas; la base guarda kg y cm.
+- **Ocultar peso corporal y calorías:** el peso sale como "Oculto", sin gráfica ni registros, con una línea que explica que se puede seguir anotando. Las medidas siguen visibles.
+- **Modo joven (11.11):** sin la tarjeta de fotos (por ahora solo el ajuste `youngMode`; la pantalla es de F1-26).
+- Las fotos se copian reducidas a 1600 px en el almacenamiento privado de la app (Photo Picker en Android, PHPicker en iPhone, sin permiso de fotos); nunca van a la galería ni a la copia de seguridad, y Copia de seguridad lo dice con una nota debajo de la explicación.
+
+**Alcance implementado en F2-10 (resúmenes):** arriba de Músculos, en cuanto hay algún entreno, la tarjeta "Resumen de noviembre" con entrenos y tiempo del mes y "Ver el año". El resumen (`Route.Summaries`) tiene barra superior "Resumen", segmentado Mes y Año y el periodo centrado entre dos flechas (también se cambia deslizando; no deja ir antes del primer entreno ni después de hoy). Contenido: cuadrícula de 2 × 2 con Entrenos, Tiempo, Volumen y Días entrenados, cada uno con su comparación en palabras ("+2 frente a octubre", "+18 % frente a octubre"); Mejor racha en semanas; Récords del periodo (uno por ejercicio y tipo, el mejor, hasta 5 y "Y 3 más"); Músculos más trabajados (3, con barra relativa); Ejercicio favorito con sus series de trabajo. Sin entrenos en el periodo, un estado vacío; nunca números de ejemplo.
 
 ### 2.2 Ejercicio, historial (`Ejercicio.dc.html`)
 
@@ -380,6 +394,8 @@ Diseño escrito por Claude el 5 de noviembre de 2026 con las reglas de `HANDOFF.
 - **Pantalla bloqueada y StandBy:** tarjeta negra con el anillo de 40, título y detalle, la cuenta atrás de 34 a la derecha y los mismos botones abajo. En StandBy el sistema la muestra al 200 %.
 - **Toques:** cada botón actúa en un toque sin abrir la app (App Intents, `LiveActivityIntent`). Tocar la tarjeta abre la app en Entreno.
 - **Reglas:** el contador lo dibuja el sistema con `Text(timerInterval:)`; la app solo actualiza en los cambios de fase (en una sesión de 60 min, unas decenas de veces). Sin pulso por ahora: llega con Salud en F4. Horizontal en iOS 27: queda para cuando exista ese SDK.
+
+**Alcance implementado en F2-15 (récord en vivo fuera de la app):** si la serie que abrió el descanso batió un récord, la Live Update de Android pone "Récord: Press banca 99 kg" como subtexto (junto al nombre de la app) y como primera línea del texto expandido; la Live Activity del iPhone lo muestra en oro con el trofeo en la expandida y en la pantalla bloqueada, y el borde de la isla pasa a oro durante ese descanso. El récord se calcula una vez por serie con `DetectRecords`; el siguiente descanso, sin récord, vuelve a lo normal.
 
 ---
 

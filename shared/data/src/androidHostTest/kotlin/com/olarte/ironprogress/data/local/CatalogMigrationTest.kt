@@ -207,6 +207,40 @@ class CatalogMigrationTest {
     }
 
     @Test
+    fun version4KeepsTheHistoryAndAddsBodyTracking() = runTest {
+        val file = File.createTempFile("ironprogress-v4", ".db").apply { delete() }
+        try {
+            createDatabaseFromSchema(file, version = 4) { connection ->
+                connection.execSQL(
+                    "INSERT INTO workout_sessions (id, discipline, started_at, ended_at, status, notes, adjustment_applied, created_at, updated_at) VALUES ('session', 'STRENGTH', 1000, 2000, 'FINISHED', '', 0, 1, 1)",
+                )
+            }
+            assertEquals(file.absolutePath + ".v4.bak", backupBeforeMigration(file.absolutePath))
+            val database = Room.databaseBuilder<IronProgressDatabase>(
+                name = file.absolutePath,
+                factory = { IronProgressDatabaseConstructor.initialize() },
+            ).buildIronProgressDatabase()
+            try {
+                val sessions = com.olarte.ironprogress.data.workout.RoomSessionRepository(database.sessionDao(), kotlin.time.Clock.System)
+                assertEquals(1, sessions.observeFinishedSessions().first().size)
+                val body = com.olarte.ironprogress.data.body.RoomBodyRepository(database.bodyDao(), kotlin.time.Clock.System)
+                body.saveWeight(
+                    com.olarte.ironprogress.domain.body.BodyWeight(
+                        com.olarte.ironprogress.domain.body.BodyEntryId("w"),
+                        kotlin.time.Instant.fromEpochMilliseconds(3000),
+                        78.0,
+                    ),
+                )
+                assertEquals(listOf(78.0), body.observeWeights().first().map { it.weightKg })
+            } finally {
+                database.close()
+            }
+        } finally {
+            listOf("", "-wal", "-shm", "-journal", ".v4.bak").forEach { File(file.path + it).delete() }
+        }
+    }
+
+    @Test
     fun noBackupForANewInstall() {
         val file = File.createTempFile("ironprogress-new", ".db").apply { delete() }
         assertNull(backupBeforeMigration(file.absolutePath))

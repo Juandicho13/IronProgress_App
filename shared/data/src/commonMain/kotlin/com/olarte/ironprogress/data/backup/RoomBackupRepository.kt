@@ -194,6 +194,9 @@ class RoomBackupRepository(
             "breathing_patterns",
             "screening_answers",
             "guardian_consents",
+            // F2-09: peso y medidas sí; las fotos de progreso no salen del teléfono.
+            "body_weights",
+            "body_measurements",
         )
 
         private const val OWN = "exercise_id IN (SELECT id FROM exercises WHERE is_custom = 1)"

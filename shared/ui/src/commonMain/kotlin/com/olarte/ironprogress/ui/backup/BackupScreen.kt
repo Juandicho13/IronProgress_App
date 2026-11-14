@@ -35,6 +35,7 @@ import com.olarte.ironprogress.ui.resources.backup_msg_restored
 import com.olarte.ironprogress.ui.resources.backup_msg_save_failed
 import com.olarte.ironprogress.ui.resources.backup_msg_saved
 import com.olarte.ironprogress.ui.resources.backup_msg_too_new
+import com.olarte.ironprogress.ui.resources.backup_photos_note
 import com.olarte.ironprogress.ui.resources.backup_restore
 import com.olarte.ironprogress.ui.resources.backup_restore_confirm
 import com.olarte.ironprogress.ui.resources.backup_section
@@ -70,6 +71,8 @@ fun BackupScreen(onBack: () -> Unit) {
         ) {
             ForjaCard {
                 ForjaNote(stringResource(Res.string.backup_hint))
+                // F2-09: las fotos de progreso se quedan en el teléfono.
+                ForjaNote(stringResource(Res.string.backup_photos_note))
                 ForjaButton(stringResource(Res.string.backup_create), Modifier.fillMaxWidth(), enabled = !state.busy) {
                     model.onIntent(BackupIntent.CreateBackup)
                 }

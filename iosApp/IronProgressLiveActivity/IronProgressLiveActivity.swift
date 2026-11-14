@@ -19,6 +19,9 @@ struct IronProgressLiveActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.center) {
                     VStack(alignment: .leading, spacing: 2) {
+                        if let record = context.state.record {
+                            RecordLine(text: record)
+                        }
                         Text(context.state.title).font(.headline).foregroundStyle(ForjaTokens.text1).lineLimit(1)
                         Text(context.state.detail).font(.caption).foregroundStyle(ForjaTokens.text2).lineLimit(2)
                     }
@@ -35,7 +38,7 @@ struct IronProgressLiveActivity: Widget {
             } minimal: {
                 RestRing(state: context.state, size: 22, fills: true)
             }
-            .keylineTint(context.state.ready ? ForjaTokens.ready : ForjaTokens.ice)
+            .keylineTint(context.state.record != nil ? ForjaTokens.gold : (context.state.ready ? ForjaTokens.ready : ForjaTokens.ice))
         }
     }
 }
@@ -110,6 +113,23 @@ private struct Countdown: View {
     }
 }
 
+/// "Récord: Press 99 kg" con el trofeo en oro (F2-15).
+private struct RecordLine: View {
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "trophy.fill")
+                .foregroundStyle(ForjaTokens.gold)
+            Text(text)
+                .foregroundStyle(ForjaTokens.gold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .font(.caption.weight(.semibold))
+    }
+}
+
 /// Completar serie en Listo; -15 s, +15 s y Saltar mientras descansa.
 private struct Actions: View {
     let state: WorkoutActivityAttributes.ContentState
@@ -144,6 +164,9 @@ private struct LockScreenView: View {
             HStack(alignment: .center, spacing: 14) {
                 RingWithTime(state: state, size: 72)
                 VStack(alignment: .leading, spacing: 2) {
+                    if let record = state.record {
+                        RecordLine(text: record)
+                    }
                     Text(state.title).font(.headline).foregroundStyle(ForjaTokens.text1).lineLimit(1)
                     Text(state.detail).font(.subheadline).foregroundStyle(ForjaTokens.text2).lineLimit(2)
                 }

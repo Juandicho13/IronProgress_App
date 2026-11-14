@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,6 +42,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.Muscle
 import com.olarte.ironprogress.domain.progress.MuscleSets
 import com.olarte.ironprogress.domain.progress.VolumeStatus
+import com.olarte.ironprogress.ui.body.BodyActions
+import com.olarte.ironprogress.ui.body.BodyContent
+import com.olarte.ironprogress.ui.body.BodyState
+import com.olarte.ironprogress.ui.body.BodyViewModel
 import com.olarte.ironprogress.ui.catalog.CatalogIntent
 import com.olarte.ironprogress.ui.catalog.CatalogScreen
 import com.olarte.ironprogress.ui.catalog.CatalogState
@@ -61,8 +66,6 @@ import com.olarte.ironprogress.ui.resources.muscle_status_above
 import com.olarte.ironprogress.ui.resources.muscle_status_below
 import com.olarte.ironprogress.ui.resources.muscle_status_in_range
 import com.olarte.ironprogress.ui.resources.nav_progress
-import com.olarte.ironprogress.ui.resources.progress_body_body
-import com.olarte.ironprogress.ui.resources.progress_body_title
 import com.olarte.ironprogress.ui.resources.progress_empty_body
 import com.olarte.ironprogress.ui.resources.progress_empty_title
 import com.olarte.ironprogress.ui.resources.progress_history
@@ -77,6 +80,7 @@ import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun ProgressRoute(
@@ -87,11 +91,44 @@ fun ProgressRoute(
     catalogListState: LazyListState,
     onHistory: () -> Unit,
     onOpenExercise: (String) -> Unit = {},
+    onOpenSummary: (String) -> Unit = {},
+    onComparePhotos: () -> Unit = {},
     model: ProgressViewModel = koinViewModel(),
+    body: BodyViewModel = koinViewModel(),
+    period: PeriodSummaryViewModel = koinViewModel(key = PERIOD_CARD_KEY) { parametersOf("") },
 ) {
     val state by model.state.collectAsStateWithLifecycle()
-    ProgressScreen(state, listState, catalogState, languageCode, onCatalogIntent, catalogListState, onHistory, onOpenExercise)
+    val bodyState by body.state.collectAsStateWithLifecycle()
+    val periodState by period.state.collectAsStateWithLifecycle()
+    val bodyActions = remember(body, onComparePhotos) {
+        BodyActions(
+            logWeight = body::logWeight,
+            logMeasure = body::logMeasure,
+            deleteWeight = body::deleteWeight,
+            deleteMeasure = body::deleteMeasure,
+            addPhoto = body::addPhoto,
+            deletePhoto = { body.deletePhoto(it.id) },
+            comparePhotos = onComparePhotos,
+        )
+    }
+    ProgressScreen(
+        state,
+        listState,
+        catalogState,
+        languageCode,
+        onCatalogIntent,
+        catalogListState,
+        onHistory,
+        onOpenExercise,
+        bodyState = bodyState,
+        bodyActions = bodyActions,
+        periodState = periodState,
+        onOpenSummary = onOpenSummary,
+    )
 }
+
+/** Clave del resumen del mes de la tarjeta de Progreso: vive a nivel de la app (F2-10). */
+const val PERIOD_CARD_KEY = "period-card"
 
 /**
  * Progreso (PANTALLAS 2.1): título con Historial y segmentado Ejercicios, Músculos y Cuerpo.
@@ -108,10 +145,16 @@ fun ProgressScreen(
     catalogListState: LazyListState,
     onHistory: () -> Unit,
     onOpenExercise: (String) -> Unit = {},
+    initialSegment: Int = 1,
+    bodyState: BodyState = BodyState(loading = false),
+    bodyActions: BodyActions = BodyActions(),
+    periodState: PeriodUiState = PeriodUiState(loading = false),
+    onOpenSummary: (String) -> Unit = {},
+    withPhotoPicker: Boolean = true,
 ) {
     val colors = ForjaTheme.colors
     val haptics = ForjaTheme.haptics
-    var selected by rememberSaveable { mutableIntStateOf(1) }
+    var selected by rememberSaveable { mutableIntStateOf(initialSegment) }
     val segments = listOf(
         stringResource(Res.string.progress_seg_exercises),
         stringResource(Res.string.progress_seg_muscles),
@@ -159,9 +202,25 @@ fun ProgressScreen(
         ),
     ) {
         item { Column { header() } }
+        // Resumen del mes (F2-10): arriba de Músculos en cuanto hay algún entreno.
+        if (selected == 1 && periodState.hasAnySession) {
+            item {
+                MonthSummaryCard(
+                    periodState,
+                    onOpenMonth = { onOpenSummary(PeriodSummaryViewModel.keyOf(it)) },
+                    onOpenYear = { onOpenSummary(PeriodSummaryViewModel.keyOf(it)) },
+                )
+            }
+        }
         when {
             selected == 2 -> item {
-                ForjaEmptyState(stringResource(Res.string.progress_body_title), stringResource(Res.string.progress_body_body))
+                if (bodyState.loading) {
+                    com.olarte.ironprogress.ui.components.DelayedLoading(true) {
+                        Text(stringResource(Res.string.editor_loading), style = ForjaTheme.typography.body2, color = colors.text2)
+                    }
+                } else {
+                    BodyContent(bodyState, bodyActions, withPhotoPicker = withPhotoPicker)
+                }
             }
             state.loading -> item {
                 com.olarte.ironprogress.ui.components.DelayedLoading(true) {
