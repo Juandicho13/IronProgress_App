@@ -4,6 +4,9 @@ import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
 import com.olarte.ironprogress.domain.catalog.TrackingType
+import com.olarte.ironprogress.domain.progress.DetectRecords
+import com.olarte.ironprogress.domain.progress.RecordHit
+import com.olarte.ironprogress.domain.progress.RecordKind
 import com.olarte.ironprogress.domain.routine.Routine
 import com.olarte.ironprogress.domain.routine.RoutineRepository
 import com.olarte.ironprogress.domain.session.CompleteSet
@@ -16,6 +19,7 @@ import com.olarte.ironprogress.domain.session.WorkoutSetId
 import com.olarte.ironprogress.domain.session.hasRequiredMeasurements
 import com.olarte.ironprogress.domain.settings.SettingsRepository
 import com.olarte.ironprogress.ui.format.Formats
+import com.olarte.ironprogress.ui.progress.roundForDisplay
 import com.olarte.ironprogress.ui.settings.forDisplay
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -69,6 +73,8 @@ data class RestNotificationStrings(
     val completedSetLine: (setNumber: Int, target: String) -> String,
     val readyTitle: (setNumber: Int, totalSets: Int) -> String,
     val readyTextWithTarget: (exercise: String, target: String) -> String,
+    /** "Récord: Press 99 kg" (F2-15). Sin plantilla no se muestra la línea del récord. */
+    val recordLine: ((exercise: String, value: String) -> String)? = null,
 )
 
 /** Modelo listo para pintar en la notificación del sistema (Estado 1 Descansando y Estado 2 Listo). */
@@ -86,6 +92,8 @@ data class RestNotificationContent(
     val showCompleteSetAction: Boolean,
     val nextSetId: WorkoutSetId?,
     val alertNow: Boolean,
+    /** Récord de la serie que abrió este descanso (F2-15); null si no hubo. */
+    val recordText: String? = null,
 )
 
 /**
@@ -264,8 +272,20 @@ class RestBackgroundActions(
     private val settings: SettingsRepository? = null,
 ) {
     private val actionMutex = Mutex()
+    private val detectRecords = DetectRecords(sessions)
+
+    /** El récord de la serie que abrió el descanso: se calcula una vez por serie (F2-15). */
+    private var recordCache: Pair<WorkoutSetId, RecordHit?>? = null
 
     fun nowMs(): Long = clock.now().toEpochMilliseconds()
+
+    private suspend fun recordFor(detail: SessionDetail, setId: WorkoutSetId?): RecordHit? {
+        if (setId == null) return null
+        recordCache?.let { (id, hit) -> if (id == setId) return hit }
+        val hit = runCatching { detectRecords(detail, setId).firstOrNull() }.getOrNull()
+        recordCache = setId to hit
+        return hit
+    }
 
     fun adjustRest(deltaSeconds: Int) {
         restController.adjustFromNotification(nowMs(), deltaSeconds)
@@ -347,6 +367,7 @@ class RestBackgroundActions(
             languageCode = languageCode,
             formats = formats,
             strings = strings,
+            record = recordFor(detail, restState.timer?.setId),
         )
     }
 }
@@ -404,8 +425,10 @@ fun buildRestNotificationContent(
     languageCode: String,
     formats: Formats,
     strings: RestNotificationStrings,
+    record: RecordHit? = null,
 ): RestNotificationContent? {
     val sessionId = restState.sessionId ?: return null
+    val recordText = record?.takeIf { it.setId == restState.timer?.setId }?.let { recordLine(it, catalog, languageCode, formats, strings) }
     if (restState.phase == RestPhase.IDLE) return null
 
     val orderedExercises = sessionDetail.exercises.sortedBy { it.sortOrder }
@@ -477,6 +500,7 @@ fun buildRestNotificationContent(
                 showCompleteSetAction = false,
                 nextSetId = nextSet?.id,
                 alertNow = false,
+                recordText = recordText,
             )
         }
         RestPhase.READY -> {
@@ -501,8 +525,28 @@ fun buildRestNotificationContent(
                 showCompleteSetAction = canCompleteNextSet,
                 nextSetId = nextSet?.id,
                 alertNow = restState.alertOnReady,
+                recordText = recordText,
             )
         }
         RestPhase.IDLE -> null
     }
+}
+
+/** "Récord: Press 99 kg": el valor como en el aviso del entreno (kg o lb, reps o volumen). */
+internal fun recordLine(
+    hit: RecordHit,
+    catalog: Map<ExerciseId, Exercise>,
+    languageCode: String,
+    formats: Formats,
+    strings: RestNotificationStrings,
+): String? {
+    val template = strings.recordLine ?: return null
+    val exercise = catalog[hit.exerciseId]
+    val unit = exercise?.preferredUnit ?: com.olarte.ironprogress.domain.catalog.WeightUnit.KG
+    val value = when (hit.kind) {
+        RecordKind.MOST_REPS -> "${formats.number(hit.value, 0)} ${strings.repsSuffix}"
+        RecordKind.BEST_SESSION_VOLUME -> formats.volume(hit.value, unit)
+        else -> formats.weight(roundForDisplay(hit.value, unit), unit)
+    }
+    return template(exercise?.name?.resolve(languageCode) ?: hit.exerciseId.value, value)
 }

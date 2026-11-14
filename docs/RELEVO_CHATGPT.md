@@ -439,3 +439,9 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Récords del periodo:** se repite toda la historia en orden con `Records.replay` y se queda el último récord de cada ejercicio y tipo batido dentro del periodo.
 - **Mejor racha:** semanas seguidas (lunes a domingo) con al menos un entreno dentro del periodo.
 - **Pantalla:** `PeriodSummaryViewModel` con clave de entrada (`MONTH:2026:11`, `YEAR:2026`, vacío para el mes actual); la tarjeta de Progreso usa su propio ViewModel a nivel de la app (`PERIOD_CARD_KEY`) para no cargar de nuevo al volver a la pestaña.
+
+## 56. F2-15 · récord en la Live Activity y la Live Update, 14 de noviembre de 2026
+
+- **Kotlin:** `RestBackgroundActions` calcula el récord de la serie que abrió el descanso con `DetectRecords` una sola vez por serie (caché por id) y lo pasa a `buildRestNotificationContent`, que arma `recordText` con `RestNotificationStrings.recordLine` ("Récord: Press banca 99 kg"; reps y volumen con su unidad). `WorkoutActivityState.record` lo lleva a Swift.
+- **Android:** `setSubText(recordText)` y primera línea del texto expandido. Cadena `rest_notification_record` en los recursos de androidApp.
+- **iPhone:** `ContentState.record: String?` (opcional, así las actividades en curso al actualizar no fallan), `RecordLine` con `trophy.fill` en `ForjaTokens.gold` en la expandida y en la pantalla bloqueada, y `keylineTint` en oro mientras dura ese descanso. Sin compilar aquí: revisar en el Mac.

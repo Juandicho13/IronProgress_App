@@ -42,6 +42,7 @@ class WorkoutActivitySyncTest {
         showCompleteSetAction = phase == RestPhase.READY,
         nextSetId = null,
         alertNow = false,
+        recordText = if (phase == RestPhase.RESTING) "Récord: Press banca 85 kg" else null,
     )
 
     @Test
@@ -62,6 +63,8 @@ class WorkoutActivitySyncTest {
         assertTrue(afterStart >= 1)
         assertEquals(1_000_090_000, bridge.shown.last().endsAtEpochMs)
         assertEquals("Descanso · Press banca", bridge.shown.last().title)
+        // F2-15: el récord de la serie llega a la Live Activity.
+        assertEquals("Récord: Press banca 85 kg", bridge.shown.last().record)
 
         // Pasa el tiempo sin cambios de fase: nada nuevo.
         runCurrent()

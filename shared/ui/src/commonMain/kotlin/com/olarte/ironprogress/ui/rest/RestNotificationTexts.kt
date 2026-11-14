@@ -8,6 +8,7 @@ import com.olarte.ironprogress.ui.resources.live_next_with_target
 import com.olarte.ironprogress.ui.resources.live_ready_chip
 import com.olarte.ironprogress.ui.resources.live_ready_text
 import com.olarte.ironprogress.ui.resources.live_ready_title
+import com.olarte.ironprogress.ui.resources.live_record
 import com.olarte.ironprogress.ui.resources.live_reps
 import com.olarte.ironprogress.ui.resources.live_resting_title
 import org.jetbrains.compose.resources.getString
@@ -24,6 +25,7 @@ suspend fun loadRestNotificationStrings(): RestNotificationStrings {
     val completed = getString(Res.string.live_completed_line)
     val readyTitle = getString(Res.string.live_ready_title)
     val readyText = getString(Res.string.live_ready_text)
+    val record = getString(Res.string.live_record)
     return RestNotificationStrings(
         defaultWorkoutName = getString(Res.string.live_free),
         repsSuffix = getString(Res.string.live_reps),
@@ -34,6 +36,7 @@ suspend fun loadRestNotificationStrings(): RestNotificationStrings {
         completedSetLine = { set, target -> fill(completed, set, target) },
         readyTitle = { set, total -> fill(readyTitle, set, total) },
         readyTextWithTarget = { exercise, target -> fill(readyText, exercise, target) },
+        recordLine = { exercise, value -> fill(record, exercise, value) },
     )
 }
 

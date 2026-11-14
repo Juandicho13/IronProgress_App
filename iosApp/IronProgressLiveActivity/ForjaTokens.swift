@@ -7,6 +7,8 @@ enum ForjaTokens {
     static let background = Color.black
     static let ember = Color(red: 1.0, green: 0x6B / 255.0, blue: 0x2C / 255.0)
     static let ice = Color(red: 0x6C / 255.0, green: 0xC4 / 255.0, blue: 0xF2 / 255.0)
+    /// Oro de los récords (F2-15).
+    static let gold = Color(red: 0xF5 / 255.0, green: 0xC4 / 255.0, blue: 0x51 / 255.0)
     static let text1 = Color.white
     static let text2 = Color.white.opacity(0.64)
     static let surface3 = Color.white.opacity(0.14)

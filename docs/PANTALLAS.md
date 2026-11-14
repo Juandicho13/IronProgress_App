@@ -388,6 +388,8 @@ Diseño escrito por Claude el 5 de noviembre de 2026 con las reglas de `HANDOFF.
 - **Toques:** cada botón actúa en un toque sin abrir la app (App Intents, `LiveActivityIntent`). Tocar la tarjeta abre la app en Entreno.
 - **Reglas:** el contador lo dibuja el sistema con `Text(timerInterval:)`; la app solo actualiza en los cambios de fase (en una sesión de 60 min, unas decenas de veces). Sin pulso por ahora: llega con Salud en F4. Horizontal en iOS 27: queda para cuando exista ese SDK.
 
+**Alcance implementado en F2-15 (récord en vivo fuera de la app):** si la serie que abrió el descanso batió un récord, la Live Update de Android pone "Récord: Press banca 99 kg" como subtexto (junto al nombre de la app) y como primera línea del texto expandido; la Live Activity del iPhone lo muestra en oro con el trofeo en la expandida y en la pantalla bloqueada, y el borde de la isla pasa a oro durante ese descanso. El récord se calcula una vez por serie con `DetectRecords`; el siguiente descanso, sin récord, vuelve a lo normal.
+
 ---
 
 ## 6. Ajuste durante el entreno

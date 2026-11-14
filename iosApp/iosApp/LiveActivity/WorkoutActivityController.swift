@@ -62,7 +62,8 @@ final class WorkoutActivityController: NSObject, WorkoutActivityBridge {
             endsAt: endsAt,
             startedAt: startedAt,
             ready: state.ready,
-            readyChip: state.readyChip
+            readyChip: state.readyChip,
+            record: state.record
         )
     }
 }
