@@ -444,6 +444,12 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Pantalla:** en Progreso > Músculos, debajo del resumen del mes y arriba de las series, la tarjeta "Recuperación muscular" con la frase ("Cuádriceps, glúteos y 2 más se están recuperando", "Todo listo para entrenar" o "Sin carga reciente"), las siluetas de frente y espalda (`BodyMap.kt`: óvalos, rectángulos redondeados y polígonos sobre una caja de 100 × 200, dibujo propio), la leyenda de 5 bloques de Fresco a Cargado y el detalle del músculo tocado (estado en palabras, "Se recupera en unas 18 h", agujetas, último entreno y la carga en Pro). El mapa tiene descripción para lectores de pantalla con cada músculo y su estado.
 - `ProgressViewModel` toma `FeedbackRepository` opcional para las agujetas. Pruebas: `RecoveryTest`. Capturas `scratchpad/shotsF2a2/mapa-recuperacion-*`.
 
+## 46. F2-14 Calentamiento según la recuperación, 14 de noviembre de 2026
+
+- **Regla:** `warmupSets(..., extraLight)` mete aproximaciones suaves antes del 50 %: 40 % × 8 en ámbar y además 30 % × 10 en rojo; se saltan las que no superan a la anterior. `RecoveryWarmups.targets` elige, por cada músculo no listo, el primer ejercicio de la sesión que lo trabaja como principal, con peso, sin calentamiento y sin series hechas.
+- **Entreno:** fila "Pecho aún se está recuperando" (o "sigue con carga alta" en rojo) con "Te sugiero 5 series de aproximación antes de empezar" y Agregar, que usa el mismo `AddWarmup` de F1-22 con las suaves de más. La calculadora de discos muestra ese mismo calentamiento. Al agregarlo la fila desaparece.
+- Pruebas: `PlatesTest.recoveringMusclesGetExtraLightApproachSets`, los de `RecoveryTest` y `aChestStillRecoveringGetsMoreApproachSets`. Captura `scratchpad/shotsF2a2/calentamiento-*`.
+
 ## 50. F2-03 · récords automáticos, 14 de noviembre de 2026
 
 - **Decisión:** los récords se derivan del historial en cada consulta, sin tabla propia. Room ya tiene la consulta `SessionDao.exerciseHistory` (series completadas de un ejercicio en sesiones terminadas, de la más vieja a la más nueva, con el id de su sesión). Así, corregir o borrar una serie en el historial (F1-23) cambia los récords sin migraciones ni datos viejos.

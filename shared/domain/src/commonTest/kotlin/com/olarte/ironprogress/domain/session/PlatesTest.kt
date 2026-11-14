@@ -45,4 +45,26 @@ class PlatesTest {
         assertEquals(listOf(WarmupStep(20.0, 10), WarmupStep(27.5, 3), WarmupStep(32.5, 1)), warmupSets(40.0))
         assertTrue(warmupSets(20.0).isEmpty())
     }
+
+    @Test
+    fun recoveringMusclesGetExtraLightApproachSets() {
+        // Ámbar: una aproximación suave más (40 % × 8). Rojo: también 30 % × 10.
+        assertEquals(
+            listOf(WarmupStep(20.0, 10), WarmupStep(40.0, 8), WarmupStep(50.0, 5), WarmupStep(70.0, 3), WarmupStep(85.0, 1)),
+            warmupSets(100.0, extraLight = 1),
+        )
+        assertEquals(
+            listOf(
+                WarmupStep(20.0, 10),
+                WarmupStep(30.0, 10),
+                WarmupStep(40.0, 8),
+                WarmupStep(50.0, 5),
+                WarmupStep(70.0, 3),
+                WarmupStep(85.0, 1),
+            ),
+            warmupSets(100.0, extraLight = 2),
+        )
+        // 60 kg en rojo: el 30 % (17,5) no supera la barra y se salta.
+        assertEquals(5, warmupSets(60.0, extraLight = 2).size)
+    }
 }

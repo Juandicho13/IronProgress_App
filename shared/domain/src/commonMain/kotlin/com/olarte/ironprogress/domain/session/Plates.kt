@@ -52,11 +52,15 @@ data class WarmupStep(val weightKg: Double, val reps: Int)
  * Calentamiento hacia [workKg]: barra × 10 y luego 50 % × 5, 70 % × 3 y 85 % × 1, redondeado
  * hacia abajo al salto de [stepKg]. Se saltan los pasos que no superan al anterior. Sin peso de
  * trabajo por encima de la barra no hay calentamiento.
+ *
+ * [extraLight] suma aproximaciones suaves antes del 50 % cuando el músculo aún se recupera
+ * (F2-14): 1 agrega 40 % × 8 (ámbar) y 2 agrega también 30 % × 10 (rojo).
  */
-fun warmupSets(workKg: Double, barKg: Double = 20.0, stepKg: Double = 2.5): List<WarmupStep> {
+fun warmupSets(workKg: Double, barKg: Double = 20.0, stepKg: Double = 2.5, extraLight: Int = 0): List<WarmupStep> {
     if (workKg <= barKg) return emptyList()
     val steps = mutableListOf(WarmupStep(barKg, 10))
-    listOf(0.5 to 5, 0.7 to 3, 0.85 to 1).forEach { (share, reps) ->
+    val light = listOf(0.3 to 10, 0.4 to 8).takeLast(extraLight.coerceIn(0, 2))
+    (light + listOf(0.5 to 5, 0.7 to 3, 0.85 to 1)).forEach { (share, reps) ->
         val kg = floor(workKg * share / stepKg + 1e-9) * stepKg
         if (kg > steps.last().weightKg && kg < workKg) steps += WarmupStep(kg, reps)
     }
