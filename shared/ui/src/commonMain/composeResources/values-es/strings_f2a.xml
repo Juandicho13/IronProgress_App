@@ -21,4 +21,19 @@
     <string name="why_at_top">Ya estás en el tope del rango: mantén las reps</string>
     <string name="why_previous_sets">%1$d × %2$d</string>
     <string name="why_previous_range">%1$d series de %2$d a %3$d</string>
+    <string name="why_deload_sets">Descarga: hoy menos series con el mismo peso</string>
+    <string name="stagnation_plateau">Llevas %1$d sesiones sin mejorar</string>
+    <string name="stagnation_below">Dos sesiones seguidas por debajo de %1$d reps</string>
+    <string name="stagnation_hint">Es normal. Toca para ver qué probar</string>
+    <string name="stagnation_title">Para volver a progresar</string>
+    <string name="stagnation_body">Prueba en este orden. Tú decides.</string>
+    <string name="stagnation_recovery">Revisa tu recuperación</string>
+    <string name="stagnation_recovery_hint">Hubo días bajos: duerme y come bien antes de cambiar nada</string>
+    <string name="stagnation_deload">Descarga hoy</string>
+    <string name="stagnation_deload_hint">40 % menos series con el mismo peso</string>
+    <string name="stagnation_range">Cambiar a %1$d a %2$d reps</string>
+    <string name="stagnation_range_hint">Otro rango para volver a subir; se guarda en la rutina</string>
+    <string name="stagnation_substitute">Cambiar por otro ejercicio</string>
+    <string name="stagnation_substitute_hint">Mismos músculos, otro estímulo</string>
+    <string name="stagnation_later">Ahora no</string>
 </resources>

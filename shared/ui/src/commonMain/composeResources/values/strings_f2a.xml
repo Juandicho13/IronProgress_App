@@ -21,4 +21,19 @@
     <string name="why_at_top">You are at the top of the range: keep the reps</string>
     <string name="why_previous_sets">%1$d × %2$d</string>
     <string name="why_previous_range">%1$d sets of %2$d to %3$d</string>
+    <string name="why_deload_sets">Deload: fewer sets today with the same weight</string>
+    <string name="stagnation_plateau">%1$d sessions without improving</string>
+    <string name="stagnation_below">Two sessions in a row below %1$d reps</string>
+    <string name="stagnation_hint">It happens. Tap to see what to try</string>
+    <string name="stagnation_title">To start progressing again</string>
+    <string name="stagnation_body">Try them in this order. You decide.</string>
+    <string name="stagnation_recovery">Check your recovery</string>
+    <string name="stagnation_recovery_hint">There were low days: sleep and eat well before changing anything</string>
+    <string name="stagnation_deload">Deload today</string>
+    <string name="stagnation_deload_hint">40% fewer sets with the same weight</string>
+    <string name="stagnation_range">Switch to %1$d to %2$d reps</string>
+    <string name="stagnation_range_hint">A new range to climb again; saved in the routine</string>
+    <string name="stagnation_substitute">Swap for another exercise</string>
+    <string name="stagnation_substitute_hint">Same muscles, a new stimulus</string>
+    <string name="stagnation_later">Not now</string>
 </resources>

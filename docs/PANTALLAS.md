@@ -96,6 +96,8 @@ Relojes:
 
 **Alcance implementado en F2-02:** la serie actual muestra la sugerencia del motor de progresión en una franja emberVeil con una flecha: "Hoy: 62,5 kg × 8" y debajo su porqué en una línea (en modo básico sin hablar de RIR: "Subes: la última vez llegaste al tope en todas las series"; en Pro con los números: "Hiciste 3 × 12 con 60 kg y RIR 2: hoy subes un salto"). Si la serie ya no coincide con la sugerencia aparece "Usar" a la derecha, que la vuelve a poner. La primera vez con un ejercicio dice "Primera vez con este ejercicio" y pide un peso que deje 2 reps de sobra. Al empezar una rutina las series de trabajo ya traen el peso y las reps sugeridos, y la sugerencia queda guardada en `WorkoutSet.suggestion`; si una serie se hace con otro peso, la siguiente que nadie tocó sigue ese peso.
 
+**Alcance implementado en F2-05:** si el ejercicio está estancado (HANDOFF 11.3), bajo el chip de modo sale una fila tranquila en surface2 con el ícono de progreso en hielo: "Llevas 4 sesiones sin mejorar" (o "Dos sesiones seguidas por debajo de 8 reps") y "Es normal. Toca para ver qué probar". Abre la hoja "Para volver a progresar" con las propuestas numeradas en el orden de las reglas: 1. Descarga hoy (40 % menos series con el mismo peso; quita las pendientes del final y marca la sesión como descarga), 2. Cambiar a 5 a 8 reps (o 10 a 15; cambia la rutina y las series pendientes; no sale en un entreno libre), 3. Cambiar por otro ejercicio (abre el selector de sustituto). "Ahora no" la esconde hasta la próxima sesión. "Revisa tu recuperación" va primero cuando haya días bajos, con el ajuste de F4.
+
 ### 1.3 Teclado numérico (`Teclado.dc.html`)
 
 - **Para qué:** cambiar peso, reps o RIR sin el teclado del sistema.

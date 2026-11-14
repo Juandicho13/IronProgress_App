@@ -38,6 +38,7 @@ import com.olarte.ironprogress.ui.resources.why_adjustment
 import com.olarte.ironprogress.ui.resources.why_aim_min
 import com.olarte.ironprogress.ui.resources.why_at_top
 import com.olarte.ironprogress.ui.resources.why_deload
+import com.olarte.ironprogress.ui.resources.why_deload_sets
 import com.olarte.ironprogress.ui.resources.why_first
 import com.olarte.ironprogress.ui.resources.why_first_pro
 import com.olarte.ironprogress.ui.resources.why_increase
@@ -143,6 +144,7 @@ internal fun SuggestionRecord.explanation(pro: Boolean, formats: Formats, unit: 
     SuggestionReason.ADJUSTMENT_HOLD -> stringResource(Res.string.why_adjustment)
     SuggestionReason.YOUNG_WAIT -> stringResource(Res.string.why_young_wait)
     SuggestionReason.AT_TOP -> stringResource(Res.string.why_at_top)
+    SuggestionReason.DELOAD_SETS -> stringResource(Res.string.why_deload_sets)
     SuggestionReason.SAME_AS_LAST -> ""
 }
 

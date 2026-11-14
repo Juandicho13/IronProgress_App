@@ -2,6 +2,9 @@ package com.olarte.ironprogress.ui.shots
 
 import android.graphics.Bitmap
 import android.os.Looper
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -24,6 +27,8 @@ import com.olarte.ironprogress.domain.session.SessionId
 import com.olarte.ironprogress.domain.session.WorkoutSession
 import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.domain.session.WorkoutSetId
+import com.olarte.ironprogress.ui.theme.ForjaRadius
+import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
 import com.olarte.ironprogress.ui.workout.WorkoutScreen
 import com.olarte.ironprogress.ui.workout.WorkoutState
@@ -126,5 +131,47 @@ class ProgressionShotsTest {
     fun suggestionProChanged() {
         val detail = pressSession(increase, changed = true)
         shoot("sugerencia-pro-cambiada") { WorkoutScreen(state(detail, pro = true), 754, {}, onMinimize = {}) }
+    }
+
+    private val plateau = com.olarte.ironprogress.domain.progression.Stagnation(
+        com.olarte.ironprogress.domain.progression.StagnationKind.PLATEAU,
+        4,
+        listOf(
+            com.olarte.ironprogress.domain.progression.StagnationProposal.DELOAD,
+            com.olarte.ironprogress.domain.progression.StagnationProposal.CHANGE_RANGE,
+            com.olarte.ironprogress.domain.progression.StagnationProposal.SUBSTITUTE,
+        ),
+        RepRange(5, 8, 2),
+        8,
+    )
+
+    @Test
+    fun stagnationRow() {
+        val repeat = Suggestion(SuggestionReason.ADD_REP, 60.0, listOf(11, 11, 11), RepRange(8, 12, 2), PreviousSummary(3, 10, 10, 60.0, 2))
+        val state = state(pressSession(repeat), pro = false).copy(stagnation = mapOf(exerciseId to plateau))
+        shoot("estancamiento") { WorkoutScreen(state, 754, {}, onMinimize = {}) }
+    }
+
+    @Test
+    fun stagnationOptions() {
+        shoot("estancamiento-opciones") {
+            androidx.compose.foundation.layout.Column(
+                androidx.compose.ui.Modifier.fillMaxSize().background(ForjaTheme.colors.background),
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.Bottom,
+            ) {
+                androidx.compose.foundation.layout.Column(
+                    androidx.compose.ui.Modifier.background(ForjaTheme.colors.surface1, ForjaRadius.shapeXlTop)
+                        .padding(top = ForjaSpacing.esp5),
+                ) {
+                    androidx.compose.material3.Text(
+                        "Para volver a progresar",
+                        androidx.compose.ui.Modifier.padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp2),
+                        style = ForjaTheme.typography.title3,
+                        color = ForjaTheme.colors.text1,
+                    )
+                    com.olarte.ironprogress.ui.workout.StagnationOptions(plateau, {}, {})
+                }
+            }
+        }
     }
 }

@@ -414,3 +414,11 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Entreno libre:** `AddSessionExercise` con el catálogo deja la pista de primera vez cuando el ejercicio nunca se hizo.
 - Pruebas: `SuggestionRecordTest`, cuatro nuevas en `SessionUseCasesTest` y `SuggestionViewModelTest`. Capturas en `scratchpad/shotsF2a/sugerencia-*`.
 
+## 42. F2-05 Estancamiento, 14 de noviembre de 2026
+
+- **Regla** (`domain/progression/Stagnation.kt`, `StagnationDetector.detect`): primero mira si las dos sesiones más recientes tienen alguna serie de trabajo bajo el mínimo del rango (BELOW_MIN); si no, si en las 4 más recientes ninguna supera a la más vieja de ellas en más de 1 % (PLATEAU). Con peso usa el mejor 1RM estimado; sin peso (o en las asistidas) las mejores reps. Las sesiones marcadas como descarga (`SuggestionRecord.deload`) no cuentan.
+- **Propuestas en orden:** RECOVERY (solo con `lowRecoveryDays`, que llega con el ajuste de F4; hoy siempre falso), DELOAD, CHANGE_RANGE (solo si la sesión viene de una rutina con rango: 9 o más arriba pasa a 5 a 8, si no a 10 a 15) y SUBSTITUTE.
+- **Descarga** (`deload`): deja el 60 % de las series de trabajo (al menos una), quita las pendientes del final y marca las que quedan con `DELOAD_SETS` y `dl` en `WorkoutSet.suggestion`, sin cambiar el peso.
+- **Entreno:** `WorkoutViewModel.analyze` revisa cada ejercicio una vez por sesión (historial con `performances`, rango de la rutina) y guarda el resultado en `WorkoutState.stagnation`. `StagnationRow` y `StagnationSheet` en `ui/workout/StagnationCard.kt`. Intenciones `Deload`, `ChangeRange` (guarda la rutina y pone el nuevo mínimo en las pendientes), `DismissStagnation`; el sustituto usa `Substitute` de F1-12. `TestSessions.deleteSet` ahora borra de verdad.
+- Pruebas: `StagnationTest`, `DeloadTest`, `StagnationViewModelTest`. Capturas `scratchpad/shotsF2a/estancamiento-*`.
+

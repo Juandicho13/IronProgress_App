@@ -4,6 +4,7 @@ import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.WeightUnit
+import com.olarte.ironprogress.domain.progression.Stagnation
 import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.SetType
 import com.olarte.ironprogress.domain.session.SessionDetail
@@ -63,6 +64,10 @@ data class WorkoutState(
     val query: String = "",
     /** Modo Pro de Ajustes: con él se ven y se anotan RIR y RPE; sin él, solo peso y reps. */
     val proMode: Boolean = false,
+    /** Ejercicios de la sesión estancados según HANDOFF 11.3 (F2-05). */
+    val stagnation: Map<SessionExerciseId, Stagnation> = emptyMap(),
+    /** Los que se cerraron con "Ahora no": no vuelven a salir en esta sesión. */
+    val stagnationDismissed: Set<SessionExerciseId> = emptySet(),
 ) {
     /** Unidad con la que se ve y se escribe el peso de un ejercicio de la sesión. */
     fun unitOf(id: SessionExerciseId?): WeightUnit {
@@ -147,6 +152,15 @@ sealed interface WorkoutIntent {
 
     /** Vuelve a poner en la serie el peso y las reps que sugirió el motor (F2-02). */
     data class ApplySuggestion(val id: WorkoutSetId) : WorkoutIntent
+
+    /** Estancamiento: descarga de hoy, 40 % menos series con el mismo peso (F2-05). */
+    data class Deload(val id: SessionExerciseId) : WorkoutIntent
+
+    /** Estancamiento: cambia el rango de reps del ejercicio en la rutina y en las series pendientes. */
+    data class ChangeRange(val id: SessionExerciseId) : WorkoutIntent
+
+    /** "Ahora no": el aviso de estancamiento no vuelve a salir en esta sesión. */
+    data class DismissStagnation(val id: SessionExerciseId) : WorkoutIntent
 }
 
 sealed interface WorkoutEffect {

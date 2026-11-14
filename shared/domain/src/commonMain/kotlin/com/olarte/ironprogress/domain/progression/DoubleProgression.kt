@@ -64,6 +64,9 @@ enum class SuggestionReason {
 
     /** Sin peso que subir y ya en el tope del rango, sin variante más difícil: mantener. */
     AT_TOP,
+
+    /** Descarga elegida ante un estancamiento (F2-05): menos series con el mismo peso. No la da el motor. */
+    DELOAD_SETS,
 }
 
 /** Lo que se hizo la última vez, para la línea de explicación ("3 × 12 con 60 kg y RIR 2"). */

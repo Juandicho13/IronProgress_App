@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.WeightUnit
+import com.olarte.ironprogress.domain.progression.StagnationProposal
 import com.olarte.ironprogress.domain.progression.suggestionRecord
 import com.olarte.ironprogress.domain.routine.BlockFormat
 import com.olarte.ironprogress.domain.routine.ExerciseMode
@@ -186,6 +187,7 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
     var menuOpen by remember { mutableStateOf(false) }
     var confirmCancel by remember { mutableStateOf(false) }
     var effortInfo by remember { mutableStateOf(false) }
+    var stagnationId by remember { mutableStateOf<SessionExerciseId?>(null) }
     val selected = detail?.exercises?.firstOrNull { it.id == state.selectedExerciseId }
     val currentSet = selected?.let { detail.setsOf(it.id).firstOrNull { set -> !set.isCompleted } }
     val block = detail?.blocks?.firstOrNull { it.id == selected?.blockId }
@@ -260,6 +262,7 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
                         onMode = { modeId = selected.id },
                         onSetOptions = { optionsId = it },
                         onEffortInfo = { effortInfo = true },
+                        onStagnation = { stagnationId = selected.id },
                     )
                 }
             }
@@ -437,6 +440,27 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
         )
     }
     if (effortInfo) EffortInfoSheet { effortInfo = false }
+    stagnationId?.let { id ->
+        state.stagnation[id]?.let { stagnation ->
+            StagnationSheet(
+                stagnation,
+                onChoose = { proposal ->
+                    stagnationId = null
+                    when (proposal) {
+                        StagnationProposal.DELOAD -> onIntent(WorkoutIntent.Deload(id))
+                        StagnationProposal.CHANGE_RANGE -> onIntent(WorkoutIntent.ChangeRange(id))
+                        StagnationProposal.SUBSTITUTE -> onIntent(WorkoutIntent.Substitute(id))
+                        StagnationProposal.RECOVERY -> Unit
+                    }
+                },
+                onLater = {
+                    stagnationId = null
+                    onIntent(WorkoutIntent.DismissStagnation(id))
+                },
+                onDismiss = { stagnationId = null },
+            )
+        }
+    }
 }
 
 /** Qué son RIR y RPE, en palabras simples y con un ejemplo (solo en modo Pro). */
@@ -582,6 +606,7 @@ private fun CurrentExercise(
     onMode: () -> Unit,
     onSetOptions: (WorkoutSetId) -> Unit,
     onEffortInfo: () -> Unit,
+    onStagnation: () -> Unit = {},
 ) {
     val detail = state.session ?: return
     val exercise = detail.exercises.firstOrNull { it.id == exerciseId } ?: return
@@ -621,6 +646,9 @@ private fun CurrentExercise(
         }
         Row(horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
             ModeChip(exercise.mode.summary(exercise.restSeconds, exercise.timedSeconds, group.size), enabled, onMode)
+        }
+        state.stagnation[exercise.id]?.takeIf { exercise.id !in state.stagnationDismissed }?.let { stagnation ->
+            StagnationRow(stagnation, enabled, onStagnation)
         }
         if (exercise.notes.isNotBlank()) Text(exercise.notes, color = colors.text2, style = typography.body2)
         val done = sets.filter { it.isCompleted }

@@ -2,11 +2,18 @@ package com.olarte.ironprogress.ui.workout
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
+import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.common.IdGenerator
+import com.olarte.ironprogress.domain.progression.RepRange
+import com.olarte.ironprogress.domain.progression.StagnationDetector
 import com.olarte.ironprogress.domain.progression.carryWeightForward
+import com.olarte.ironprogress.domain.progression.deload
+import com.olarte.ironprogress.domain.progression.performances
 import com.olarte.ironprogress.domain.progression.suggestionRecord
+import com.olarte.ironprogress.domain.progression.workingRange
 import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.RoutineRepository
 import com.olarte.ironprogress.domain.routine.SetType
@@ -15,6 +22,8 @@ import com.olarte.ironprogress.domain.session.AddSessionExercise
 import com.olarte.ironprogress.domain.session.CompleteSet
 import com.olarte.ironprogress.domain.session.EndSession
 import com.olarte.ironprogress.domain.session.SessionDetail
+import com.olarte.ironprogress.domain.session.SessionExerciseId
+import com.olarte.ironprogress.domain.session.SessionId
 import com.olarte.ironprogress.domain.session.SessionRepository
 import com.olarte.ironprogress.domain.session.SessionStatus
 import com.olarte.ironprogress.domain.session.StartSession
@@ -87,6 +96,10 @@ class WorkoutViewModel(
     private var highlightJob: Job? = null
     private var undoExpiresAt = 0L
     private var lastRestFrameMs = 0L
+
+    /** Ejercicios ya revisados en busca de estancamiento en esta sesión. */
+    private val analyzed = mutableSetOf<SessionExerciseId>()
+    private var analyzedSession: SessionId? = null
 
     /** Series ya rellenadas con la última vez: cada una una sola vez, aunque el usuario la vacíe. */
     private val prefilled = mutableSetOf<WorkoutSetId>()
@@ -197,9 +210,12 @@ class WorkoutViewModel(
                             routineName = name,
                             selectedExerciseId = selected,
                             keyboard = it.keyboard?.takeIf { keyboard -> detail?.sets?.any { set -> set.id == keyboard.setId } == true },
+                            stagnation = if (sameSession) it.stagnation else emptyMap(),
+                            stagnationDismissed = if (sameSession) it.stagnationDismissed else emptySet(),
                         )
                     }
                     if (detail != null) prefillFromLastTime(detail, previous)
+                    if (detail != null) analyze(detail, catalog)
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -423,6 +439,14 @@ class WorkoutViewModel(
                     notifyRestDeadline(null)
                 }
             }
+            is WorkoutIntent.Deload -> enqueue {
+                val change = deload(active().setsOf(intent.id))
+                change.remove.forEach { sessions.deleteSet(it) }
+                change.save.forEach { sessions.saveSet(it) }
+                mutableState.update { it.copy(stagnation = it.stagnation - intent.id) }
+            }
+            is WorkoutIntent.ChangeRange -> enqueue { changeRange(intent.id) }
+            is WorkoutIntent.DismissStagnation -> mutableState.update { it.copy(stagnationDismissed = it.stagnationDismissed + intent.id) }
             is WorkoutIntent.ApplySuggestion -> edit(intent.id) { set ->
                 val record = set.suggestionRecord ?: return@edit set
                 set.copy(weightKg = record.weightKg ?: set.weightKg, reps = record.reps ?: set.reps)
@@ -460,6 +484,58 @@ class WorkoutViewModel(
                 sessions.saveSet(current.fillMissingFrom(last))
             }
         }
+    }
+
+    /**
+     * Busca estancamiento (F2-05) una sola vez por ejercicio de la sesión, con su historial y el
+     * rango de la rutina. Las series por tiempo, los ejercicios sin reps y los que ya están en
+     * descarga no se miran.
+     */
+    private suspend fun analyze(detail: SessionDetail, catalog: Map<ExerciseId, com.olarte.ironprogress.domain.catalog.Exercise>) {
+        if (analyzedSession != detail.session.id) {
+            analyzed.clear()
+            analyzedSession = detail.session.id
+        }
+        val pending = detail.exercises.filter { it.id !in analyzed }
+        if (pending.isEmpty()) return
+        val routine = detail.session.routineId?.let { routines.findRoutine(it) }
+        val found = mutableMapOf<SessionExerciseId, com.olarte.ironprogress.domain.progression.Stagnation>()
+        pending.forEach { exercise ->
+            analyzed += exercise.id
+            val info = catalog[exercise.exerciseId] ?: return@forEach
+            if (SetField.REPS !in info.trackingType.fields || exercise.mode == ExerciseMode.TIMED) return@forEach
+            if (detail.setsOf(exercise.id).any { it.suggestionRecord?.deload == true }) return@forEach
+            val planned = routine?.exercises?.firstOrNull { it.exerciseId == exercise.exerciseId }
+            val range = planned?.let { routine.setsOf(it.id).workingRange() } ?: RepRange()
+            val history = sessions.performances(exercise.exerciseId)
+            StagnationDetector.detect(history, info.trackingType, range, canChangeRange = planned != null)?.let { found[exercise.id] = it }
+        }
+        if (found.isNotEmpty()) mutableState.update { it.copy(stagnation = it.stagnation + found) }
+    }
+
+    /** Cambia el rango de reps del ejercicio en la rutina y pone el nuevo mínimo en las series pendientes. */
+    private suspend fun changeRange(id: SessionExerciseId) {
+        val range = state.value.stagnation[id]?.newRange ?: return
+        val detail = active()
+        val exercise = detail.exercises.firstOrNull { it.id == id } ?: return
+        val routine = detail.session.routineId?.let { routines.findRoutine(it) } ?: return
+        val planned = routine.exercises.firstOrNull { it.exerciseId == exercise.exerciseId } ?: return
+        routines.saveRoutine(
+            routine.copy(
+                setTemplates = routine.setTemplates.map { template ->
+                    if (template.routineExerciseId == planned.id && template.setType.countsAsWorking) {
+                        template.copy(repsMin = range.min, repsMax = range.max)
+                    } else {
+                        template
+                    }
+                },
+            ),
+        )
+        detail.setsOf(id).filter { !it.isCompleted && it.setType.countsAsWorking }.forEach { set ->
+            val record = set.suggestionRecord?.copy(reps = range.min, repsMin = range.min, repsMax = range.max)
+            sessions.saveSet(set.copy(reps = range.min, suggestion = record?.encode() ?: set.suggestion))
+        }
+        mutableState.update { it.copy(stagnation = it.stagnation - id) }
     }
 
     /** Marca la sesión como descartada: no sale en el historial ni cuenta en Hoy ni en la racha. */
