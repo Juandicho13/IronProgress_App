@@ -1,6 +1,8 @@
 package com.olarte.ironprogress.domain.session
 
 import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.progress.ExerciseHistoryEntry
+import com.olarte.ironprogress.domain.progress.historyOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
@@ -30,6 +32,16 @@ interface SessionRepository {
         }
         return emptyList()
     }
+
+    /**
+     * Todas las series completadas de un ejercicio en sesiones terminadas, de la más vieja a la más
+     * nueva (récords y gráficas, F2-03 y F2-04). Room lo resuelve con una consulta; esta versión
+     * por defecto, para repositorios en memoria, recorre las sesiones.
+     */
+    suspend fun exerciseHistory(exerciseId: ExerciseId): List<ExerciseHistoryEntry> =
+        observeFinishedSessions().first().mapNotNull { findSession(it.id) }
+            .flatMap { it.historyOf(exerciseId) }
+            .sortedBy { it.at }
 
     suspend fun saveSession(session: WorkoutSession)
 

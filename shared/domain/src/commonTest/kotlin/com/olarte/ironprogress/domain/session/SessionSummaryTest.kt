@@ -2,6 +2,7 @@ package com.olarte.ironprogress.domain.session
 
 import com.olarte.ironprogress.domain.catalog.Discipline
 import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.progress.RecordKind
 import com.olarte.ironprogress.domain.routine.BlockFormat
 import com.olarte.ironprogress.domain.routine.RoutineId
 import com.olarte.ironprogress.domain.routine.SetType
@@ -76,7 +77,11 @@ class SessionSummaryTest {
         // 62,5 × 40 reps + 12,5 × 8; el calentamiento no suma.
         assertEquals(2_600.0, summary.volumeKg)
         assertEquals(5, summary.workingSets)
-        assertEquals(listOf(SessionRecord(bench, 62.5, 11), SessionRecord(dips, 12.5, 8)), summary.records)
+        // Press: más fuerza estimada, más peso y más volumen; fondos, igual.
+        val all = listOf(RecordKind.ESTIMATED_ONE_REP_MAX, RecordKind.HEAVIEST_WEIGHT, RecordKind.BEST_SESSION_VOLUME)
+        assertEquals(all, summary.records.filter { it.exerciseId == bench }.map { it.kind })
+        assertEquals(all, summary.records.filter { it.exerciseId == dips }.map { it.kind })
+        assertEquals(2_500.0, summary.records.first { it.exerciseId == bench && it.kind == RecordKind.BEST_SESSION_VOLUME }.value)
         assertEquals(SessionId("s1"), summary.previous?.sessionId)
         // Antes: 60 × 29 + 10 × 8 = 1.820 kg. Ahora 2.600: un 43 % más.
         assertEquals(43, summary.volumeChangePercent)
@@ -93,7 +98,9 @@ class SessionSummaryTest {
         assertTrue(summary.records.isEmpty())
 
         val moreReps = session("c", day, 50, mapOf(bench to listOf(62.5 to 11)))
-        assertEquals(listOf(SessionRecord(bench, 62.5, 11)), summarize(moreReps, listOf(before)).records)
+        val hits = summarize(moreReps, listOf(before)).records
+        assertEquals(listOf(RecordKind.ESTIMATED_ONE_REP_MAX, RecordKind.MOST_REPS, RecordKind.BEST_SESSION_VOLUME), hits.map { it.kind })
+        assertEquals(11.0, hits.first { it.kind == RecordKind.MOST_REPS }.value)
     }
 
     @Test
@@ -105,7 +112,8 @@ class SessionSummaryTest {
         assertNull(summary.previous)
         assertNull(summary.volumeChangePercent)
         // El récord sí mira todas las sesiones anteriores, de cualquier rutina.
-        assertEquals(listOf(SessionRecord(bench, 60.0, 5)), summary.records)
+        assertEquals(RecordKind.ESTIMATED_ONE_REP_MAX, summary.records.first().kind)
+        assertEquals(60.0, summary.records.first { it.kind == RecordKind.HEAVIEST_WEIGHT }.value)
     }
 
     @Test

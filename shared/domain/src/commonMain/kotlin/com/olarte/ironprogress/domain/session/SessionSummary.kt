@@ -1,11 +1,11 @@
 package com.olarte.ironprogress.domain.session
 
 import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.progress.RecordHit
+import com.olarte.ironprogress.domain.progress.Records
+import com.olarte.ironprogress.domain.progress.historyOf
 import com.olarte.ironprogress.domain.routine.BlockFormat
 import kotlinx.coroutines.flow.first
-
-/** Mejor serie de un ejercicio en la sesión que supera todo lo anterior (récord simple, SES-08). */
-data class SessionRecord(val exerciseId: ExerciseId, val weightKg: Double, val reps: Int)
 
 /** Lo hecho en un ejercicio: sus series de trabajo completadas, en orden. */
 data class ExerciseSummary(val exerciseId: ExerciseId, val sets: List<WorkoutSet>)
@@ -19,7 +19,8 @@ data class SessionSummary(
     val durationSeconds: Long,
     val volumeKg: Double,
     val workingSets: Int,
-    val records: List<SessionRecord>,
+    /** Récords batidos en la sesión, por ejercicio y en orden de importancia (F2-03). */
+    val records: List<RecordHit>,
     val exercises: List<ExerciseSummary>,
     /** Bloques temporizados con su resultado (intervalos, AMRAP, EMOM, por tiempo, rondas, flujo). */
     val blockResults: List<SessionBlock>,
@@ -46,8 +47,7 @@ private fun SessionDetail.workingSetsOf(exerciseId: ExerciseId): List<WorkoutSet
 
 /**
  * Arma el resumen de [detail] con las sesiones terminadas antes que ella ([history], en cualquier
- * orden). Un récord cuenta solo si el ejercicio ya se había hecho: más peso que nunca, o el mismo
- * peso máximo con más reps. La primera vez de un ejercicio no es récord.
+ * orden). Los récords siguen [Records]: la primera vez de un ejercicio no es récord.
  */
 fun summarize(detail: SessionDetail, history: List<SessionDetail>): SessionSummary {
     val earlier = history.filter {
@@ -59,16 +59,9 @@ fun summarize(detail: SessionDetail, history: List<SessionDetail>): SessionSumma
         ExerciseSummary(id, detail.workingSetsOf(id))
     }.filter { it.sets.isNotEmpty() }
 
-    val records = exercises.mapNotNull { summary ->
-        val today = summary.sets.filter { it.weightKg != null && (it.reps ?: 0) > 0 }
-            .maxWithOrNull(compareBy<WorkoutSet> { it.weightKg }.thenBy { it.reps }) ?: return@mapNotNull null
-        val before = earlier.flatMap { it.workingSetsOf(summary.exerciseId) }.filter { it.weightKg != null && (it.reps ?: 0) > 0 }
-        if (before.isEmpty()) return@mapNotNull null
-        val maxBefore = before.maxOf { it.weightKg!! }
-        val repsAtMax = before.filter { it.weightKg == maxBefore }.maxOf { it.reps!! }
-        val weight = today.weightKg!!
-        val reps = today.reps!!
-        if (weight > maxBefore || (weight == maxBefore && reps > repsAtMax)) SessionRecord(summary.exerciseId, weight, reps) else null
+    val records = exercises.flatMap { summary ->
+        val past = earlier.flatMap { it.historyOf(summary.exerciseId) }
+        Records.replay(summary.exerciseId, past, detail.historyOf(summary.exerciseId))
     }
 
     val previous = earlier.filter {

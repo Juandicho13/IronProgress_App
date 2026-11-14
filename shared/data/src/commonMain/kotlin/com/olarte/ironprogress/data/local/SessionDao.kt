@@ -1,6 +1,8 @@
 package com.olarte.ironprogress.data.local
 
+import androidx.room3.ColumnInfo
 import androidx.room3.Dao
+import androidx.room3.Embedded
 import androidx.room3.Query
 import androidx.room3.Transaction
 import androidx.room3.Upsert
@@ -58,6 +60,20 @@ interface SessionDao {
             "ORDER BY s.completed_at DESC LIMIT :limit",
     )
     suspend fun recentSetsOfExercise(exerciseId: String, limit: Int): List<WorkoutSetEntity>
+
+    /**
+     * Todas las series completadas de un ejercicio en sesiones terminadas, con su sesión, de la más
+     * vieja a la más nueva: récords y gráficas del ejercicio (F2-03 y F2-04).
+     */
+    @Query(
+        "SELECT s.*, w.id AS history_session_id FROM workout_sets s " +
+            "JOIN session_exercises e ON e.id = s.session_exercise_id " +
+            "JOIN workout_sessions w ON w.id = e.session_id " +
+            "WHERE e.exercise_id = :exerciseId AND w.status = 'FINISHED' AND s.completed_at IS NOT NULL " +
+            "AND s.deleted_at IS NULL AND e.deleted_at IS NULL AND w.deleted_at IS NULL " +
+            "ORDER BY s.completed_at ASC",
+    )
+    suspend fun exerciseHistory(exerciseId: String): List<ExerciseHistoryRow>
 
     @Query("SELECT id FROM workout_sessions WHERE status = 'IN_PROGRESS' AND deleted_at IS NULL LIMIT 1")
     suspend fun activeSessionId(): String?
@@ -144,3 +160,6 @@ interface SessionDao {
     @Query("SELECT created_at FROM workout_sessions WHERE id = :sessionId LIMIT 1")
     suspend fun sessionCreatedAt(sessionId: String): Long?
 }
+
+/** Una serie de la historia de un ejercicio con la sesión a la que pertenece. */
+data class ExerciseHistoryRow(@Embedded val set: WorkoutSetEntity, @ColumnInfo(name = "history_session_id") val sessionId: String)

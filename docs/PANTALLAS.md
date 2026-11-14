@@ -94,6 +94,8 @@ Relojes:
 
 **Alcance de la tercera ronda (5 nov 2026):** arriba, "Ejercicio 2 de 3" y una barra por ejercicio que se toca para ir a él; el ejercicio lleva su número y la lista "Ejercicios" sale numerada en el orden de la rutina con el de ahora resaltado. Sin modo Pro solo se ven peso y reps; con él, RIR y RPE y un ícono que explica qué son. Cada serie arranca rellena con la anterior o con la última vez, así completar es un toque. Deslizar para terminar aparece cuando ya hay una serie hecha; el menú ⋮ de arriba tiene Cancelar entreno con confirmación.
 
+**Récords en vivo (F2-03):** al completar una serie que bate una marca de otra sesión, baja arriba una franja dorada con el trofeo: "Récord · Press", el tipo ("Fuerza estimada" en el modo básico, "1RM estimado" en el Pro; "Mayor peso", "Más reps con 60 kg" o "Mayor volumen"), la marca nueva y "Antes 80 kg". Sale también sobre el descanso, vibra con el patrón de récord si la vibración está prendida, se anuncia al lector de pantalla y se cierra sola a los 4,5 s o al tocarla. Deshacer la serie quita su récord. La primera vez de un ejercicio no es récord.
+
 ### 1.3 Teclado numérico (`Teclado.dc.html`)
 
 - **Para qué:** cambiar peso, reps o RIR sin el teclado del sistema.
@@ -151,6 +153,8 @@ Relojes:
 - **Toques:** dar el feedback 1 (todo viene en "Justo"); guardar 1.
 
 **Alcance implementado en F1-21:** Deslizar para terminar va al final de la lista de Entreno y solo se activa con una serie hecha; con lector de pantalla es un botón. El Resumen muestra la rutina y la fecha, los récords simples (más peso que nunca, o el mismo peso máximo con más reps; la primera vez de un ejercicio no cuenta), duración y volumen comparados con la sesión anterior de la misma rutina (o de la misma disciplina en un entreno libre), cada ejercicio con sus series y el resultado de cada bloque con tiempo. El botón principal es Listo. Compartir llega con F5-07 y el feedback por músculo y las molestias con F2-06.
+
+**Alcance implementado en F2-03:** la tarjeta dorada de Récords lista cada récord de la sesión con el ejercicio, el tipo y la marca a la derecha ("Press · Fuerza estimada · 85 kg"); si un tipo se batió dos veces, sale el último. El volumen muestra el total del ejercicio en la sesión.
 
 ---
 

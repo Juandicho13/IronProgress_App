@@ -4,6 +4,7 @@ import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.WeightUnit
+import com.olarte.ironprogress.domain.progress.RecordHit
 import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.SetType
 import com.olarte.ironprogress.domain.session.SessionDetail
@@ -63,6 +64,8 @@ data class WorkoutState(
     val query: String = "",
     /** Modo Pro de Ajustes: con él se ven y se anotan RIR y RPE; sin él, solo peso y reps. */
     val proMode: Boolean = false,
+    /** Récord recién batido que se está mostrando (F2-03); null sin aviso. */
+    val record: RecordHit? = null,
 ) {
     /** Unidad con la que se ve y se escribe el peso de un ejercicio de la sesión. */
     fun unitOf(id: SessionExerciseId?): WeightUnit {
@@ -144,6 +147,9 @@ sealed interface WorkoutIntent {
 
     /** Cancela el entreno: no se guarda nada ni cuenta en Hoy ni en la racha. */
     data object Cancel : WorkoutIntent
+
+    /** Cierra el aviso de récord antes de tiempo. */
+    data object DismissRecord : WorkoutIntent
 }
 
 sealed interface WorkoutEffect {
@@ -155,4 +161,7 @@ sealed interface WorkoutEffect {
 
     /** La sesión se descartó (cancelada o terminada sin ninguna serie hecha): se vuelve a Hoy. */
     data object Discarded : WorkoutEffect
+
+    /** Se batió un récord al completar una serie: vibración de récord (F2-03). */
+    data class Record(val hit: RecordHit) : WorkoutEffect
 }

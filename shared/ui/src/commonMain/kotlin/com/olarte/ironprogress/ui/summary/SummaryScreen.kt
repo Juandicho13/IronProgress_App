@@ -37,6 +37,9 @@ import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaNumber
 import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.rememberFormats
+import com.olarte.ironprogress.ui.progress.ForjaRecordIcons
+import com.olarte.ironprogress.ui.progress.recordKindLabel
+import com.olarte.ironprogress.ui.progress.recordValue
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.summary_blocks
 import com.olarte.ironprogress.ui.resources.summary_done
@@ -55,7 +58,7 @@ import com.olarte.ironprogress.ui.resources.summary_free
 import com.olarte.ironprogress.ui.resources.summary_less_time
 import com.olarte.ironprogress.ui.resources.summary_loading
 import com.olarte.ironprogress.ui.resources.summary_more_time
-import com.olarte.ironprogress.ui.resources.summary_records
+import com.olarte.ironprogress.ui.resources.summary_records_count
 import com.olarte.ironprogress.ui.resources.summary_result_completed
 import com.olarte.ironprogress.ui.resources.summary_result_reps
 import com.olarte.ironprogress.ui.resources.summary_result_rounds
@@ -195,19 +198,30 @@ private fun ColumnScope.SummaryBody(state: SummaryState, languageCode: String, f
 @Composable
 private fun Records(state: SummaryState, summary: SessionSummary, languageCode: String, formats: Formats) {
     val colors = ForjaTheme.colors
+    val typography = ForjaTheme.typography
     Column(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(colors.goldVeil).padding(ForjaSpacing.esp4),
-        verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1),
+        verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
     ) {
-        Text(stringResource(Res.string.summary_records), style = ForjaTheme.typography.caption, color = colors.goldInk)
-        ForjaNumber(summary.records.size.toString(), ForjaTheme.typography.largeFigure)
-        Text(
-            summary.records.joinToString(" · ") {
-                state.exerciseName(it.exerciseId, languageCode) + " " + formats.number(it.weightKg, 2) + " × " + it.reps
-            },
-            style = ForjaTheme.typography.body2,
-            color = colors.text1,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2)) {
+            Icon(ForjaRecordIcons.Trophy, contentDescription = null, tint = colors.goldInk, modifier = Modifier.size(20.dp))
+            Text(
+                pluralStringResource(Res.plurals.summary_records_count, summary.records.size, summary.records.size),
+                style = typography.caption,
+                color = colors.goldInk,
+            )
+        }
+        // Un renglón por récord: ejercicio y tipo a la izquierda, la marca a la derecha.
+        summary.records.forEach { hit ->
+            val unit = state.exercises[hit.exerciseId]?.preferredUnit ?: com.olarte.ironprogress.domain.catalog.WeightUnit.KG
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(state.exerciseName(hit.exerciseId, languageCode), style = typography.body, color = colors.text1)
+                    Text(recordKindLabel(hit.kind, hit.weightKg, unit, formats), style = typography.body2, color = colors.text2)
+                }
+                ForjaNumber(recordValue(hit.kind, hit.value, unit, formats), typography.smallFigure, color = colors.text1)
+            }
+        }
     }
 }
 

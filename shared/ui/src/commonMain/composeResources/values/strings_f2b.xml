@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- F2-03: records -->
+    <string name="record_title">Record</string>
+    <string name="record_kind_strength">Estimated strength</string>
+    <string name="record_kind_one_rm">Estimated 1RM</string>
+    <string name="record_kind_heaviest">Heaviest weight</string>
+    <string name="record_kind_reps_with">Most reps with %1$s</string>
+    <string name="record_kind_reps">Most reps</string>
+    <string name="record_kind_volume">Best volume</string>
+    <string name="record_previous">Before %1$s</string>
+    <string name="record_banner_a11y">Record: %1$s, %2$s</string>
+    <string name="record_dismiss">Close the record notice</string>
+    <string name="record_strength_info_title">Estimated strength</string>
+    <string name="record_strength_info_body">The weight you could lift once, worked out from your sets. No need to test it: it comes from the weight, the reps and the reps you had left.</string>
+    <string name="record_one_rm_info_body">Estimated 1RM with Epley plus RIR: weight × (1 + (reps + RIR) ÷ 30). Only worked out when reps + RIR is 12 or less.</string>
+    <plurals name="record_reps_value">
+        <item quantity="one">%1$d rep</item>
+        <item quantity="other">%1$d reps</item>
+    </plurals>
+    <plurals name="summary_records_count">
+        <item quantity="one">%1$d record</item>
+        <item quantity="other">%1$d records</item>
+    </plurals>
+
+    <!-- F2-04: exercise progress -->
+    <string name="exercise_progress_title">Progress</string>
+    <string name="exercise_progress_open">See progress</string>
+    <string name="exercise_progress_open_hint">Charts, records and your last sessions</string>
+    <string name="exercise_progress_metric_best_set">Best set</string>
+    <string name="exercise_progress_metric_volume">Volume</string>
+    <string name="exercise_progress_metric_reps">Most reps</string>
+    <string name="exercise_progress_metric_total_reps">Total reps</string>
+    <string name="exercise_progress_range_3m">3 m</string>
+    <string name="exercise_progress_range_6m">6 m</string>
+    <string name="exercise_progress_range_1y">1 y</string>
+    <string name="exercise_progress_range_all">All</string>
+    <string name="exercise_progress_vs_4w">%1$s vs 4 weeks ago</string>
+    <string name="exercise_progress_same_4w">Same as 4 weeks ago</string>
+    <string name="exercise_progress_records">Records</string>
+    <string name="exercise_progress_sessions">Last sessions</string>
+    <string name="exercise_progress_empty_title">No sets of this exercise yet</string>
+    <string name="exercise_progress_empty_body">Once you train it, you will see your progress and records here.</string>
+    <string name="exercise_progress_range_empty">No sessions in this range</string>
+    <string name="exercise_progress_one_point">One more session and you will see the line.</string>
+    <string name="exercise_progress_chart_a11y">Chart of %1$s: %2$d sessions, the latest %3$s on %4$s, the highest %5$s.</string>
+    <string name="exercise_progress_record_point">Record %1$s</string>
+    <string name="exercise_progress_info">What is it</string>
+    <string name="month_short_1">Jan</string>
+    <string name="month_short_2">Feb</string>
+    <string name="month_short_3">Mar</string>
+    <string name="month_short_4">Apr</string>
+    <string name="month_short_5">May</string>
+    <string name="month_short_6">Jun</string>
+    <string name="month_short_7">Jul</string>
+    <string name="month_short_8">Aug</string>
+    <string name="month_short_9">Sep</string>
+    <string name="month_short_10">Oct</string>
+    <string name="month_short_11">Nov</string>
+    <string name="month_short_12">Dec</string>
+    <string name="day_month">%2$s %1$d</string>
+
+    <!-- F2-07: effective sets -->
+    <string name="muscle_status_below">Low</string>
+    <string name="muscle_status_in_range">In range</string>
+    <string name="muscle_status_above">High</string>
+    <string name="muscle_sets_effective_hint">The main muscle of each exercise counts 1 set; the helpers count their share.</string>
+    <string name="muscle_row_a11y">%1$s: %2$s sets, %3$s</string>
+
+    <!-- F2-13: records per format -->
+    <string name="format_record_new">New record</string>
+    <string name="format_record_first">First score for this block</string>
+    <string name="format_record_to_beat">Score to beat: %1$s</string>
+    <string name="format_record_previous">Your previous score: %1$s</string>
+    <string name="interval_best_per_round">%1$s reps per round</string>
+</resources>

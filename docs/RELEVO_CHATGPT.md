@@ -397,3 +397,10 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Diseño de la isla:** compacta con el anillo azul que se vacía a la izquierda y el tiempo a la derecha; mínima con el anillo que se va llenando hasta quedar todo azul; expandida y pantalla bloqueada con el anillo grande, la cuenta atrás y lo que sigue; en Listo, check verde. El inicio del descanso se conserva entre actualizaciones (+15 s, -15 s) para que el anillo no vuelva a empezar.
 - Sin compilar aquí: todo el Swift y `iosMain` (`AppLanguage.ios.kt`, `PlatformFormatter.ios.kt`).
 
+## 50. F2-03 · récords automáticos, 14 de noviembre de 2026
+
+- **Decisión:** los récords se derivan del historial en cada consulta, sin tabla propia. Room ya tiene la consulta `SessionDao.exerciseHistory` (series completadas de un ejercicio en sesiones terminadas, de la más vieja a la más nueva, con el id de su sesión). Así, corregir o borrar una serie en el historial (F1-23) cambia los récords sin migraciones ni datos viejos.
+- **Reglas (`Records`):** cuentan las series de trabajo completadas con reps, sin calentamientos ni rondas de intervalos o bloques funcionales. 1RM estimado = peso × (1 + (reps + RIR) / 30), solo si reps + RIR ≤ 12 (11.1). "Más reps" se mira por peso redondeado a 10 g (sin peso, 0). El volumen es por sesión y se bate una vez, al cruzar la marca. Sin historia de otra sesión no hay récord.
+- **API para F2-15:** `DetectRecords(detail, setId)` devuelve los `RecordHit` en orden de importancia; `WorkoutViewModel` muestra el primero en `WorkoutState.record` y manda `WorkoutEffect.Record` (vibración `personalRecord`). La Live Activity y la Live Update pueden leer `record` o escuchar ese efecto.
+- **Resumen:** `summarize` usa `Records.replay`, que repite la sesión serie por serie y deja el último de cada tipo.
+- **Pantalla:** `ui/progress/RecordUi.kt` (franja, nombres de los récords, "Fuerza estimada" en el modo básico y la hoja que la explica). Ícono `ic_trophy` de Material Symbols Rounded.

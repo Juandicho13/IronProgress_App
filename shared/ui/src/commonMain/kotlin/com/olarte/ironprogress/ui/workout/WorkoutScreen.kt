@@ -375,6 +375,14 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
         enter = slideInVertically(ForjaTheme.motion.spatial()) { it } + fadeIn(ForjaTheme.motion.effect()),
         exit = slideOutVertically(ForjaTheme.motion.spatial()) { it } + fadeOut(ForjaTheme.motion.effect()),
     ) { RestScreen(state, onIntent) }
+    // Récord en vivo (F2-03): encima del entreno y del descanso, que sale justo al completar.
+    val record = state.record
+    com.olarte.ironprogress.ui.progress.RecordBanner(
+        hit = record,
+        exerciseName = record?.let { state.catalog[it.exerciseId]?.name?.resolve(language) ?: it.exerciseId.value }.orEmpty(),
+        unit = record?.let { state.catalog[it.exerciseId]?.preferredUnit } ?: com.olarte.ironprogress.domain.catalog.WeightUnit.KG,
+        onDismiss = { onIntent(WorkoutIntent.DismissRecord) },
+    )
     optionsId?.let { id ->
         detail?.sets?.firstOrNull { it.id == id }?.let { set ->
             SetOptions(set, detail.setsOf(set.sessionExerciseId).indexOf(set) + 1, onIntent) { optionsId = null }

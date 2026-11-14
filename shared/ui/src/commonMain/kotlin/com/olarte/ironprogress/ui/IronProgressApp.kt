@@ -182,6 +182,7 @@ fun IronProgressApp() {
                     WorkoutEffect.RestTick -> haptics.restCountdownTick()
                     WorkoutEffect.RestFinished -> haptics.restFinished()
                     WorkoutEffect.SetCompleted -> haptics.setCompleted()
+                    is WorkoutEffect.Record -> haptics.personalRecord()
                     is WorkoutEffect.Finished -> {
                         backStack.removeAll { it is Route.Workout }
                         backStack.add(Route.Summary(effect.sessionId))
