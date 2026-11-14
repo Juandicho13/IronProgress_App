@@ -438,6 +438,12 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Resumen:** tarjeta "¿Cuánto trabajo sintió cada músculo?" con un segmentado por músculo, el bombeo en Pro, los chips de molestias con Leve / Fuerte y la vista previa "La próxima semana: Pecho +1 serie / Si llegas sin agujetas". Abajo, Omitir y Guardar del mismo ancho: guardar es un toque porque todo viene en "Justo". Si la sesión ya tiene feedback, solo Listo.
 - Pruebas: `SessionFeedbackRulesTest`, `BodyFeedbackViewModelTest` (agujetas, molestias y Resumen) y la migración. Capturas `scratchpad/shotsF2a2/feedback-*`, `agujetas-*` y `molestia-cambiar-*`.
 
+## 45. F2-08 Mapa de recuperación, 14 de noviembre de 2026
+
+- **Motor (`Recovery`):** F = Σ s · 0,5^(Δt / h) con los pesos de `MuscleSets.setWeights` y la vida media de `MuscleSize` (24 h pequeños, 48 h grandes); solo cuentan las series de trabajo de las últimas dos semanas. Verde por debajo de 3, ámbar de 3 a 6, rojo por encima de 6; heat0 sin carga (menos de 0,5), heat1 verde, heat2 y heat3 las dos mitades del ámbar y heat4 rojo. La hora en que se recupera sale de h · log2(F / 3). Agujetas de 2 o más contestadas en las últimas 48 h dejan el músculo por lo menos en ámbar.
+- **Pantalla:** en Progreso > Músculos, debajo del resumen del mes y arriba de las series, la tarjeta "Recuperación muscular" con la frase ("Cuádriceps, glúteos y 2 más se están recuperando", "Todo listo para entrenar" o "Sin carga reciente"), las siluetas de frente y espalda (`BodyMap.kt`: óvalos, rectángulos redondeados y polígonos sobre una caja de 100 × 200, dibujo propio), la leyenda de 5 bloques de Fresco a Cargado y el detalle del músculo tocado (estado en palabras, "Se recupera en unas 18 h", agujetas, último entreno y la carga en Pro). El mapa tiene descripción para lectores de pantalla con cada músculo y su estado.
+- `ProgressViewModel` toma `FeedbackRepository` opcional para las agujetas. Pruebas: `RecoveryTest`. Capturas `scratchpad/shotsF2a2/mapa-recuperacion-*`.
+
 ## 50. F2-03 · récords automáticos, 14 de noviembre de 2026
 
 - **Decisión:** los récords se derivan del historial en cada consulta, sin tabla propia. Room ya tiene la consulta `SessionDao.exerciseHistory` (series completadas de un ejercicio en sesiones terminadas, de la más vieja a la más nueva, con el id de su sesión). Así, corregir o borrar una serie en el historial (F1-23) cambia los récords sin migraciones ni datos viejos.
