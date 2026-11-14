@@ -18,6 +18,7 @@ import com.olarte.ironprogress.domain.wod.SaveWodResult
 import com.olarte.ironprogress.domain.wod.Wod
 import com.olarte.ironprogress.domain.wod.WodMovement
 import com.olarte.ironprogress.domain.wod.WodScore
+import com.olarte.ironprogress.domain.wod.isFormatRecord
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -50,6 +51,13 @@ data class WodState(
 ) {
     val wod: Wod?
         get() = runCatching { Wod(name.ifBlank { "WOD" }, format, minutes, movements) }.getOrNull()
+
+    /** El resultado de lo hecho hasta ahora, según el formato. */
+    val result: BlockResult? get() = wod?.let { score.result(it, elapsedSeconds) }
+
+    /** Al terminar: supera la marca anterior de este bloque (F2-13). La primera vez no es récord. */
+    val isRecord: Boolean
+        get() = phase == WodPhase.FINISHED && result?.let { isFormatRecord(it, best) } == true
 
     val canStart: Boolean get() = wod != null && phase == WodPhase.SETUP
 
@@ -92,18 +100,23 @@ class WodViewModel(
     private val edits = mutableListOf<TimerEdit>()
     private var startedAt: Instant? = null
     private var ticker: Job? = null
+    private var bestLookup: Job? = null
 
     init {
         viewModelScope.launch {
             val exercises = catalog.observeExercises().first().filter { !it.isArchived }
             mutableState.update { it.copy(exercises = exercises) }
         }
+        lookUpBest()
     }
 
     fun onIntent(intent: WodIntent) {
         val current = state.value
         when (intent) {
-            is WodIntent.Name -> setup { it.copy(name = intent.value.take(MAX_NAME)) }
+            is WodIntent.Name -> {
+                setup { it.copy(name = intent.value.take(MAX_NAME)) }
+                lookUpBest()
+            }
             is WodIntent.Format -> setup {
                 val minutes = when (intent.value) {
                     BlockFormat.AMRAP, BlockFormat.EMOM -> it.minutes ?: DEFAULT_MINUTES
@@ -111,7 +124,7 @@ class WodViewModel(
                     else -> null
                 }
                 it.copy(format = intent.value, minutes = minutes)
-            }
+            }.also { lookUpBest() }
             is WodIntent.Minutes -> setup {
                 val next = (it.minutes ?: 0) + intent.delta
                 val optional = it.format == BlockFormat.FOR_TIME
@@ -139,6 +152,25 @@ class WodViewModel(
             }
             WodIntent.Finish -> if (current.phase == WodPhase.RUNNING) edits += TimerEdit.Skip(clock.now().toEpochMilliseconds())
             WodIntent.Save -> saveResult()
+        }
+    }
+
+    /** La marca a superar del bloque que se arma: por nombre y formato, con una pausa al escribir. */
+    private fun lookUpBest() {
+        bestLookup?.cancel()
+        val current = state.value
+        if (current.phase != WodPhase.SETUP) return
+        val name = current.name.ifBlank { "WOD" }
+        bestLookup = viewModelScope.launch {
+            delay(BEST_DEBOUNCE_MS)
+            val best = try {
+                findBest.of(name, current.format)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                null
+            }
+            mutableState.update { if (it.phase == WodPhase.SETUP) it.copy(best = best) else it }
         }
     }
 
@@ -198,6 +230,7 @@ class WodViewModel(
 
     private companion object {
         const val TICK_MS = 100L
+        const val BEST_DEBOUNCE_MS = 350L
         const val DEFAULT_MINUTES = 12
         const val DEFAULT_REPS = 10
         const val MAX_REPS = 200

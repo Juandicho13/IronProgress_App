@@ -61,11 +61,14 @@ class SaveWodResult(private val sessions: SessionRepository, private val ids: Id
 /** La mejor marca guardada de un bloque con el mismo nombre y formato ("Tu marca 8 + 12"). */
 class FindWodBest(private val sessions: SessionRepository) {
 
-    suspend operator fun invoke(wod: Wod): BlockResult? {
+    suspend operator fun invoke(wod: Wod): BlockResult? = of(wod.name, wod.format)
+
+    /** La mejor marca de un bloque con [name] y [format], aunque todavía no tenga movimientos (F2-13). */
+    suspend fun of(name: String, format: com.olarte.ironprogress.domain.routine.BlockFormat): BlockResult? {
         var best: BlockResult? = null
         for (session in sessions.observeFinishedSessions().first()) {
-            if (session.discipline != Discipline.FUNCTIONAL || session.notes != wod.name) continue
-            val result = sessions.findSession(session.id)?.blocks?.firstOrNull { it.format == wod.format }?.result ?: continue
+            if (session.discipline != Discipline.FUNCTIONAL || session.notes != name) continue
+            val result = sessions.findSession(session.id)?.blocks?.firstOrNull { it.format == format }?.result ?: continue
             if (isBetter(result, best)) best = result
         }
         return best

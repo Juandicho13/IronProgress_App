@@ -296,6 +296,8 @@ Las mismas tres pantallas en claro, con los tokens de la columna clara de Forja:
 
 - **Audio:** la voz baja la música mientras habla y la devuelve al terminar (iPhone: `AVAudioSession` con `duckOthers`; Android: foco de audio con atenuación). Voz grabada para las cuentas y las frases fijas; la del sistema para los nombres de ejercicios. Con el teléfono bloqueado sigue en la Live Activity y en los relojes.
 
+**Alcance implementado en F2-13:** al terminar, la marca de hoy en reps por ronda de media frente a la mejor de estos intervalos (mismo nombre): "Nuevo récord" en oro con la marca anterior, la marca anterior en texto o "Primera marca de este bloque". Las vueltas sin reps anotadas no cuentan. Al editar unos intervalos guardados sale "Marca a superar: 11,3 reps por ronda".
+
 ### 5.4 Adaptación del día: detalle (`AdaptacionDia.dc.html`)
 
 - **Para qué:** ver por qué la app propone una versión ligera y elegir cambio por cambio.
@@ -471,6 +473,8 @@ El borde de la pantalla sigue siendo el descanso (hielo, 0:48 en la cabecera, la
   7. "La voz avisa cada minuto y los últimos 10 s; el reloj suma rondas con un toque."
   8. Barra inferior: pausa, **+ 1 ronda** (principal, `ember`) y `more_horiz`. Al acabar el tiempo: "Tiempo" y **Guardar 8 + 12**.
 - **Formatos hermanos que usan esta misma pantalla:** EMOM (cuenta atrás de cada minuto, lo que sobra es descanso), por tiempo con límite (cuenta hacia arriba) y rondas (tiempo total). Cambia el contador y el resultado (`HANDOFF.md` 11.9).
+
+**Alcance implementado en F2-13:** al armar el bloque, si ese nombre y formato ya tienen marca, sale "Marca a superar: 8 + 12" con el trofeo encima de Empezar. Al terminar, una píldora dorada "Nuevo récord" con "Tu marca anterior: 8 + 12" cuando se supera; si no, la marca anterior en texto, o "Primera marca de este bloque". AMRAP gana con más rondas y reps, EMOM con más rondas, por tiempo y rondas con menos tiempo.
 
 ### 7.5 Ficha de ejercicio (`FichaEjercicio.dc.html`)
 

@@ -232,6 +232,7 @@ private fun Setup(state: WodState, languageCode: String, onIntent: (WodIntent) -
             }
         }
     }
+    state.best?.let { com.olarte.ironprogress.ui.progress.FormatBestToBeat(mark(it)) }
     EditorAction(stringResource(Res.string.wod_start), state.canStart, Modifier.fillMaxWidth(), ForjaButtonStyle.PRIMARY) {
         onIntent(WodIntent.Start)
     }
@@ -286,7 +287,8 @@ private fun Running(state: WodState, languageCode: String, onIntent: (WodIntent)
             ForjaNumber(score(wod, state), ForjaTheme.typography.heroFigure.copy(fontSize = 56.sp, lineHeight = 60.sp))
         }
         Column(horizontalAlignment = Alignment.End) {
-            state.best?.let {
+            // Al terminar, la marca anterior sale en la nota del récord, no aquí.
+            state.best?.takeIf { !finished }?.let {
                 Text(stringResource(Res.string.wod_best, mark(it)), style = ForjaTheme.typography.body2, color = colors.text2)
             }
             state.score.paceRounds(wod, state.elapsedSeconds.toLong())?.takeIf { !finished }?.let {
@@ -343,6 +345,8 @@ private fun Running(state: WodState, languageCode: String, onIntent: (WodIntent)
             if (!wod.countsDown) TextAction(stringResource(Res.string.wod_finish), colors.text1) { onIntent(WodIntent.Finish) }
         }
     } else {
+        // Récord por formato (F2-13): la marca de hoy frente a la mejor de este bloque.
+        com.olarte.ironprogress.ui.progress.FormatResultNote(state.isRecord, state.best?.let { mark(it) })
         when {
             state.saved -> Text(stringResource(Res.string.wod_saved), style = ForjaTheme.typography.body2, color = colors.text2)
             else -> {

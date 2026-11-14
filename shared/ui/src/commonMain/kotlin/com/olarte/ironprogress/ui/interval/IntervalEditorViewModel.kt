@@ -26,6 +26,8 @@ data class IntervalEditorState(
     val loading: Boolean = false,
     val saving: Boolean = false,
     val failed: Boolean = false,
+    /** La mejor marca de estos intervalos guardados (F2-13); null si nunca se han hecho. */
+    val best: com.olarte.ironprogress.domain.session.BlockResult.RepsPerRound? = null,
 ) {
     val selected: List<Exercise> get() = template.exerciseIds.mapNotNull { id -> exercises.firstOrNull { it.id == id } }
 }
@@ -54,6 +56,7 @@ class IntervalEditorViewModel(
     ids: IdGenerator,
     private val editingId: String?,
     defaultName: String,
+    private val findBest: com.olarte.ironprogress.domain.interval.FindIntervalBest? = null,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(
         IntervalEditorState(
@@ -75,7 +78,8 @@ class IntervalEditorViewModel(
         viewModelScope.launch {
             val exercises = catalog.observeExercises().first().filter { !it.isArchived }
             val saved = editingId?.let { templates.findTemplate(IntervalTemplateId(it)) }
-            mutableState.update { it.copy(exercises = exercises, template = saved ?: it.template, loading = false) }
+            val best = saved?.let { template -> runCatching { findBest?.invoke(template.name) }.getOrNull() }
+            mutableState.update { it.copy(exercises = exercises, template = saved ?: it.template, loading = false, best = best) }
         }
     }
 

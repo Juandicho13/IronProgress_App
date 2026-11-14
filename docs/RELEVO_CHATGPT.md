@@ -417,3 +417,9 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Regla (propuesta de 11.10, aplicada):** s = porcentaje del músculo ÷ porcentaje del músculo con más porcentaje del ejercicio. Así el principal suma 1 y los rangos de 10 a 20 siguen valiendo. Los ejercicios propios sin porcentajes siguen con primario 1 y secundario 0,5.
 - **Semáforo:** `VolumeStatus` (BELOW, IN_RANGE, ABOVE) con 10 y 20 incluidos en el rango. Colores: hielo, ember y peligro, siempre con la palabra al lado.
 - **Pendiente:** los porcentajes de los 77 son los de F1-06, que Juan todavía revisa; si cambian, las series cambian solas.
+
+## 53. F2-13 · récords por formato, 14 de noviembre de 2026
+
+- **Comparación (`isBetter`):** AMRAP más rondas y a igual rondas más reps; EMOM más rondas; por tiempo y rondas menos segundos; intervalos más reps por ronda de media (`averageReps`, null si todo quedó en 0). `isFormatRecord` exige una marca anterior: la primera vez es "primera marca".
+- **Dónde se busca:** bloques funcionales por nombre y formato en las sesiones FUNCTIONAL (`FindWodBest.of`); intervalos por nombre en las sesiones HIIT (`FindIntervalBest`). La marca se lee antes de guardar la de hoy.
+- **Pantallas:** `FormatBestToBeat` y `FormatResultNote` en `ui/progress/RecordUi.kt`, usadas por el bloque funcional (al armarlo y al terminar) y por los intervalos (editor y fin). Mientras corre el bloque sigue "Tu marca" a la derecha; al terminar no se repite.

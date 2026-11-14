@@ -3,10 +3,12 @@ package com.olarte.ironprogress.ui.interval
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
+import com.olarte.ironprogress.domain.interval.FindIntervalBest
 import com.olarte.ironprogress.domain.interval.IntervalTemplate
 import com.olarte.ironprogress.domain.interval.IntervalTemplateId
 import com.olarte.ironprogress.domain.interval.IntervalTemplateRepository
 import com.olarte.ironprogress.domain.interval.SaveIntervalResult
+import com.olarte.ironprogress.domain.session.BlockResult
 import com.olarte.ironprogress.domain.session.SessionRepository
 import com.olarte.ironprogress.domain.time.SegmentKind
 import com.olarte.ironprogress.domain.time.TimerEdit
@@ -14,6 +16,7 @@ import com.olarte.ironprogress.domain.time.TimerState
 import com.olarte.ironprogress.domain.time.stateAt
 import com.olarte.ironprogress.domain.voice.VoiceLine
 import com.olarte.ironprogress.domain.voice.voiceLinesBetween
+import com.olarte.ironprogress.domain.wod.isFormatRecord
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -39,8 +42,14 @@ data class IntervalRunState(
     val saved: Boolean = false,
     val failed: Boolean = false,
     val notFound: Boolean = false,
+    /** La mejor marca de estos intervalos antes de hoy (F2-13); null la primera vez. */
+    val best: BlockResult.RepsPerRound? = null,
 ) {
     val finished: Boolean get() = timer?.isFinished == true
+
+    /** Al terminar: más reps por ronda de media que la mejor marca anterior. */
+    val isRecord: Boolean
+        get() = finished && saved && isFormatRecord(BlockResult.RepsPerRound(reps.map { it ?: 0 }), best)
 
     /** La ronda que se anota en el descanso: la de trabajo que acaba de terminar. */
     val roundToLog: Int? get() = timer?.takeIf { it.kind == SegmentKind.REST && !it.isFinished }?.round
@@ -78,6 +87,7 @@ class IntervalRunViewModel(
     private val clock: Clock,
     private val templateId: String,
     private val languageCode: String,
+    private val findBest: FindIntervalBest? = null,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(IntervalRunState())
     val state = mutableState.asStateFlow()
@@ -100,7 +110,11 @@ class IntervalRunViewModel(
             val lastTime = template.exerciseIds.distinct().mapNotNull { id ->
                 sessions.previousSets(id).lastOrNull { it.reps != null }?.reps?.let { id.value to it }
             }.toMap()
-            mutableState.update { it.copy(template = template, names = names, lastTime = lastTime, reps = List(template.rounds) { null }) }
+            // La marca se lee antes de guardar la de hoy, para poder compararlas al terminar.
+            val best = runCatching { findBest?.invoke(template.name) }.getOrNull()
+            mutableState.update {
+                it.copy(template = template, names = names, lastTime = lastTime, reps = List(template.rounds) { null }, best = best)
+            }
             start(template)
         }
     }
