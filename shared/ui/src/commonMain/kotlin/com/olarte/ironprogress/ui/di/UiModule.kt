@@ -34,11 +34,12 @@ val uiModule = module {
     viewModel { (id: String) -> com.olarte.ironprogress.ui.summary.SummaryViewModel(get(), get(), get(), id) }
     viewModel { com.olarte.ironprogress.ui.history.HistoryViewModel(get(), get(), get()) }
     viewModel { com.olarte.ironprogress.ui.progress.ProgressViewModel(get(), get(), get()) }
+    viewModel { (id: String) -> com.olarte.ironprogress.ui.progress.ExerciseProgressViewModel(get(), get(), get(), id) }
     viewModel { (id: String) -> com.olarte.ironprogress.ui.history.HistorySessionViewModel(get(), get(), get(), get(), get(), id) }
     viewModel { (id: String?, defaultName: String) ->
-        com.olarte.ironprogress.ui.interval.IntervalEditorViewModel(get(), get(), get(), id, defaultName)
+        com.olarte.ironprogress.ui.interval.IntervalEditorViewModel(get(), get(), get(), id, defaultName, getOrNull())
     }
     viewModel { (id: String, languageCode: String) ->
-        com.olarte.ironprogress.ui.interval.IntervalRunViewModel(get(), get(), get(), get(), get(), id, languageCode)
+        com.olarte.ironprogress.ui.interval.IntervalRunViewModel(get(), get(), get(), get(), get(), id, languageCode, getOrNull())
     }
 }

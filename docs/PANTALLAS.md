@@ -99,6 +99,7 @@ Relojes:
 **Alcance implementado en F2-05:** si el ejercicio está estancado (HANDOFF 11.3), bajo el chip de modo sale una fila tranquila en surface2 con el ícono de progreso en hielo: "Llevas 4 sesiones sin mejorar" (o "Dos sesiones seguidas por debajo de 8 reps") y "Es normal. Toca para ver qué probar". Abre la hoja "Para volver a progresar" con las propuestas numeradas en el orden de las reglas: 1. Descarga hoy (40 % menos series con el mismo peso; quita las pendientes del final y marca la sesión como descarga), 2. Cambiar a 5 a 8 reps (o 10 a 15; cambia la rutina y las series pendientes; no sale en un entreno libre), 3. Cambiar por otro ejercicio (abre el selector de sustituto). "Ahora no" la esconde hasta la próxima sesión. "Revisa tu recuperación" va primero cuando haya días bajos, con el ajuste de F4.
 
 **Alcance implementado en F2-12:** en ejercicios sin peso que subir, la franja de sugerencia propone la escalera: "Pasa a Flexiones declinadas" con "Dos sesiones en el tope: prueba la variante más difícil desde 8 reps" (o la más fácil tras dos sesiones bajo el mínimo) y "Cambiar" a la derecha. Cambiar abre una hoja con "Solo hoy" y, si el entreno viene de una rutina, "Hoy y en la rutina"; lo ya hecho se queda y las series pendientes pasan a la variante en el mínimo del rango. Con una sola sesión en el tope dice "Una sesión más en el tope y pasas a Flexiones declinadas". Si no cambia, sigue con su ejercicio en el tope.
+**Récords en vivo (F2-03):** al completar una serie que bate una marca de otra sesión, baja arriba una franja dorada con el trofeo: "Récord · Press", el tipo ("Fuerza estimada" en el modo básico, "1RM estimado" en el Pro; "Mayor peso", "Más reps con 60 kg" o "Mayor volumen"), la marca nueva y "Antes 80 kg". Sale también sobre el descanso, vibra con el patrón de récord si la vibración está prendida, se anuncia al lector de pantalla y se cierra sola a los 4,5 s o al tocarla. Deshacer la serie quita su récord. La primera vez de un ejercicio no es récord.
 
 ### 1.3 Teclado numérico (`Teclado.dc.html`)
 
@@ -158,6 +159,8 @@ Relojes:
 
 **Alcance implementado en F1-21:** Deslizar para terminar va al final de la lista de Entreno y solo se activa con una serie hecha; con lector de pantalla es un botón. El Resumen muestra la rutina y la fecha, los récords simples (más peso que nunca, o el mismo peso máximo con más reps; la primera vez de un ejercicio no cuenta), duración y volumen comparados con la sesión anterior de la misma rutina (o de la misma disciplina en un entreno libre), cada ejercicio con sus series y el resultado de cada bloque con tiempo. El botón principal es Listo. Compartir llega con F5-07 y el feedback por músculo y las molestias con F2-06.
 
+**Alcance implementado en F2-03:** la tarjeta dorada de Récords lista cada récord de la sesión con el ejercicio, el tipo y la marca a la derecha ("Press · Fuerza estimada · 85 kg"); si un tipo se batió dos veces, sale el último. El volumen muestra el total del ejercicio en la sesión.
+
 ---
 
 ## 2. Progreso, plan y ajuste del día
@@ -171,6 +174,8 @@ Relojes:
 
 **Alcance actual de Progreso:** Músculos muestra las series reales de los últimos 7 días (primario 1, secundario 0,5) con la banda de 10 a 20; sin entrenos, "Aún no hay entrenos". El mapa de recuperación espera a F2-08 y Cuerpo al seguimiento del cuerpo; no se muestran datos de ejemplo.
 
+**Alcance implementado en F2-07:** series efectivas con porcentajes (11.10): cada serie suma a un músculo su porcentaje entre el del músculo principal del ejercicio (press banca: pecho 1, tríceps 0,45, hombro 0,36); sin porcentajes, primario 1 y secundario 0,5. Cada fila lleva semáforo frente al rango de 10 a 20: barra y punto en hielo con "Bajo", en ember con "En rango" y en peligro con "Alto"; el estado siempre va con palabra, no solo con color, y la fila se lee entera con lector de pantalla. La escala llega a 24 para que lo alto se vea por encima de la banda. Pie con el rango y una línea que explica cómo cuentan las series.
+
 **Alcance implementado en F1-23:** el botón Historial de Progreso abre el historial, sin diseño propio en el lienzo y hecho con las piezas de Forja (tarjetas surface1, chips, botones de 48). Arriba, Calendario o Lista. El calendario muestra el mes de lunes a domingo, con los días entrenados en emberVeil y el día elegido en ember; debajo, las sesiones de ese día. La lista trae todas las sesiones terminadas, de la más nueva a la más vieja, con fecha, rutina, duración, volumen y series. Tocar una sesión abre su detalle: tocar una serie la corrige (peso y reps) o la borra, y cada bloque con tiempo se puede borrar. Las sesiones descartadas no salen.
 
 ### 2.2 Ejercicio, historial (`Ejercicio.dc.html`)
@@ -181,6 +186,8 @@ Relojes:
   3. Tarjeta **Récords** con `trophy` en oro: "1RM estimado · Hoy · 85 kg", "Mayor peso · 26 ago · 65 kg × 6", "Más reps con 60 kg · 9 sep · 12".
   4. Tarjeta **Últimas sesiones**: fecha a la izquierda y las series a la derecha ("62,5 × 11, 10, 10, 9").
 - **Nota:** la ficha con músculos y exigencia es otra pantalla (7.5); desde la ficha se llega aquí con "Historial".
+
+**Alcance implementado en F2-04:** se abre desde la ficha ("Ver progreso"), desde Progreso > Ejercicios, desde el menú ⋮ del ejercicio en Entreno y tocando el nombre del ejercicio en una sesión del historial. Barra superior con el nombre y "Progreso". Arriba, centrado, el nombre de la métrica ("Fuerza estimada" con el ícono que la explica, o "1RM estimado" en el Pro), la última marca en grande y el cambio frente a hace 4 semanas. Tarjeta con la métrica (Fuerza estimada, Mejor serie, Volumen; sin peso, Más reps y Reps totales), la gráfica dibujada con Canvas (línea de 2 dp en ember con área al 10 %, rejilla de 1 dp, ejes en text3, el récord de siempre en oro con su etiqueta y el último punto marcado; tocar o arrastrar muestra la línea guía con el valor, la mejor serie y la fecha) y el rango 3 m, 6 m, 1 a y Todo. Debajo, Récords con el trofeo y Últimas sesiones (fecha y series; tocar abre la sesión). Sin series del ejercicio, un estado vacío; nunca datos de ejemplo.
 
 ### 2.3 Plan con un entreno en curso (`Plan.dc.html`)
 
@@ -293,6 +300,8 @@ Las mismas tres pantallas en claro, con los tokens de la columna clara de Forja:
 | En pausa | "En pausa" (solo texto) |
 
 - **Audio:** la voz baja la música mientras habla y la devuelve al terminar (iPhone: `AVAudioSession` con `duckOthers`; Android: foco de audio con atenuación). Voz grabada para las cuentas y las frases fijas; la del sistema para los nombres de ejercicios. Con el teléfono bloqueado sigue en la Live Activity y en los relojes.
+
+**Alcance implementado en F2-13:** al terminar, la marca de hoy en reps por ronda de media frente a la mejor de estos intervalos (mismo nombre): "Nuevo récord" en oro con la marca anterior, la marca anterior en texto o "Primera marca de este bloque". Las vueltas sin reps anotadas no cuentan. Al editar unos intervalos guardados sale "Marca a superar: 11,3 reps por ronda".
 
 ### 5.4 Adaptación del día: detalle (`AdaptacionDia.dc.html`)
 
@@ -469,6 +478,8 @@ El borde de la pantalla sigue siendo el descanso (hielo, 0:48 en la cabecera, la
   7. "La voz avisa cada minuto y los últimos 10 s; el reloj suma rondas con un toque."
   8. Barra inferior: pausa, **+ 1 ronda** (principal, `ember`) y `more_horiz`. Al acabar el tiempo: "Tiempo" y **Guardar 8 + 12**.
 - **Formatos hermanos que usan esta misma pantalla:** EMOM (cuenta atrás de cada minuto, lo que sobra es descanso), por tiempo con límite (cuenta hacia arriba) y rondas (tiempo total). Cambia el contador y el resultado (`HANDOFF.md` 11.9).
+
+**Alcance implementado en F2-13:** al armar el bloque, si ese nombre y formato ya tienen marca, sale "Marca a superar: 8 + 12" con el trofeo encima de Empezar. Al terminar, una píldora dorada "Nuevo récord" con "Tu marca anterior: 8 + 12" cuando se supera; si no, la marca anterior en texto, o "Primera marca de este bloque". AMRAP gana con más rondas y reps, EMOM con más rondas, por tiempo y rondas con menos tiempo.
 
 ### 7.5 Ficha de ejercicio (`FichaEjercicio.dc.html`)
 

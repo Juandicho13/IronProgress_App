@@ -182,6 +182,7 @@ fun IronProgressApp() {
                     WorkoutEffect.RestTick -> haptics.restCountdownTick()
                     WorkoutEffect.RestFinished -> haptics.restFinished()
                     WorkoutEffect.SetCompleted -> haptics.setCompleted()
+                    is WorkoutEffect.Record -> haptics.personalRecord()
                     is WorkoutEffect.Finished -> {
                         backStack.removeAll { it is Route.Workout }
                         backStack.add(Route.Summary(effect.sessionId))
@@ -233,7 +234,7 @@ fun IronProgressApp() {
                 entryProvider = entryProvider {
                     entry<Route.Workout> {
                         CompositionLocalProvider(LocalForjaHazeState provides hazeState) {
-                            WorkoutRoute(workoutViewModel, onMinimize = {
+                            WorkoutRoute(workoutViewModel, onOpenProgress = { backStack.add(Route.ExerciseProgress(it)) }, onMinimize = {
                                 // Un entreno libre sin ningún ejercicio no se deja abierto: salir lo descarta.
                                 if (workoutState.session?.exercises?.isEmpty() == true) workoutViewModel.onIntent(WorkoutIntent.Cancel)
                                 backStack.removeAll { it is Route.Workout }
@@ -265,6 +266,15 @@ fun IronProgressApp() {
                             languageCode = languageCode,
                             onBack = { backStack.removeLastOrNull() },
                             onOpen = { backStack.add(Route.ExerciseDetail(it)) },
+                            onProgress = { backStack.add(Route.ExerciseProgress(it)) },
+                        )
+                    }
+                    entry<Route.ExerciseProgress> { route ->
+                        com.olarte.ironprogress.ui.progress.ExerciseProgressRoute(
+                            route.id,
+                            languageCode = languageCode,
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenSession = { backStack.add(Route.HistorySession(it)) },
                         )
                     }
 
@@ -332,6 +342,7 @@ fun IronProgressApp() {
                             route.sessionId,
                             languageCode,
                             onBack = { backStack.removeLastOrNull() },
+                            onOpenExercise = { backStack.add(Route.ExerciseProgress(it)) },
                         )
                     }
                     entry<Route.Disciplines> {
@@ -386,6 +397,7 @@ fun IronProgressApp() {
                             onCatalogIntent = viewModel::onIntent,
                             catalogListState = catalogListState,
                             onHistory = { backStack.add(Route.History) },
+                            onOpenExercise = { backStack.add(Route.ExerciseProgress(it)) },
                             model = progressViewModel,
                         )
                     }
@@ -394,6 +406,7 @@ fun IronProgressApp() {
 
             val isFullScreen = currentDestination is Route.ExerciseEditor ||
                 currentDestination is Route.ExerciseDetail ||
+                currentDestination is Route.ExerciseProgress ||
                 currentDestination is Route.IntervalEditor ||
                 currentDestination is Route.IntervalRun ||
                 currentDestination is Route.Wod ||
@@ -493,6 +506,7 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     is Route.Summary -> ForjaTab.TODAY
     Route.History -> ForjaTab.PROGRESS
     is Route.HistorySession -> ForjaTab.PROGRESS
+    is Route.ExerciseProgress -> ForjaTab.PROGRESS
     Route.Settings -> ForjaTab.TODAY
     Route.Backup -> ForjaTab.TODAY
     Route.Disciplines -> ForjaTab.PLAN

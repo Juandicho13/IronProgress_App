@@ -4,6 +4,7 @@ import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.WeightUnit
+import com.olarte.ironprogress.domain.progress.RecordHit
 import com.olarte.ironprogress.domain.progression.Stagnation
 import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.SetType
@@ -68,6 +69,8 @@ data class WorkoutState(
     val stagnation: Map<SessionExerciseId, Stagnation> = emptyMap(),
     /** Los que se cerraron con "Ahora no": no vuelven a salir en esta sesión. */
     val stagnationDismissed: Set<SessionExerciseId> = emptySet(),
+    /** Récord recién batido que se está mostrando (F2-03); null sin aviso. */
+    val record: RecordHit? = null,
 ) {
     /** Unidad con la que se ve y se escribe el peso de un ejercicio de la sesión. */
     fun unitOf(id: SessionExerciseId?): WeightUnit {
@@ -167,6 +170,9 @@ sealed interface WorkoutIntent {
      * Con [inRoutine] también la cambia en la rutina.
      */
     data class ApplyLadder(val id: SessionExerciseId, val inRoutine: Boolean) : WorkoutIntent
+
+    /** Cierra el aviso de récord antes de tiempo. */
+    data object DismissRecord : WorkoutIntent
 }
 
 sealed interface WorkoutEffect {
@@ -178,4 +184,7 @@ sealed interface WorkoutEffect {
 
     /** La sesión se descartó (cancelada o terminada sin ninguna serie hecha): se vuelve a Hoy. */
     data object Discarded : WorkoutEffect
+
+    /** Se batió un récord al completar una serie: vibración de récord (F2-03). */
+    data class Record(val hit: RecordHit) : WorkoutEffect
 }

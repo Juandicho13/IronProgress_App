@@ -69,5 +69,11 @@ class WodTest {
         assertFalse(isBetter(BlockResult.RoundsAndReps(7, 40), BlockResult.RoundsAndReps(8, 0)))
         assertTrue(isBetter(BlockResult.Time(400), BlockResult.Time(431)))
         assertTrue(isBetter(BlockResult.Rounds(10), null))
+        // Intervalos: más reps por ronda de media; las vueltas sin anotar no ganan.
+        assertTrue(isBetter(BlockResult.RepsPerRound(listOf(12, 11, 11)), BlockResult.RepsPerRound(listOf(10, 10, 11, 11))))
+        assertFalse(isBetter(BlockResult.RepsPerRound(listOf(0, 0)), BlockResult.RepsPerRound(listOf(5))))
+        assertFalse(isFormatRecord(BlockResult.Time(300), null))
+        assertTrue(isFormatRecord(BlockResult.Time(300), BlockResult.Time(301)))
+        assertFalse(isFormatRecord(BlockResult.Time(301), BlockResult.Time(301)))
     }
 }

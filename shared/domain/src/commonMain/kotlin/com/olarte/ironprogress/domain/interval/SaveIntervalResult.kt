@@ -14,6 +14,9 @@ import com.olarte.ironprogress.domain.session.SessionStatus
 import com.olarte.ironprogress.domain.session.WorkoutSession
 import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.domain.session.WorkoutSetId
+import com.olarte.ironprogress.domain.wod.averageReps
+import com.olarte.ironprogress.domain.wod.isBetter
+import kotlinx.coroutines.flow.first
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -69,5 +72,23 @@ class SaveIntervalResult(private val sessions: SessionRepository, private val id
             )
         }
         return session.id
+    }
+}
+
+/**
+ * La mejor marca de unos intervalos con el mismo nombre (F2-13): las reps por ronda más altas de
+ * media. Las vueltas sin reps anotadas no cuentan.
+ */
+class FindIntervalBest(private val sessions: SessionRepository) {
+    suspend operator fun invoke(name: String): BlockResult.RepsPerRound? {
+        var best: BlockResult.RepsPerRound? = null
+        for (session in sessions.observeFinishedSessions().first()) {
+            if (session.discipline != Discipline.HIIT || session.notes != name) continue
+            val result = sessions.findSession(session.id)?.blocks
+                ?.firstOrNull { it.format == BlockFormat.INTERVALS }?.result as? BlockResult.RepsPerRound ?: continue
+            if (result.averageReps == null) continue
+            if (isBetter(result, best)) best = result
+        }
+        return best
     }
 }

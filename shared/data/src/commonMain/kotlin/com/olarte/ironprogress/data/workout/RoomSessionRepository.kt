@@ -2,6 +2,7 @@ package com.olarte.ironprogress.data.workout
 
 import com.olarte.ironprogress.data.local.SessionDao
 import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.progress.ExerciseHistoryEntry
 import com.olarte.ironprogress.domain.session.SessionBlock
 import com.olarte.ironprogress.domain.session.SessionBlockId
 import com.olarte.ironprogress.domain.session.SessionDetail
@@ -80,6 +81,13 @@ class RoomSessionRepository(private val dao: SessionDao, private val clock: Cloc
     }
 
     override suspend fun previousSets(exerciseId: ExerciseId): List<WorkoutSet> = dao.previousSets(exerciseId.value).map { it.toDomain() }
+
+    override suspend fun exerciseHistory(exerciseId: ExerciseId): List<ExerciseHistoryEntry> =
+        dao.exerciseHistory(exerciseId.value).mapNotNull { row ->
+            val set = row.set.toDomain()
+            val at = set.completedAt ?: return@mapNotNull null
+            ExerciseHistoryEntry(SessionId(row.sessionId), at, set)
+        }
 
     override suspend fun saveSession(session: WorkoutSession) {
         val now = now()

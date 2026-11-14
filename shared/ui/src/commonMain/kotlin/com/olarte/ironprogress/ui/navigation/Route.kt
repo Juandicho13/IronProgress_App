@@ -46,6 +46,9 @@ sealed interface Route : NavKey {
     @Serializable data class Flow(val id: String) : Route
 
     @Serializable data object Breathing : Route
+
+    /** Progreso de un ejercicio: gráficas, récords y últimas sesiones (F2-04). */
+    @Serializable data class ExerciseProgress(val id: String) : Route
 }
 
 /**
@@ -74,6 +77,7 @@ val navConfiguration = SavedStateConfiguration {
             subclass(Route.Disciplines::class, Route.Disciplines.serializer())
             subclass(Route.Flow::class, Route.Flow.serializer())
             subclass(Route.Breathing::class, Route.Breathing.serializer())
+            subclass(Route.ExerciseProgress::class, Route.ExerciseProgress.serializer())
         }
     }
 }

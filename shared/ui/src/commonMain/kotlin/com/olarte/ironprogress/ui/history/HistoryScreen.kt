@@ -45,6 +45,7 @@ import com.olarte.ironprogress.ui.format.Formats
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.interval.TextAction
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.exercise_progress_open
 import com.olarte.ironprogress.ui.resources.history_back
 import com.olarte.ironprogress.ui.resources.history_calendar
 import com.olarte.ironprogress.ui.resources.history_cancel
@@ -262,15 +263,21 @@ private fun Chip(text: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-fun HistorySessionRoute(sessionId: String, languageCode: String, onBack: () -> Unit) {
+fun HistorySessionRoute(sessionId: String, languageCode: String, onBack: () -> Unit, onOpenExercise: (String) -> Unit = {}) {
     val model = koinViewModel<HistorySessionViewModel>(key = "history-$sessionId") { parametersOf(sessionId) }
     val state by model.state.collectAsStateWithLifecycle()
-    HistorySessionScreen(state, languageCode, model::onIntent, onBack)
+    HistorySessionScreen(state, languageCode, model::onIntent, onBack, onOpenExercise)
 }
 
 /** Una sesión pasada: tocar una serie la corrige o la borra; cada bloque con tiempo se puede borrar. */
 @Composable
-fun HistorySessionScreen(state: HistorySessionState, languageCode: String, onIntent: (HistorySessionIntent) -> Unit, onBack: () -> Unit) {
+fun HistorySessionScreen(
+    state: HistorySessionState,
+    languageCode: String,
+    onIntent: (HistorySessionIntent) -> Unit,
+    onBack: () -> Unit,
+    onOpenExercise: (String) -> Unit = {},
+) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val formats = rememberFormats()
@@ -303,7 +310,28 @@ fun HistorySessionScreen(state: HistorySessionState, languageCode: String, onInt
                             }
                         }
                         exercises.forEach { exercise ->
-                            Text(state.exerciseName(exercise.exerciseId, languageCode), style = typography.body, color = colors.text1)
+                            // El nombre abre el progreso del ejercicio (F2-04).
+                            Row(
+                                Modifier.fillMaxWidth().heightIn(min = 48.dp).clip(RoundedCornerShape(12.dp))
+                                    .clickable(role = androidx.compose.ui.semantics.Role.Button) {
+                                        onOpenExercise(exercise.exerciseId.value)
+                                    }
+                                    .padding(horizontal = ForjaSpacing.esp2),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    state.exerciseName(exercise.exerciseId, languageCode),
+                                    Modifier.weight(1f),
+                                    style = typography.body,
+                                    color = colors.text1,
+                                )
+                                androidx.compose.material3.Icon(
+                                    com.olarte.ironprogress.ui.components.ForjaIcons.MonitoringOutline,
+                                    contentDescription = stringResource(Res.string.exercise_progress_open),
+                                    tint = colors.text3,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
                             detail.setsOf(exercise.id).forEach { set ->
                                 val values = listOfNotNull(
                                     set.weightKg?.let { formats.weight(it) },

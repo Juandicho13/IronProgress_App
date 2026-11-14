@@ -10,7 +10,7 @@ import com.olarte.ironprogress.domain.session.SessionRepository
 
 /** Las últimas veces que se hizo un ejercicio, con las descargas marcadas, de la más reciente a la más antigua. */
 suspend fun SessionRepository.performances(exerciseId: ExerciseId, limit: Int = 8): List<PastPerformance> =
-    exerciseHistory(exerciseId, limit).map { sets -> PastPerformance(sets, deload = sets.any { it.suggestionRecord?.deload == true }) }
+    recentPerformances(exerciseId, limit).map { sets -> PastPerformance(sets, deload = sets.any { it.suggestionRecord?.deload == true }) }
 
 /** El rango de las series de trabajo de una rutina: el de la primera que lo tenga. */
 fun List<SetTemplate>.workingRange(): RepRange {

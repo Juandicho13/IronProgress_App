@@ -39,10 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.time.SegmentKind
+import com.olarte.ironprogress.domain.wod.averageReps
 import com.olarte.ironprogress.ui.a11y.timerPhase
 import com.olarte.ironprogress.ui.components.ForjaMoreIcons
 import com.olarte.ironprogress.ui.components.ForjaNumber
+import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.interval_best_per_round
 import com.olarte.ironprogress.ui.resources.interval_breathe
 import com.olarte.ironprogress.ui.resources.interval_close
 import com.olarte.ironprogress.ui.resources.interval_default_hint
@@ -343,6 +346,10 @@ private fun Finished(state: IntervalRunState) {
             color = colors.text1,
         )
     }
+    // Récord por formato (F2-13): reps por ronda de media frente a la mejor marca.
+    if (state.saved) {
+        com.olarte.ironprogress.ui.progress.FormatResultNote(state.isRecord, state.best?.let { perRound(it) })
+    }
     when {
         state.saved -> Text(stringResource(Res.string.interval_saved), style = ForjaTheme.typography.caption, color = colors.text2)
         state.failed -> Text(
@@ -354,3 +361,10 @@ private fun Finished(state: IntervalRunState) {
 }
 
 private const val SUBTITLE_MS = 2_600L
+
+/** "11,3 reps por ronda": la media de una marca de intervalos. */
+@Composable
+internal fun perRound(result: com.olarte.ironprogress.domain.session.BlockResult.RepsPerRound): String {
+    val average = result.averageReps ?: 0.0
+    return stringResource(Res.string.interval_best_per_round, rememberFormats().number(average, 1))
+}

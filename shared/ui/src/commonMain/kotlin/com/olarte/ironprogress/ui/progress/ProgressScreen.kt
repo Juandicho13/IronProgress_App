@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -37,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olarte.ironprogress.domain.catalog.Muscle
 import com.olarte.ironprogress.domain.progress.MuscleSets
+import com.olarte.ironprogress.domain.progress.VolumeStatus
 import com.olarte.ironprogress.ui.catalog.CatalogIntent
 import com.olarte.ironprogress.ui.catalog.CatalogScreen
 import com.olarte.ironprogress.ui.catalog.CatalogState
@@ -46,10 +50,16 @@ import com.olarte.ironprogress.ui.components.ForjaCard
 import com.olarte.ironprogress.ui.components.ForjaEmptyState
 import com.olarte.ironprogress.ui.components.ForjaHeaderTop
 import com.olarte.ironprogress.ui.components.ForjaLargeTitle
+import com.olarte.ironprogress.ui.components.ForjaNumber
 import com.olarte.ironprogress.ui.format.rememberFormats
 import com.olarte.ironprogress.ui.label
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.editor_loading
+import com.olarte.ironprogress.ui.resources.muscle_row_a11y
+import com.olarte.ironprogress.ui.resources.muscle_sets_effective_hint
+import com.olarte.ironprogress.ui.resources.muscle_status_above
+import com.olarte.ironprogress.ui.resources.muscle_status_below
+import com.olarte.ironprogress.ui.resources.muscle_status_in_range
 import com.olarte.ironprogress.ui.resources.nav_progress
 import com.olarte.ironprogress.ui.resources.progress_body_body
 import com.olarte.ironprogress.ui.resources.progress_body_title
@@ -57,7 +67,6 @@ import com.olarte.ironprogress.ui.resources.progress_empty_body
 import com.olarte.ironprogress.ui.resources.progress_empty_title
 import com.olarte.ironprogress.ui.resources.progress_history
 import com.olarte.ironprogress.ui.resources.progress_last7
-import com.olarte.ironprogress.ui.resources.progress_low
 import com.olarte.ironprogress.ui.resources.progress_seg_body
 import com.olarte.ironprogress.ui.resources.progress_seg_exercises
 import com.olarte.ironprogress.ui.resources.progress_seg_muscles
@@ -77,10 +86,11 @@ fun ProgressRoute(
     onCatalogIntent: (CatalogIntent) -> Unit,
     catalogListState: LazyListState,
     onHistory: () -> Unit,
+    onOpenExercise: (String) -> Unit = {},
     model: ProgressViewModel = koinViewModel(),
 ) {
     val state by model.state.collectAsStateWithLifecycle()
-    ProgressScreen(state, listState, catalogState, languageCode, onCatalogIntent, catalogListState, onHistory)
+    ProgressScreen(state, listState, catalogState, languageCode, onCatalogIntent, catalogListState, onHistory, onOpenExercise)
 }
 
 /**
@@ -97,6 +107,7 @@ fun ProgressScreen(
     onCatalogIntent: (CatalogIntent) -> Unit,
     catalogListState: LazyListState,
     onHistory: () -> Unit,
+    onOpenExercise: (String) -> Unit = {},
 ) {
     val colors = ForjaTheme.colors
     val haptics = ForjaTheme.haptics
@@ -124,7 +135,14 @@ fun ProgressScreen(
             Column(Modifier.padding(horizontal = ForjaSpacing.esp5).padding(top = ForjaHeaderTop, bottom = ForjaSpacing.esp2)) {
                 header()
             }
-            CatalogScreen(state = catalogState, languageCode = languageCode, onIntent = onCatalogIntent, listState = catalogListState)
+            // En Progreso, tocar un ejercicio abre su progreso (F2-04); la ficha sale del buscador.
+            CatalogScreen(
+                state = catalogState,
+                languageCode = languageCode,
+                onIntent = onCatalogIntent,
+                listState = catalogListState,
+                onOpen = onOpenExercise,
+            )
         }
         return
     }
@@ -174,37 +192,67 @@ private fun MuscleSetsCard(state: ProgressState) {
         }
         state.sets.forEach { (muscle, sets) -> MuscleRow(muscle, sets, formats.number(sets, 1)) }
         Text(stringResource(Res.string.progress_target), style = typography.label, color = colors.text2)
+        Text(stringResource(Res.string.muscle_sets_effective_hint), style = typography.caption, color = colors.text3)
     }
 }
 
+/** Color de la barra y del punto según el rango: bajo en hielo, en rango en ember, alto en peligro. */
+@Composable
+private fun VolumeStatus.color(): Color = when (this) {
+    VolumeStatus.BELOW -> ForjaTheme.colors.ice
+    VolumeStatus.IN_RANGE -> ForjaTheme.colors.ember
+    VolumeStatus.ABOVE -> ForjaTheme.colors.danger
+}
+
+@Composable
+private fun VolumeStatus.label(): String = stringResource(
+    when (this) {
+        VolumeStatus.BELOW -> Res.string.muscle_status_below
+        VolumeStatus.IN_RANGE -> Res.string.muscle_status_in_range
+        VolumeStatus.ABOVE -> Res.string.muscle_status_above
+    },
+)
+
+/**
+ * Una fila de series efectivas (F2-07): el músculo, la barra sobre la banda del rango (10 a 20) y el
+ * número con su semáforo. El estado va con palabra y punto, nunca solo con color.
+ */
 @Composable
 private fun MuscleRow(muscle: Muscle, sets: Double, shown: String) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
-    val max = MuscleSets.TARGET_MAX.toFloat()
+    val status = MuscleSets.status(sets)
+    // La escala llega a 24 para que "alto" se vea por encima de la banda.
+    val max = (MuscleSets.TARGET_MAX + 4).toFloat()
+    val name = muscle.label()
+    val statusLabel = status.label()
+    val description = stringResource(Res.string.muscle_row_a11y, name, shown, statusLabel)
     Row(
-        Modifier.fillMaxWidth(),
+        Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp2),
     ) {
-        Text(muscle.label(), Modifier.width(96.dp), style = typography.body2, color = colors.text1)
+        Text(name, Modifier.width(92.dp), style = typography.body2, color = colors.text1, maxLines = 1)
         Box(Modifier.weight(1f).height(20.dp), contentAlignment = Alignment.CenterStart) {
-            // Banda del rango objetivo: de 10 a 20 series, la mitad derecha.
+            // Banda del rango objetivo: de 10 a 20 series.
             Row(Modifier.fillMaxSize()) {
                 Spacer(Modifier.weight(MuscleSets.TARGET_MIN.toFloat()))
                 Box(
-                    Modifier.weight(max - MuscleSets.TARGET_MIN).fillMaxHeight().clip(RoundedCornerShape(4.dp)).background(colors.surface3),
+                    Modifier.weight((MuscleSets.TARGET_MAX - MuscleSets.TARGET_MIN).toFloat()).fillMaxHeight()
+                        .clip(RoundedCornerShape(4.dp)).background(colors.surface3),
                 )
+                Spacer(Modifier.weight(max - MuscleSets.TARGET_MAX))
             }
             Box(
                 Modifier.fillMaxWidth((sets.toFloat() / max).coerceIn(0.04f, 1f)).height(12.dp)
-                    .clip(RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp)).background(colors.ember),
+                    .clip(RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp)).background(status.color()),
             )
         }
-        Row(Modifier.width(64.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-            Text(shown, style = typography.smallFigure, color = colors.text1, textAlign = TextAlign.End)
-            if (sets < MuscleSets.TARGET_MIN) {
-                Text(" " + stringResource(Res.string.progress_low), style = typography.label, color = colors.text3)
+        Column(Modifier.width(76.dp), horizontalAlignment = Alignment.End) {
+            ForjaNumber(shown, typography.smallFigure, color = colors.text1, textAlign = TextAlign.End)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Box(Modifier.size(8.dp).clip(CircleShape).background(status.color()))
+                Text(statusLabel, style = typography.caption, color = colors.text2, maxLines = 1)
             }
         }
     }

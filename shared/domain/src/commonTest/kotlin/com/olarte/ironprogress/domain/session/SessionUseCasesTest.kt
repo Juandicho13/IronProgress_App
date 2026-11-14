@@ -300,10 +300,10 @@ class SessionUseCasesTest {
             EndSession(repo, clock)(detail.session)
             clock.now += 5.minutes
         }
-        val history = repo.exerciseHistory(ExerciseId("bench-press"))
+        val history = repo.recentPerformances(ExerciseId("bench-press"))
         assertEquals(listOf(52.0, 51.0, 50.0), history.map { it.single().weightKg })
-        assertEquals(2, repo.exerciseHistory(ExerciseId("bench-press"), limit = 2).size)
-        assertEquals(emptyList(), repo.exerciseHistory(ExerciseId("barbell-row")))
+        assertEquals(2, repo.recentPerformances(ExerciseId("bench-press"), limit = 2).size)
+        assertEquals(emptyList(), repo.recentPerformances(ExerciseId("barbell-row")))
     }
 
     @Test

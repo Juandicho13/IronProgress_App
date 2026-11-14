@@ -81,7 +81,7 @@ data class WodScore(val rounds: Int = 0, val movementsDone: Int = 0) {
 
 /**
  * ¿Es [candidate] mejor marca que [best]? AMRAP y EMOM: más rondas (y más reps). Por tiempo y
- * rondas: menos segundos.
+ * rondas: menos segundos. Intervalos: más reps por ronda de media.
  */
 fun isBetter(candidate: BlockResult, best: BlockResult?): Boolean = when {
     best == null -> true
@@ -89,5 +89,20 @@ fun isBetter(candidate: BlockResult, best: BlockResult?): Boolean = when {
         candidate.rounds > best.rounds || (candidate.rounds == best.rounds && candidate.reps > best.reps)
     candidate is BlockResult.Rounds && best is BlockResult.Rounds -> candidate.rounds > best.rounds
     candidate is BlockResult.Time && best is BlockResult.Time -> candidate.seconds < best.seconds
+    candidate is BlockResult.RepsPerRound && best is BlockResult.RepsPerRound -> {
+        val mine = candidate.averageReps
+        val theirs = best.averageReps
+        mine != null && (theirs == null || mine > theirs + 1e-9)
+    }
     else -> false
 }
+
+/** Reps medias por ronda de unos intervalos; null si no se anotó ninguna (todo en 0). */
+val BlockResult.RepsPerRound.averageReps: Double?
+    get() = reps.takeIf { list -> list.isNotEmpty() && list.any { it > 0 } }?.let { it.sum().toDouble() / it.size }
+
+/**
+ * Récord por formato (F2-13): [result] supera una marca anterior. La primera vez no es récord; es
+ * la primera marca.
+ */
+fun isFormatRecord(result: BlockResult, previousBest: BlockResult?): Boolean = previousBest != null && isBetter(result, previousBest)

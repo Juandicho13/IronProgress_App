@@ -141,6 +141,31 @@ class RoomWorkoutRepositoryTest {
     }
 
     @Test
+    fun exerciseHistoryReadsOnlyFinishedSessionsOldestFirst() = runTest {
+        val routine = CreateRoutine(routines, ids)("Torso").let {
+            it.addExercise(ids, it.blocks.single().id, ExerciseId("bench"), sets = 2)
+        }
+        val first = StartSession(sessions, ids, clock)(routine)
+        CompleteSet(sessions, clock)(first.sets[0].copy(weightKg = 60.0, reps = 10))
+        EndSession(sessions, clock)(first.session)
+        clock.now += 1.minutes
+        val discarded = StartSession(sessions, ids, clock)(routine)
+        CompleteSet(sessions, clock)(discarded.sets[0].copy(weightKg = 100.0, reps = 1))
+        EndSession(sessions, clock)(discarded.session, discard = true)
+        clock.now += 1.minutes
+        val second = StartSession(sessions, ids, clock)(routine)
+        CompleteSet(sessions, clock)(second.sets[0].copy(weightKg = 62.5, reps = 8))
+        clock.now += 1.minutes
+        CompleteSet(sessions, clock)(second.sets[1].copy(weightKg = 62.5, reps = 7))
+        EndSession(sessions, clock)(second.session)
+
+        val history = sessions.exerciseHistory(ExerciseId("bench"))
+        assertEquals(listOf(60.0, 62.5, 62.5), history.map { it.set.weightKg })
+        assertEquals(listOf(first.session.id, second.session.id, second.session.id), history.map { it.sessionId })
+        assertEquals(history.sortedBy { it.at }, history)
+    }
+
+    @Test
     fun pastSetsAreEditedAndBlocksDeletedInTheHistory() = runTest {
         val routine = CreateRoutine(routines, ids)("Torso").let {
             it.addExercise(ids, it.blocks.single().id, ExerciseId("bench"), sets = 2)

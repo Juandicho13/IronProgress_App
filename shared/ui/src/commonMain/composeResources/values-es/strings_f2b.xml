@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- F2-03: récords -->
+    <string name="record_title">Récord</string>
+    <string name="record_kind_strength">Fuerza estimada</string>
+    <string name="record_kind_one_rm">1RM estimado</string>
+    <string name="record_kind_heaviest">Mayor peso</string>
+    <string name="record_kind_reps_with">Más reps con %1$s</string>
+    <string name="record_kind_reps">Más reps</string>
+    <string name="record_kind_volume">Mayor volumen</string>
+    <string name="record_previous">Antes %1$s</string>
+    <string name="record_banner_a11y">Récord: %1$s, %2$s</string>
+    <string name="record_dismiss">Cerrar el aviso de récord</string>
+    <string name="record_strength_info_title">Fuerza estimada</string>
+    <string name="record_strength_info_body">Es el peso que podrías levantar una sola vez, calculado con tus series. No hace falta probarlo: sale del peso, las reps y las que te quedaban.</string>
+    <string name="record_one_rm_info_body">1RM estimado con Epley y el RIR sumado: peso × (1 + (reps + RIR) ÷ 30). Solo se calcula si reps + RIR no pasa de 12.</string>
+    <plurals name="record_reps_value">
+        <item quantity="one">%1$d rep</item>
+        <item quantity="other">%1$d reps</item>
+    </plurals>
+    <plurals name="summary_records_count">
+        <item quantity="one">%1$d récord</item>
+        <item quantity="other">%1$d récords</item>
+    </plurals>
+
+    <!-- F2-04: progreso de un ejercicio -->
+    <string name="exercise_progress_title">Progreso</string>
+    <string name="exercise_progress_open">Ver progreso</string>
+    <string name="exercise_progress_open_hint">Gráficas, récords y tus últimas sesiones</string>
+    <string name="exercise_progress_metric_best_set">Mejor serie</string>
+    <string name="exercise_progress_metric_volume">Volumen</string>
+    <string name="exercise_progress_metric_reps">Más reps</string>
+    <string name="exercise_progress_metric_total_reps">Reps totales</string>
+    <string name="exercise_progress_range_3m">3 m</string>
+    <string name="exercise_progress_range_6m">6 m</string>
+    <string name="exercise_progress_range_1y">1 a</string>
+    <string name="exercise_progress_range_all">Todo</string>
+    <string name="exercise_progress_vs_4w">%1$s frente a hace 4 semanas</string>
+    <string name="exercise_progress_same_4w">Igual que hace 4 semanas</string>
+    <string name="exercise_progress_records">Récords</string>
+    <string name="exercise_progress_sessions">Últimas sesiones</string>
+    <string name="exercise_progress_empty_title">Aún no hay series de este ejercicio</string>
+    <string name="exercise_progress_empty_body">Cuando lo entrenes, aquí verás cómo progresas y tus récords.</string>
+    <string name="exercise_progress_range_empty">Sin sesiones en este rango</string>
+    <string name="exercise_progress_one_point">Con una sesión más ya verás la línea.</string>
+    <string name="exercise_progress_chart_a11y">Gráfica de %1$s: %2$d sesiones, la última %3$s el %4$s, la más alta %5$s.</string>
+    <string name="exercise_progress_record_point">Récord %1$s</string>
+    <string name="exercise_progress_info">Qué es</string>
+    <string name="month_short_1">ene</string>
+    <string name="month_short_2">feb</string>
+    <string name="month_short_3">mar</string>
+    <string name="month_short_4">abr</string>
+    <string name="month_short_5">may</string>
+    <string name="month_short_6">jun</string>
+    <string name="month_short_7">jul</string>
+    <string name="month_short_8">ago</string>
+    <string name="month_short_9">sep</string>
+    <string name="month_short_10">oct</string>
+    <string name="month_short_11">nov</string>
+    <string name="month_short_12">dic</string>
+    <string name="day_month">%1$d %2$s</string>
+
+    <!-- F2-07: series efectivas -->
+    <string name="muscle_status_below">Bajo</string>
+    <string name="muscle_status_in_range">En rango</string>
+    <string name="muscle_status_above">Alto</string>
+    <string name="muscle_sets_effective_hint">El músculo principal de cada ejercicio suma 1 serie; los que ayudan suman su parte.</string>
+    <string name="muscle_row_a11y">%1$s: %2$s series, %3$s</string>
+
+    <!-- F2-13: récords por formato -->
+    <string name="format_record_new">Nuevo récord</string>
+    <string name="format_record_first">Primera marca de este bloque</string>
+    <string name="format_record_to_beat">Marca a superar: %1$s</string>
+    <string name="format_record_previous">Tu marca anterior: %1$s</string>
+    <string name="interval_best_per_round">%1$s reps por ronda</string>
+</resources>

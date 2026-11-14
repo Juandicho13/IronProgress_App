@@ -7,6 +7,7 @@ import com.olarte.ironprogress.domain.catalog.ExerciseRepository
 import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.common.IdGenerator
+import com.olarte.ironprogress.domain.progress.DetectRecords
 import com.olarte.ironprogress.domain.progression.RepRange
 import com.olarte.ironprogress.domain.progression.StagnationDetector
 import com.olarte.ironprogress.domain.progression.carryWeightForward
@@ -72,6 +73,8 @@ class WorkoutViewModel(
     /** Aviso local del fin del descanso en iPhone (F1-15); en Android lo hace el servicio de F1-14. */
     private val restNotifications: RestNotifications = RestNotifications { },
     val restController: RestController = RestController(),
+    /** Récords al completar una serie (F2-03); la Live Activity los tomará de aquí (F2-15). */
+    private val detectRecords: DetectRecords = DetectRecords(sessions),
 ) : ViewModel() {
     private var notifiedDeadline: Long? = null
 
@@ -94,6 +97,7 @@ class WorkoutViewModel(
     private val completing = mutableSetOf<WorkoutSetId>()
     private var undoJob: Job? = null
     private var highlightJob: Job? = null
+    private var recordJob: Job? = null
     private var undoExpiresAt = 0L
     private var lastRestFrameMs = 0L
 
@@ -431,7 +435,9 @@ class WorkoutViewModel(
                 val id = state.value.undoSetId ?: return
                 if (clock.now().toEpochMilliseconds() > undoExpiresAt) return
                 undoJob?.cancel()
-                mutableState.update { it.copy(undoSetId = null) }
+                // Deshacer la serie también quita su récord: ya no cuenta.
+                if (state.value.record?.setId == id) recordJob?.cancel()
+                mutableState.update { it.copy(undoSetId = null, record = it.record?.takeIf { hit -> hit.setId != id }) }
                 edit(id) { it.copy(completedAt = null) }
                 if (state.value.rest?.setId == id) {
                     mutableState.update { it.copy(rest = null, restExpanded = false) }
@@ -451,6 +457,10 @@ class WorkoutViewModel(
             is WorkoutIntent.ApplySuggestion -> edit(intent.id) { set ->
                 val record = set.suggestionRecord ?: return@edit set
                 set.copy(weightKg = record.weightKg ?: set.weightKg, reps = record.reps ?: set.reps)
+            }
+            WorkoutIntent.DismissRecord -> {
+                recordJob?.cancel()
+                mutableState.update { it.copy(record = null) }
             }
             is WorkoutIntent.ChangeType -> edit(intent.id) { it.copy(setType = intent.type) }
             is WorkoutIntent.ChangeNote -> edit(intent.id) { it.copy(notes = intent.note) }
@@ -740,6 +750,7 @@ class WorkoutViewModel(
                 )
             }
             effectChannel.send(WorkoutEffect.SetCompleted)
+            announceRecords(after, id)
             undoJob?.cancel()
             undoJob = viewModelScope.launch {
                 delay(5_000)
@@ -753,7 +764,31 @@ class WorkoutViewModel(
         }
     }
 
+    /**
+     * Busca los récords de la serie recién completada sin frenar la cola de escrituras. Muestra el
+     * más importante unos segundos; si falla la consulta, no hay aviso y el entreno sigue igual.
+     */
+    private fun announceRecords(detail: SessionDetail, id: WorkoutSetId) {
+        recordJob?.cancel()
+        recordJob = viewModelScope.launch {
+            val hits = try {
+                detectRecords(detail, id)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                emptyList()
+            }
+            val top = hits.firstOrNull() ?: return@launch
+            mutableState.update { it.copy(record = top) }
+            effectChannel.send(WorkoutEffect.Record(top))
+            delay(RECORD_VISIBLE_MS)
+            mutableState.update { if (it.record == top) it.copy(record = null) else it }
+        }
+    }
+
     private companion object {
+        /** Lo que dura el aviso de récord en pantalla. */
+        const val RECORD_VISIBLE_MS = 4_500L
         val PRO_FIELDS = listOf(WorkoutField.RIR, WorkoutField.RPE)
         const val RPE_MIN = 1.0
         const val RPE_MAX = 10.0

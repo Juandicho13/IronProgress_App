@@ -124,6 +124,7 @@ fun IntervalEditorScreen(
             TextAction(stringResource(Res.string.interval_save), enabled = !state.saving) { onIntent(IntervalEditorIntent.Save) }
         }
         EditorField(stringResource(Res.string.interval_name), template.name) { onIntent(IntervalEditorIntent.Rename(it)) }
+        state.best?.let { com.olarte.ironprogress.ui.progress.FormatBestToBeat(perRound(it)) }
 
         PresetChips(template) { onIntent(IntervalEditorIntent.ChoosePreset(it)) }
 

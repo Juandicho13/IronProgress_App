@@ -429,3 +429,29 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Entreno:** la franja muestra "Pasa a X" y "Cambiar"; `LadderSheet` (`ui/workout/LadderSheet.kt`) ofrece "Solo hoy" y, con rutina, "Hoy y en la rutina". `WorkoutIntent.ApplyLadder` usa `substitute` de F1-12 (lo hecho se queda, las pendientes pasan a la variante) y pone el mínimo del rango; con rutina cambia el `exerciseId` de ese ejercicio en la rutina.
 - Pruebas: `LadderTest` y la prueba de escalera en `StagnationViewModelTest`. Capturas `scratchpad/shotsF2a/escalera-*`.
 
+## 50. F2-03 · récords automáticos, 14 de noviembre de 2026
+
+- **Decisión:** los récords se derivan del historial en cada consulta, sin tabla propia. Room ya tiene la consulta `SessionDao.exerciseHistory` (series completadas de un ejercicio en sesiones terminadas, de la más vieja a la más nueva, con el id de su sesión). Así, corregir o borrar una serie en el historial (F1-23) cambia los récords sin migraciones ni datos viejos.
+- **Reglas (`Records`):** cuentan las series de trabajo completadas con reps, sin calentamientos ni rondas de intervalos o bloques funcionales. 1RM estimado = peso × (1 + (reps + RIR) / 30), solo si reps + RIR ≤ 12 (11.1). "Más reps" se mira por peso redondeado a 10 g (sin peso, 0). El volumen es por sesión y se bate una vez, al cruzar la marca. Sin historia de otra sesión no hay récord.
+- **API para F2-15:** `DetectRecords(detail, setId)` devuelve los `RecordHit` en orden de importancia; `WorkoutViewModel` muestra el primero en `WorkoutState.record` y manda `WorkoutEffect.Record` (vibración `personalRecord`). La Live Activity y la Live Update pueden leer `record` o escuchar ese efecto.
+- **Resumen:** `summarize` usa `Records.replay`, que repite la sesión serie por serie y deja el último de cada tipo.
+- **Pantalla:** `ui/progress/RecordUi.kt` (franja, nombres de los récords, "Fuerza estimada" en el modo básico y la hoja que la explica). Ícono `ic_trophy` de Material Symbols Rounded.
+
+## 51. F2-04 · progreso de un ejercicio, 14 de noviembre de 2026
+
+- **Datos:** `ExerciseProgress.of(history)` agrupa la historia por sesión: mejor serie (más peso, y a igual peso más reps), 1RM estimado de la sesión, volumen y reps totales. `metrics` quita el 1RM si nunca hubo peso. `changeOverFourWeeks` compara el último punto con el último que tenga 28 días o más antes que él.
+- **Gráfica (`ProgressChart`):** sigue la guía de dataviz: una sola serie sin leyenda (el título la nombra), 2 dp, área al 10 %, rejilla de 1 dp sólida en `line`, marcas redondas del eje (`niceTicks`), fechas solo en el primero, el del medio y el último, el récord en oro con anillo del color de la tarjeta y etiqueta en text1 (el texto nunca va en el color de la serie). El eje X es por tiempo, no por índice. Tocar o arrastrar en horizontal elige el punto más cercano; la descripción para lector de pantalla dice cuántas sesiones, la última y la más alta, y la lista de Últimas sesiones hace de tabla.
+- **Unidad:** se dibuja en la unidad del ejercicio (kg o lb); todo sigue guardado en kg.
+- **Rutas:** `Route.ExerciseProgress(id)`, pestaña Progreso. `ExerciseDetailRoute`, `ProgressRoute`, `WorkoutRoute` y `HistorySessionRoute` reciben el callback para abrirla.
+
+## 52. F2-07 · series efectivas por músculo, 14 de noviembre de 2026
+
+- **Regla (propuesta de 11.10, aplicada):** s = porcentaje del músculo ÷ porcentaje del músculo con más porcentaje del ejercicio. Así el principal suma 1 y los rangos de 10 a 20 siguen valiendo. Los ejercicios propios sin porcentajes siguen con primario 1 y secundario 0,5.
+- **Semáforo:** `VolumeStatus` (BELOW, IN_RANGE, ABOVE) con 10 y 20 incluidos en el rango. Colores: hielo, ember y peligro, siempre con la palabra al lado.
+- **Pendiente:** los porcentajes de los 77 son los de F1-06, que Juan todavía revisa; si cambian, las series cambian solas.
+
+## 53. F2-13 · récords por formato, 14 de noviembre de 2026
+
+- **Comparación (`isBetter`):** AMRAP más rondas y a igual rondas más reps; EMOM más rondas; por tiempo y rondas menos segundos; intervalos más reps por ronda de media (`averageReps`, null si todo quedó en 0). `isFormatRecord` exige una marca anterior: la primera vez es "primera marca".
+- **Dónde se busca:** bloques funcionales por nombre y formato en las sesiones FUNCTIONAL (`FindWodBest.of`); intervalos por nombre en las sesiones HIIT (`FindIntervalBest`). La marca se lee antes de guardar la de hoy.
+- **Pantallas:** `FormatBestToBeat` y `FormatResultNote` en `ui/progress/RecordUi.kt`, usadas por el bloque funcional (al armarlo y al terminar) y por los intervalos (editor y fin). Mientras corre el bloque sigue "Tu marca" a la derecha; al terminar no se repite.
