@@ -2,9 +2,13 @@ package com.olarte.ironprogress.ui.workout
 
 import com.olarte.ironprogress.domain.catalog.Exercise
 import com.olarte.ironprogress.domain.catalog.ExerciseId
+import com.olarte.ironprogress.domain.catalog.Muscle
 import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.WeightUnit
+import com.olarte.ironprogress.domain.feedback.SessionFeedback
+import com.olarte.ironprogress.domain.feedback.SetChange
 import com.olarte.ironprogress.domain.progress.RecordHit
+import com.olarte.ironprogress.domain.progress.RecoveryLevel
 import com.olarte.ironprogress.domain.progression.Stagnation
 import com.olarte.ironprogress.domain.routine.ExerciseMode
 import com.olarte.ironprogress.domain.routine.SetType
@@ -71,6 +75,16 @@ data class WorkoutState(
     val stagnationDismissed: Set<SessionExerciseId> = emptySet(),
     /** Récord recién batido que se está mostrando (F2-03); null sin aviso. */
     val record: RecordHit? = null,
+    /** Agujetas por preguntar antes de la primera serie (F2-06): el feedback anterior de cada músculo. */
+    val soreness: List<SessionFeedback> = emptyList(),
+    val sorenessAnswers: Map<Muscle, Int> = emptyMap(),
+    /** Lo que cambió hoy después de contestar las agujetas; null sin aviso. */
+    val sorenessResult: Map<Muscle, SetChange>? = null,
+    /** Ejercicios que la última vez dejaron una molestia fuerte (F2-06): se propone cambiarlos. */
+    val painSwap: Set<SessionExerciseId> = emptySet(),
+    val painSwapDismissed: Set<SessionExerciseId> = emptySet(),
+    /** Calentamiento según la recuperación (F2-14): el aviso de cada ejercicio. */
+    val warmups: Map<SessionExerciseId, RecoveryWarmupNote> = emptyMap(),
 ) {
     /** Unidad con la que se ve y se escribe el peso de un ejercicio de la sesión. */
     fun unitOf(id: SessionExerciseId?): WeightUnit {
@@ -95,6 +109,9 @@ data class WorkoutState(
         return timed.distinct()
     }
 }
+
+/** Aviso de calentamiento: el músculo que sigue cargado y cuántas aproximaciones se sugieren. */
+data class RecoveryWarmupNote(val muscle: Muscle, val level: RecoveryLevel, val sets: Int)
 
 sealed interface WorkoutIntent {
     data class AdjustRest(val seconds: Int) : WorkoutIntent
@@ -173,6 +190,20 @@ sealed interface WorkoutIntent {
 
     /** Cierra el aviso de récord antes de tiempo. */
     data object DismissRecord : WorkoutIntent
+
+    /** Agujetas de un músculo, de 0 (nada) a 3 (muchas) (F2-06). */
+    data class AnswerSoreness(val muscle: Muscle, val value: Int) : WorkoutIntent
+
+    /** Guarda las agujetas contestadas y ajusta las series de hoy (11.4). */
+    data object ApplySoreness : WorkoutIntent
+
+    /** No contesta las agujetas: hoy no cambia nada. */
+    data object SkipSoreness : WorkoutIntent
+
+    data object DismissSorenessResult : WorkoutIntent
+
+    /** "Ahora no" en la propuesta de cambiar un ejercicio por molestias. */
+    data class DismissPainSwap(val id: SessionExerciseId) : WorkoutIntent
 }
 
 sealed interface WorkoutEffect {

@@ -48,6 +48,10 @@ val sharedAppModule: Module = module {
     factory { com.olarte.ironprogress.domain.body.LogBodyWeight(get(), get(), get()) }
     factory { com.olarte.ironprogress.domain.body.LogBodyMeasurement(get(), get(), get()) }
     factory { com.olarte.ironprogress.domain.body.AddProgressPhoto(get(), get(), get()) }
+    single { get<IronProgressDatabase>().feedbackDao() }
+    single<com.olarte.ironprogress.domain.feedback.FeedbackRepository> {
+        com.olarte.ironprogress.data.feedback.RoomFeedbackRepository(get(), get())
+    }
 
     single { RoomExerciseRepository(get()) }
     single<ExerciseRepository> { get<RoomExerciseRepository>() }

@@ -163,6 +163,8 @@ Relojes:
 
 **Alcance implementado en F2-03:** la tarjeta dorada de Récords lista cada récord de la sesión con el ejercicio, el tipo y la marca a la derecha ("Press · Fuerza estimada · 85 kg"); si un tipo se batió dos veces, sale el último. El volumen muestra el total del ejercicio en la sesión.
 
+**Alcance implementado en F2-06:** debajo de las métricas, la tarjeta "¿Cuánto trabajo sintió cada músculo?" con los músculos que tuvieron al menos una serie efectiva (como mucho 5), cada uno con su segmentado Poco / Justo / Mucho (todo empieza en Justo) y, en modo Pro, una fila Bombeo con Nada / Poco / Bien / Mucho. Molestias con chips de Ninguna, Hombro, Codo, Muñeca, Rodilla y Espalda baja; al elegir una, un segmentado Leve / Fuerte, y con Fuerte la nota en oro "La próxima vez te propondré cambiar el ejercicio que molestó". Al final, en surface2 y centrado, "La próxima semana: Pecho +1 serie" (o "mismas series") y "Si llegas sin agujetas". Abajo, Omitir y Guardar del mismo ancho; si la sesión ya tiene feedback, solo Listo.
+
 ---
 
 ## 2. Progreso, plan y ajuste del día

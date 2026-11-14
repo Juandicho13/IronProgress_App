@@ -1,6 +1,8 @@
 package com.olarte.ironprogress.data.local
 
 import androidx.room3.Room
+import androidx.room3.executeSQL
+import androidx.room3.withWriteTransaction
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
@@ -237,6 +239,60 @@ class CatalogMigrationTest {
             }
         } finally {
             listOf("", "-wal", "-shm", "-journal", ".v4.bak").forEach { File(file.path + it).delete() }
+        }
+    }
+
+    @Test
+    fun version5KeepsTheSessionsAndAddsFeedbackPerMuscle() = runTest {
+        val file = File.createTempFile("ironprogress-v5", ".db").apply { delete() }
+        try {
+            createDatabaseFromSchema(file, version = 5) { connection ->
+                connection.execSQL(
+                    "INSERT INTO workout_sessions (id, discipline, started_at, ended_at, status, notes, adjustment_applied, created_at, updated_at) VALUES ('done', 'STRENGTH', 1000, 5000, 'FINISHED', '', 0, 1, 1)",
+                )
+            }
+            val database = Room.databaseBuilder<IronProgressDatabase>(
+                name = file.absolutePath,
+                factory = { IronProgressDatabaseConstructor.initialize() },
+            ).buildIronProgressDatabase()
+            try {
+                val sessions = com.olarte.ironprogress.data.workout.RoomSessionRepository(database.sessionDao(), kotlin.time.Clock.System)
+                assertEquals(1, sessions.observeFinishedSessions().first().size)
+                val repository = com.olarte.ironprogress.data.feedback.RoomFeedbackRepository(
+                    database.feedbackDao(),
+                    kotlin.time.Clock.System,
+                )
+                val at = kotlin.time.Instant.fromEpochMilliseconds(6000)
+                repository.save(
+                    listOf(
+                        com.olarte.ironprogress.domain.feedback.SessionFeedback(
+                            id = com.olarte.ironprogress.domain.feedback.FeedbackId("chest"),
+                            sessionId = com.olarte.ironprogress.domain.session.SessionId("done"),
+                            muscle = com.olarte.ironprogress.domain.catalog.Muscle.CHEST,
+                            pump = 1,
+                            jointPain = 2,
+                            load = 1,
+                            createdAt = at,
+                        ),
+                    ),
+                )
+                repository.setSoreness(
+                    com.olarte.ironprogress.domain.feedback.FeedbackId("chest"),
+                    2,
+                    kotlin.time.Instant.fromEpochMilliseconds(9000),
+                )
+                val saved = repository.latestByMuscle().getValue(com.olarte.ironprogress.domain.catalog.Muscle.CHEST)
+                assertEquals(2, saved.soreness)
+                assertEquals(2, saved.jointPain)
+                assertEquals(9000, saved.sorenessAt?.toEpochMilliseconds())
+                // Borrar la sesión se lleva su feedback.
+                database.withWriteTransaction { executeSQL("DELETE FROM workout_sessions WHERE id = 'done'") }
+                assertEquals(emptyList(), repository.forSession(com.olarte.ironprogress.domain.session.SessionId("done")))
+            } finally {
+                database.close()
+            }
+        } finally {
+            listOf("", "-wal", "-shm", "-journal", ".v5.bak").forEach { File(file.path + it).delete() }
         }
     }
 

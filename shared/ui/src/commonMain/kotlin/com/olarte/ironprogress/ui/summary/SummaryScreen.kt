@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +34,7 @@ import com.olarte.ironprogress.domain.session.SessionSummary
 import com.olarte.ironprogress.domain.session.WorkoutSet
 import com.olarte.ironprogress.ui.components.EditorAction
 import com.olarte.ironprogress.ui.components.ForjaButton
+import com.olarte.ironprogress.ui.components.ForjaButtonStyle
 import com.olarte.ironprogress.ui.components.ForjaIcons
 import com.olarte.ironprogress.ui.components.ForjaNumber
 import com.olarte.ironprogress.ui.format.Formats
@@ -41,6 +43,8 @@ import com.olarte.ironprogress.ui.progress.ForjaRecordIcons
 import com.olarte.ironprogress.ui.progress.recordKindLabel
 import com.olarte.ironprogress.ui.progress.recordValue
 import com.olarte.ironprogress.ui.resources.Res
+import com.olarte.ironprogress.ui.resources.fb_save
+import com.olarte.ironprogress.ui.resources.fb_skip
 import com.olarte.ironprogress.ui.resources.summary_blocks
 import com.olarte.ironprogress.ui.resources.summary_done
 import com.olarte.ironprogress.ui.resources.summary_duration
@@ -69,6 +73,7 @@ import com.olarte.ironprogress.ui.resources.summary_title
 import com.olarte.ironprogress.ui.resources.summary_volume
 import com.olarte.ironprogress.ui.resources.summary_vs_last
 import com.olarte.ironprogress.ui.resources.summary_working_sets
+import com.olarte.ironprogress.ui.settings.LocalAppSettings
 import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
 import org.jetbrains.compose.resources.pluralStringResource
@@ -81,12 +86,28 @@ import kotlin.math.abs
 fun SummaryRoute(sessionId: String, languageCode: String, onDone: () -> Unit) {
     val model = koinViewModel<SummaryViewModel>(key = "summary-$sessionId") { parametersOf(sessionId) }
     val state by model.state.collectAsStateWithLifecycle()
-    SummaryScreen(state, languageCode, onRetry = model::retry, onDone = onDone)
+    val pro = LocalAppSettings.current.proMode
+    val actions = remember(model, pro) {
+        FeedbackActions(
+            onLoad = model::setLoad,
+            onPump = model::setPump,
+            onJoint = model::toggleJoint,
+            onStrong = model::setStrongPain,
+            onSave = { model.save(pro, onDone) },
+        )
+    }
+    SummaryScreen(state, languageCode, onRetry = model::retry, onDone = onDone, feedbackActions = actions)
 }
 
-/** Resumen al terminar (PANTALLAS 1.6). El feedback por músculo y las molestias llegan en F2-06. */
+/** Resumen al terminar (PANTALLAS 1.6) con el feedback por músculo y las molestias (F2-06). */
 @Composable
-fun SummaryScreen(state: SummaryState, languageCode: String, onRetry: () -> Unit, onDone: () -> Unit) {
+fun SummaryScreen(
+    state: SummaryState,
+    languageCode: String,
+    onRetry: () -> Unit,
+    onDone: () -> Unit,
+    feedbackActions: FeedbackActions? = null,
+) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val formats = rememberFormats()
@@ -96,9 +117,31 @@ fun SummaryScreen(state: SummaryState, languageCode: String, onRetry: () -> Unit
                 .padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
             verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp4),
         ) {
-            SummaryBody(state, languageCode, formats, onRetry)
+            SummaryBody(state, languageCode, formats, onRetry, feedbackActions)
         }
-        if (!state.loading) {
+        val form = state.feedback
+        if (!state.loading && form != null && feedbackActions != null) {
+            // Con feedback: Omitir y Guardar, del mismo ancho. Guardar es un toque: todo viene en "Justo".
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
+                horizontalArrangement = Arrangement.spacedBy(ForjaSpacing.esp3),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ForjaButton(
+                    stringResource(Res.string.fb_skip),
+                    Modifier.weight(1f),
+                    ForjaButtonStyle.SECONDARY,
+                    enabled = !form.saving,
+                    onClick = onDone,
+                )
+                ForjaButton(
+                    stringResource(Res.string.fb_save),
+                    Modifier.weight(1f),
+                    enabled = !form.saving,
+                    onClick = feedbackActions.onSave,
+                )
+            }
+        } else if (!state.loading) {
             ForjaButton(
                 stringResource(Res.string.summary_done),
                 Modifier.fillMaxWidth().padding(horizontal = ForjaSpacing.esp5, vertical = ForjaSpacing.esp3),
@@ -109,7 +152,13 @@ fun SummaryScreen(state: SummaryState, languageCode: String, onRetry: () -> Unit
 }
 
 @Composable
-private fun ColumnScope.SummaryBody(state: SummaryState, languageCode: String, formats: Formats, onRetry: () -> Unit) {
+private fun ColumnScope.SummaryBody(
+    state: SummaryState,
+    languageCode: String,
+    formats: Formats,
+    onRetry: () -> Unit,
+    feedbackActions: FeedbackActions?,
+) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     run {
@@ -153,6 +202,8 @@ private fun ColumnScope.SummaryBody(state: SummaryState, languageCode: String, f
                         } ?: stringResource(Res.string.summary_first_time),
                     )
                 }
+                val form = state.feedback
+                if (form != null && feedbackActions != null) FeedbackCard(form, LocalAppSettings.current.proMode, feedbackActions)
                 if (summary.exercises.isNotEmpty()) {
                     Card {
                         Label(stringResource(Res.string.summary_exercises))

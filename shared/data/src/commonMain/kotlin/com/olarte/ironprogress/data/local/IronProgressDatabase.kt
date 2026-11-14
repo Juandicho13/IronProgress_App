@@ -15,6 +15,7 @@ import kotlinx.coroutines.IO
  * Base local de IronProgress. Si cambias una entidad, sube [SCHEMA_VERSION] y version a la vez,
  * agrega la migración y amplía CatalogMigrationTest con el esquema anterior.
  *
+ * Versión 6 (F2-06): agrega la tabla session_feedback (feedback por músculo y agujetas).
  * Versión 5 (F2-09): peso corporal, medidas y fotos de progreso (solo tablas nuevas).
  * Versión 3 (F1-10): agrega notes a workout_sets con valor vacío por defecto.
  * Versión 2 (F1-03): rutinas, sesiones, bloques y las tablas de la Etapa 1, más discipline,
@@ -44,14 +45,16 @@ import kotlinx.coroutines.IO
         BodyWeightEntity::class,
         BodyMeasurementEntity::class,
         ProgressPhotoEntity::class,
+        SessionFeedbackEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6),
     ],
 )
 @ConstructedBy(IronProgressDatabaseConstructor::class)
@@ -67,8 +70,10 @@ abstract class IronProgressDatabase : RoomDatabase() {
 
     abstract fun bodyDao(): BodyDao
 
+    abstract fun feedbackDao(): FeedbackDao
+
     companion object {
-        const val SCHEMA_VERSION = 5
+        const val SCHEMA_VERSION = 6
         const val DATABASE_NAME = "ironprogress.db"
     }
 }

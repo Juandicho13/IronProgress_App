@@ -190,6 +190,7 @@ class RoomBackupRepository(
             "set_templates",
             "session_exercises",
             "workout_sets",
+            "session_feedback",
             "interval_templates",
             "breathing_patterns",
             "screening_answers",

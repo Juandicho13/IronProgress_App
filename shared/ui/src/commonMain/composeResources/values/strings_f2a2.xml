@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F2 round 2 (fork A2): feedback after training, soreness, recovery map and warm-up by recovery. -->
+<resources>
+    <string name="fb_title">How much work did each muscle feel?</string>
+    <string name="fb_subtitle">It adjusts next week\'s sets.</string>
+    <string name="fb_load_light">Little</string>
+    <string name="fb_load_right">Right</string>
+    <string name="fb_load_hard">A lot</string>
+    <string name="fb_pump">Pump</string>
+    <string name="fb_pump_0">None</string>
+    <string name="fb_pump_1">Low</string>
+    <string name="fb_pump_2">Good</string>
+    <string name="fb_pump_3">High</string>
+    <string name="fb_pain">Discomfort</string>
+    <string name="fb_pain_none">None</string>
+    <string name="fb_joint_shoulder">Shoulder</string>
+    <string name="fb_joint_elbow">Elbow</string>
+    <string name="fb_joint_wrist">Wrist</string>
+    <string name="fb_joint_knee">Knee</string>
+    <string name="fb_joint_lower_back">Lower back</string>
+    <string name="fb_pain_mild">Mild</string>
+    <string name="fb_pain_strong">Strong</string>
+    <string name="fb_pain_strong_note">Next time I will suggest swapping the exercise that bothered you.</string>
+    <string name="fb_next_week">Next week: %1$s</string>
+    <string name="fb_next_same">Next week: same sets</string>
+    <string name="fb_change_add">%1$s +1 set</string>
+    <string name="fb_change_remove">%1$s −1 set</string>
+    <string name="fb_if_no_soreness">If you arrive without soreness.</string>
+    <string name="fb_save">Save</string>
+    <string name="fb_skip">Skip</string>
+
+    <string name="sore_title">Any soreness left?</string>
+    <string name="sore_body">This adjusts today\'s sets.</string>
+    <string name="sore_0">None</string>
+    <string name="sore_1">A little</string>
+    <string name="sore_2">Quite</string>
+    <string name="sore_3">A lot</string>
+    <string name="sore_apply">Done</string>
+    <string name="sore_skip">Skip</string>
+    <string name="sore_result_changes">Today: %1$s</string>
+    <string name="sore_result_same">Same sets today</string>
+    <string name="sore_result_dismiss">Dismiss</string>
+
+    <string name="pain_swap_title">Last time a joint bothered you with this exercise</string>
+    <string name="pain_swap_hint">Tap to swap it for another</string>
+
+    <string name="warm_recovering">%1$s is still recovering</string>
+    <string name="warm_loaded">%1$s is still under high load</string>
+    <plurals name="warm_hint">
+        <item quantity="one">I suggest %1$d approach set before you start.</item>
+        <item quantity="other">I suggest %1$d approach sets before you start.</item>
+    </plurals>
+    <string name="warm_add">Add</string>
+
+    <string name="rec_title">Muscle recovery</string>
+    <string name="rec_all_fresh">Everything is ready to train</string>
+    <string name="rec_none_recent">No recent load: all fresh</string>
+    <string name="rec_one">%1$s is recovering</string>
+    <string name="rec_two">%1$s and %2$s are recovering</string>
+    <string name="rec_many">%1$s, %2$s and %3$d more are recovering</string>
+    <string name="rec_front">Front</string>
+    <string name="rec_back">Back</string>
+    <string name="rec_fresh">Fresh</string>
+    <string name="rec_loaded">Loaded</string>
+    <string name="rec_level_fresh">Ready</string>
+    <string name="rec_level_recovering">Recovering</string>
+    <string name="rec_level_loaded">Loaded</string>
+    <plurals name="rec_ready_hours">
+        <item quantity="one">Recovers in about %1$d h</item>
+        <item quantity="other">Recovers in about %1$d h</item>
+    </plurals>
+    <plurals name="rec_ready_days">
+        <item quantity="one">Recovers in about %1$d day</item>
+        <item quantity="other">Recovers in about %1$d days</item>
+    </plurals>
+    <string name="rec_ready_now">Ready to train</string>
+    <string name="rec_tap_hint">Tap a muscle to see its state</string>
+    <string name="rec_sore">Soreness reported</string>
+    <string name="rec_last_trained">Last trained: %1$s</string>
+    <string name="rec_not_trained">Not trained in the last two weeks</string>
+    <string name="rec_pro_load">Load %1$s (ready below 3)</string>
+    <string name="rec_map_description">Recovery map. %1$s</string>
+</resources>
