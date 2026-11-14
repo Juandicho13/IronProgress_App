@@ -397,3 +397,12 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Diseño de la isla:** compacta con el anillo azul que se vacía a la izquierda y el tiempo a la derecha; mínima con el anillo que se va llenando hasta quedar todo azul; expandida y pantalla bloqueada con el anillo grande, la cuenta atrás y lo que sigue; en Listo, check verde. El inicio del descanso se conserva entre actualizaciones (+15 s, -15 s) para que el anillo no vuelva a empezar.
 - Sin compilar aquí: todo el Swift y `iosMain` (`AppLanguage.ios.kt`, `PlatformFormatter.ios.kt`).
 
+## 40. F2-01 Motor de progresión, 14 de noviembre de 2026
+
+- Todo en `shared/domain/.../domain/progression`, funciones puras con pruebas (`DoubleProgressionTest`, `OneRepMaxTest`, `WeightStepsTest`, `YoungModeTest`).
+- **1RM estimado** (`OneRepMax.estimate`): peso × (1 + (reps + RIR) / 30), RIR 0 si no se anotó, solo si reps + RIR ≤ 12. `estimatedOneRepMax` y `bestOneRepMax` solo cuentan series de trabajo hechas en ejercicios donde el peso es carga (no en las asistidas).
+- **Saltos** (`WeightSteps`), calculados en la unidad con que se ve el ejercicio para que en lb suba de 5 en 5: barra, barra Z, trap y Smith con el par de discos más pequeño del perfil (2,5 kg o 5 lb); mancuernas y pesas rusas con su lista de pesos; máquina 5 kg o 10 lb (2,5 o 5 en modo joven); polea y el resto 2,5 kg o 5 lb. Nunca baja de la barra vacía.
+- **Doble progresión** (`DoubleProgression.suggest`), en este orden: sin historial, serie de prueba (FIRST_TIME); sin tope de rango o sin reps, lo mismo que la última vez (SAME_AS_LAST); ajuste del día activo, no sube (ADJUSTMENT_HOLD, llega en F4); dos sesiones seguidas con alguna serie bajo el mínimo, baja 7,5 % redondeado abajo y al menos un salto, vuelve al mínimo (DELOAD); todas en el tope pero al fallo o bajo el RIR objetivo, repite (REPEAT_HARD); todas en el tope, sube un salto y vuelve al mínimo (INCREASE); una sesión bajo el mínimo, busca el mínimo (AIM_MIN); si no, una rep más donde faltó (ADD_REP). Sin RIR anotado (modo básico) se da por bueno; sin RIR objetivo solo el RIR 0 cuenta como fallo. En las asistidas subir es quitar ayuda.
+- **Modo joven** (`YoungRules`, detrás de `ProgressionInput.young`; la interfaz es F1-26): sin series al fallo, RIR objetivo 2 o más, 1RM no se muestra, sube solo tras dos sesiones seguidas en el tope (YOUNG_WAIT) y con el salto más pequeño del equipo.
+- Las líneas de explicación de cada regla están en `strings_f2a.xml` (español e inglés).
+

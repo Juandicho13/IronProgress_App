@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F2 (fork A): sugerencia de carga, estancamiento y escaleras. Una línea de explicación por regla. -->
+<resources>
+    <string name="suggest_load">Hoy: %1$s × %2$s</string>
+    <string name="suggest_reps">Hoy: %1$s reps</string>
+    <string name="suggest_first">Primera vez con este ejercicio</string>
+    <string name="suggest_same">Como la última vez: %1$s</string>
+    <string name="suggest_apply">Usar</string>
+    <string name="suggest_apply_description">Poner la sugerencia en esta serie</string>
+    <string name="why_increase">Subes: la última vez llegaste al tope en todas las series</string>
+    <string name="why_increase_pro">Hiciste %1$s con %2$s y RIR %3$d: hoy subes un salto</string>
+    <string name="why_repeat_hard">Mismo peso: llegaste al tope, pero muy al límite</string>
+    <string name="why_repeat_hard_pro">Mismo peso: llegaste a %1$d con RIR %2$d; repite antes de subir</string>
+    <string name="why_add_rep">Mismo peso: una rep más en las series que no llegaron a %1$d</string>
+    <string name="why_aim_min">Mismo peso: intenta llegar a %1$d reps en cada serie</string>
+    <string name="why_deload">Bajas un poco: dos sesiones seguidas por debajo de %1$d reps</string>
+    <string name="why_first">Elige un peso con el que te sobren 2 reps y desde ahí te propongo</string>
+    <string name="why_first_pro">Haz una serie de prueba con RIR 2 y desde ahí te propongo</string>
+    <string name="why_adjustment">Hoy no subes peso por el ajuste del día</string>
+    <string name="why_young_wait">Mismo peso: una sesión más en el tope y subes</string>
+    <string name="why_at_top">Ya estás en el tope del rango: mantén las reps</string>
+    <string name="why_previous_sets">%1$d × %2$d</string>
+    <string name="why_previous_range">%1$d series de %2$d a %3$d</string>
+</resources>

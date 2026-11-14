@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F2 (fork A): load suggestion, plateaus and progression ladders. One explanation line per rule. -->
+<resources>
+    <string name="suggest_load">Today: %1$s × %2$s</string>
+    <string name="suggest_reps">Today: %1$s reps</string>
+    <string name="suggest_first">First time with this exercise</string>
+    <string name="suggest_same">Same as last time: %1$s</string>
+    <string name="suggest_apply">Use</string>
+    <string name="suggest_apply_description">Put the suggestion in this set</string>
+    <string name="why_increase">Going up: last time every set reached the top</string>
+    <string name="why_increase_pro">You did %1$s with %2$s and RIR %3$d: one step up today</string>
+    <string name="why_repeat_hard">Same weight: you reached the top, but very close to failure</string>
+    <string name="why_repeat_hard_pro">Same weight: you reached %1$d with RIR %2$d; repeat before going up</string>
+    <string name="why_add_rep">Same weight: one more rep in the sets that missed %1$d</string>
+    <string name="why_aim_min">Same weight: try to reach %1$d reps in every set</string>
+    <string name="why_deload">A bit lighter: two sessions in a row below %1$d reps</string>
+    <string name="why_first">Pick a weight that leaves 2 reps in the tank and I will suggest from there</string>
+    <string name="why_first_pro">Do a test set at RIR 2 and I will suggest from there</string>
+    <string name="why_adjustment">No weight increase today because of the day adjustment</string>
+    <string name="why_young_wait">Same weight: one more session at the top and you go up</string>
+    <string name="why_at_top">You are at the top of the range: keep the reps</string>
+    <string name="why_previous_sets">%1$d × %2$d</string>
+    <string name="why_previous_range">%1$d sets of %2$d to %3$d</string>
+</resources>
