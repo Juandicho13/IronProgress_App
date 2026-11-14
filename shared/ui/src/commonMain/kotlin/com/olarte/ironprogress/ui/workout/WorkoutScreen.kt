@@ -89,6 +89,7 @@ import com.olarte.ironprogress.ui.label
 import com.olarte.ironprogress.ui.resources.Res
 import com.olarte.ironprogress.ui.resources.editor_loading
 import com.olarte.ironprogress.ui.resources.editor_retry
+import com.olarte.ironprogress.ui.resources.exercise_progress_open
 import com.olarte.ironprogress.ui.resources.hidden_value
 import com.olarte.ironprogress.ui.resources.workout_add_exercise
 import com.olarte.ironprogress.ui.resources.workout_add_set
@@ -164,16 +165,22 @@ import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun WorkoutRoute(viewModel: WorkoutViewModel, onMinimize: () -> Unit) {
+fun WorkoutRoute(viewModel: WorkoutViewModel, onMinimize: () -> Unit, onOpenProgress: (String) -> Unit = {}) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val elapsed by produceState(0L, state.session?.session?.id) {
         while (true) withFrameNanos { value = viewModel.elapsedSeconds() }
     }
-    WorkoutScreen(state, elapsed, viewModel::onIntent, onMinimize)
+    WorkoutScreen(state, elapsed, viewModel::onIntent, onMinimize, onOpenProgress)
 }
 
 @Composable
-fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutIntent) -> Unit, onMinimize: () -> Unit) {
+fun WorkoutScreen(
+    state: WorkoutState,
+    elapsedSeconds: Long,
+    onIntent: (WorkoutIntent) -> Unit,
+    onMinimize: () -> Unit,
+    onOpenProgress: (String) -> Unit = {},
+) {
     val colors = ForjaTheme.colors
     val typography = ForjaTheme.typography
     val language = appLanguage()
@@ -397,7 +404,9 @@ fun WorkoutScreen(state: WorkoutState, elapsedSeconds: Long, onIntent: (WorkoutI
                 onIntent,
                 onPlates = { platesId = id },
                 onMode = { modeId = id },
-            ) { exerciseOptionsId = null }
+                onClose = { exerciseOptionsId = null },
+                onProgress = { detail.exercises.firstOrNull { ex -> ex.id == id }?.let { ex -> onOpenProgress(ex.exerciseId.value) } },
+            )
         }
     }
     modeId?.let { id ->
@@ -912,6 +921,7 @@ private fun ExerciseOptions(
     onPlates: () -> Unit,
     onMode: () -> Unit,
     onClose: () -> Unit,
+    onProgress: () -> Unit = {},
 ) {
     val ordered = detail.exercises.sortedBy { it.sortOrder }
     val index = ordered.indexOfFirst { it.id == id }
@@ -948,6 +958,12 @@ private fun ExerciseOptions(
         } else if (index in 0 until ordered.lastIndex) {
             add(stringResource(Res.string.workout_group) to { act(WorkoutIntent.ToggleGroup(id)) })
         }
+        add(
+            stringResource(Res.string.exercise_progress_open) to {
+                onClose()
+                onProgress()
+            },
+        )
     }
     ForjaSheet(stringResource(Res.string.workout_exercise_options), onDismiss = onClose) {
         rows.forEachIndexed { position, (label, action) ->

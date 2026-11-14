@@ -77,10 +77,11 @@ fun ProgressRoute(
     onCatalogIntent: (CatalogIntent) -> Unit,
     catalogListState: LazyListState,
     onHistory: () -> Unit,
+    onOpenExercise: (String) -> Unit = {},
     model: ProgressViewModel = koinViewModel(),
 ) {
     val state by model.state.collectAsStateWithLifecycle()
-    ProgressScreen(state, listState, catalogState, languageCode, onCatalogIntent, catalogListState, onHistory)
+    ProgressScreen(state, listState, catalogState, languageCode, onCatalogIntent, catalogListState, onHistory, onOpenExercise)
 }
 
 /**
@@ -97,6 +98,7 @@ fun ProgressScreen(
     onCatalogIntent: (CatalogIntent) -> Unit,
     catalogListState: LazyListState,
     onHistory: () -> Unit,
+    onOpenExercise: (String) -> Unit = {},
 ) {
     val colors = ForjaTheme.colors
     val haptics = ForjaTheme.haptics
@@ -124,7 +126,14 @@ fun ProgressScreen(
             Column(Modifier.padding(horizontal = ForjaSpacing.esp5).padding(top = ForjaHeaderTop, bottom = ForjaSpacing.esp2)) {
                 header()
             }
-            CatalogScreen(state = catalogState, languageCode = languageCode, onIntent = onCatalogIntent, listState = catalogListState)
+            // En Progreso, tocar un ejercicio abre su progreso (F2-04); la ficha sale del buscador.
+            CatalogScreen(
+                state = catalogState,
+                languageCode = languageCode,
+                onIntent = onCatalogIntent,
+                listState = catalogListState,
+                onOpen = onOpenExercise,
+            )
         }
         return
     }

@@ -180,6 +180,8 @@ Relojes:
   4. Tarjeta **Últimas sesiones**: fecha a la izquierda y las series a la derecha ("62,5 × 11, 10, 10, 9").
 - **Nota:** la ficha con músculos y exigencia es otra pantalla (7.5); desde la ficha se llega aquí con "Historial".
 
+**Alcance implementado en F2-04:** se abre desde la ficha ("Ver progreso"), desde Progreso > Ejercicios, desde el menú ⋮ del ejercicio en Entreno y tocando el nombre del ejercicio en una sesión del historial. Barra superior con el nombre y "Progreso". Arriba, centrado, el nombre de la métrica ("Fuerza estimada" con el ícono que la explica, o "1RM estimado" en el Pro), la última marca en grande y el cambio frente a hace 4 semanas. Tarjeta con la métrica (Fuerza estimada, Mejor serie, Volumen; sin peso, Más reps y Reps totales), la gráfica dibujada con Canvas (línea de 2 dp en ember con área al 10 %, rejilla de 1 dp, ejes en text3, el récord de siempre en oro con su etiqueta y el último punto marcado; tocar o arrastrar muestra la línea guía con el valor, la mejor serie y la fecha) y el rango 3 m, 6 m, 1 a y Todo. Debajo, Récords con el trofeo y Últimas sesiones (fecha y series; tocar abre la sesión). Sin series del ejercicio, un estado vacío; nunca datos de ejemplo.
+
 ### 2.3 Plan con un entreno en curso (`Plan.dc.html`)
 
 **Alcance implementado (segunda ronda, 5 de noviembre):** arriba la semana en 7 círculos con los días entrenados, como en Hoy; la rutina que toca según la rotación lleva "Toca hoy" y un ícono de reproducir. La tarjeta de programa y la biblioteca llegan con F5.

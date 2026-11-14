@@ -54,6 +54,8 @@ import com.olarte.ironprogress.ui.resources.detail_spine
 import com.olarte.ironprogress.ui.resources.detail_technique
 import com.olarte.ironprogress.ui.resources.detail_title
 import com.olarte.ironprogress.ui.resources.editor_back
+import com.olarte.ironprogress.ui.resources.exercise_progress_open
+import com.olarte.ironprogress.ui.resources.exercise_progress_open_hint
 import com.olarte.ironprogress.ui.resources.impact_high
 import com.olarte.ironprogress.ui.resources.impact_low
 import com.olarte.ironprogress.ui.resources.impact_medium
@@ -72,15 +74,27 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun ExerciseDetailRoute(id: String, languageCode: String, onBack: () -> Unit, onOpen: (String) -> Unit) {
+fun ExerciseDetailRoute(
+    id: String,
+    languageCode: String,
+    onBack: () -> Unit,
+    onOpen: (String) -> Unit,
+    onProgress: (String) -> Unit = {},
+) {
     val model = koinViewModel<ExerciseDetailViewModel>(key = "detail-$id") { parametersOf(id) }
     val state by model.state.collectAsStateWithLifecycle()
-    ExerciseDetailScreen(state, languageCode, onBack, onOpen)
+    ExerciseDetailScreen(state, languageCode, onBack, onOpen, onProgress)
 }
 
 /** Ficha de ejercicio (PANTALLAS 7.5): músculos, exigencia, impacto, alternativas y fuente. */
 @Composable
-fun ExerciseDetailScreen(state: ExerciseDetailState, languageCode: String, onBack: () -> Unit, onOpen: (String) -> Unit) {
+fun ExerciseDetailScreen(
+    state: ExerciseDetailState,
+    languageCode: String,
+    onBack: () -> Unit,
+    onOpen: (String) -> Unit,
+    onProgress: (String) -> Unit = {},
+) {
     val colors = ForjaTheme.colors
     val type = ForjaTheme.typography
     Column(
@@ -106,13 +120,19 @@ fun ExerciseDetailScreen(state: ExerciseDetailState, languageCode: String, onBac
         when {
             state.loading -> Unit
             exercise == null -> Text(stringResource(Res.string.detail_not_found), style = type.body, color = colors.text2)
-            else -> DetailContent(state, exercise, languageCode, onOpen)
+            else -> DetailContent(state, exercise, languageCode, onOpen, onProgress)
         }
     }
 }
 
 @Composable
-private fun DetailContent(state: ExerciseDetailState, exercise: Exercise, languageCode: String, onOpen: (String) -> Unit) {
+private fun DetailContent(
+    state: ExerciseDetailState,
+    exercise: Exercise,
+    languageCode: String,
+    onOpen: (String) -> Unit,
+    onProgress: (String) -> Unit,
+) {
     val colors = ForjaTheme.colors
     val type = ForjaTheme.typography
     Column(verticalArrangement = Arrangement.spacedBy(ForjaSpacing.esp1)) {
@@ -121,6 +141,16 @@ private fun DetailContent(state: ExerciseDetailState, exercise: Exercise, langua
             "${exercise.discipline.editorLabel()} · ${exercise.equipment.label()}",
             style = type.body2,
             color = colors.text2,
+        )
+    }
+
+    // Historial con gráficas y récords del ejercicio (F2-04, PANTALLAS 2.2).
+    com.olarte.ironprogress.ui.components.ForjaListGroup {
+        com.olarte.ironprogress.ui.components.ForjaListRow(
+            stringResource(Res.string.exercise_progress_open),
+            subtitle = stringResource(Res.string.exercise_progress_open_hint),
+            leading = com.olarte.ironprogress.ui.components.ForjaIcons.MonitoringOutline,
+            onClick = { onProgress(exercise.id.value) },
         )
     }
 

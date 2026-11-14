@@ -404,3 +404,10 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **API para F2-15:** `DetectRecords(detail, setId)` devuelve los `RecordHit` en orden de importancia; `WorkoutViewModel` muestra el primero en `WorkoutState.record` y manda `WorkoutEffect.Record` (vibración `personalRecord`). La Live Activity y la Live Update pueden leer `record` o escuchar ese efecto.
 - **Resumen:** `summarize` usa `Records.replay`, que repite la sesión serie por serie y deja el último de cada tipo.
 - **Pantalla:** `ui/progress/RecordUi.kt` (franja, nombres de los récords, "Fuerza estimada" en el modo básico y la hoja que la explica). Ícono `ic_trophy` de Material Symbols Rounded.
+
+## 51. F2-04 · progreso de un ejercicio, 14 de noviembre de 2026
+
+- **Datos:** `ExerciseProgress.of(history)` agrupa la historia por sesión: mejor serie (más peso, y a igual peso más reps), 1RM estimado de la sesión, volumen y reps totales. `metrics` quita el 1RM si nunca hubo peso. `changeOverFourWeeks` compara el último punto con el último que tenga 28 días o más antes que él.
+- **Gráfica (`ProgressChart`):** sigue la guía de dataviz: una sola serie sin leyenda (el título la nombra), 2 dp, área al 10 %, rejilla de 1 dp sólida en `line`, marcas redondas del eje (`niceTicks`), fechas solo en el primero, el del medio y el último, el récord en oro con anillo del color de la tarjeta y etiqueta en text1 (el texto nunca va en el color de la serie). El eje X es por tiempo, no por índice. Tocar o arrastrar en horizontal elige el punto más cercano; la descripción para lector de pantalla dice cuántas sesiones, la última y la más alta, y la lista de Últimas sesiones hace de tabla.
+- **Unidad:** se dibuja en la unidad del ejercicio (kg o lb); todo sigue guardado en kg.
+- **Rutas:** `Route.ExerciseProgress(id)`, pestaña Progreso. `ExerciseDetailRoute`, `ProgressRoute`, `WorkoutRoute` y `HistorySessionRoute` reciben el callback para abrirla.
