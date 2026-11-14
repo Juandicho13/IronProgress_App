@@ -134,6 +134,8 @@ Relojes:
   5. Barra inferior de descanso: "-15", el anillo de 40 en hielo con el tiempo ("1:48") y el pulso ("138"), "+15" y **Saltar** (`skip_next`).
 - **Toques:** ajustar el descanso 1; saltar 1. Al terminar el descanso vibra con el patrón 0, 180, 90, 180 ms y la barra vuelve a ser Completar serie.
 
+**Franja del récord (arreglo del 14 de noviembre):** la franja dorada ya no flota encima de la pantalla: abre su espacio justo debajo de la barra de arriba del entreno y del descanso y empuja el contenido, así nunca tapa la flecha de volver ni otro botón.
+
 ### 1.5 Terminar (`Terminar.dc.html`)
 
 - **Para qué:** cerrar el último ejercicio y terminar con un gesto que no se hace por error.

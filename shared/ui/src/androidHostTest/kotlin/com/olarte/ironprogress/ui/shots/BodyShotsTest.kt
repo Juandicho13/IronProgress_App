@@ -4,11 +4,14 @@ import android.graphics.Bitmap
 import android.os.Looper
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.lifecycle.ViewModelStore
 import com.olarte.ironprogress.domain.body.BodyEntryId
 import com.olarte.ironprogress.domain.body.BodyMeasure
 import com.olarte.ironprogress.domain.body.BodyMeasurement
@@ -32,6 +35,11 @@ import com.olarte.ironprogress.ui.progress.PeriodUiState
 import com.olarte.ironprogress.ui.progress.ProgressScreen
 import com.olarte.ironprogress.ui.progress.ProgressState
 import com.olarte.ironprogress.ui.theme.ForjaTheme
+import com.olarte.ironprogress.ui.workout.TestSessions
+import com.olarte.ironprogress.ui.workout.WorkoutField
+import com.olarte.ironprogress.ui.workout.WorkoutIntent
+import com.olarte.ironprogress.ui.workout.WorkoutScreen
+import com.olarte.ironprogress.ui.workout.newWorkoutViewModel
 import com.olarte.ironprogress.ui.workout.testBench
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
@@ -45,7 +53,7 @@ import java.io.File
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
-/** Capturas de F2-09 y F2-10. */
+/** Capturas de F2-09, F2-10 y la franja del récord ya sin tapar la barra del descanso. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35], qualifiers = "es-rCO-w411dp-h891dp")
@@ -56,6 +64,7 @@ class BodyShotsTest {
     private val dir: String? = System.getProperty("shots.dir")
     private val dark = mutableStateOf(true)
     private val screen = mutableStateOf<(@Composable () -> Unit)?>(null)
+    private val store = ViewModelStore()
     private val now = Instant.parse("2026-11-12T18:00:00Z")
 
     private fun shoot(name: String, content: @Composable () -> Unit) {
@@ -81,6 +90,8 @@ class BodyShotsTest {
             }
         }
     }
+
+    private fun idle() = repeat(5) { shadowOf(Looper.getMainLooper()).idle() }
 
     private fun bodyState(hidden: Boolean): BodyState {
         val weights = listOf(84.2 to 70, 83.6 to 56, 82.9 to 42, 82.1 to 28, 81.4 to 14, 80.8 to 7, 80.5 to 1).mapIndexed {
@@ -171,5 +182,34 @@ class BodyShotsTest {
                 periodState = state,
             )
         }
+    }
+
+    @Test
+    fun restWithRecordBanner() {
+        val model = newWorkoutViewModel(TestSessions()).also { store.put("w", it) }
+        idle()
+        model.onIntent(WorkoutIntent.StartFree)
+        idle()
+        model.onIntent(WorkoutIntent.AddExercise(testBench.id))
+        idle()
+        val first = model.state.value.session!!.sets.first().id
+        model.onIntent(WorkoutIntent.OpenKeyboard(first, WorkoutField.WEIGHT))
+        "85".forEach { model.onIntent(WorkoutIntent.Key(it.toString())) }
+        model.onIntent(WorkoutIntent.NextField)
+        model.onIntent(WorkoutIntent.Key("5"))
+        idle()
+        model.onIntent(WorkoutIntent.CloseKeyboard)
+        model.onIntent(WorkoutIntent.Complete(first))
+        idle()
+        val hit = RecordHit(testBench.id, RecordKind.ESTIMATED_ONE_REP_MAX, 99.2, 95.0, 85.0, 5, first, SessionId("s"), now)
+        shoot("descanso-record") {
+            val state by model.state.collectAsState()
+            WorkoutScreen(state.copy(record = hit), 754, model::onIntent, onMinimize = {})
+        }
+        shoot("entreno-record") {
+            val state by model.state.collectAsState()
+            WorkoutScreen(state.copy(record = hit, restExpanded = false), 754, model::onIntent, onMinimize = {})
+        }
+        store.clear()
     }
 }

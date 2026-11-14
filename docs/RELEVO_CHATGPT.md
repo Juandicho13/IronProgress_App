@@ -445,3 +445,8 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Kotlin:** `RestBackgroundActions` calcula el récord de la serie que abrió el descanso con `DetectRecords` una sola vez por serie (caché por id) y lo pasa a `buildRestNotificationContent`, que arma `recordText` con `RestNotificationStrings.recordLine` ("Récord: Press banca 99 kg"; reps y volumen con su unidad). `WorkoutActivityState.record` lo lleva a Swift.
 - **Android:** `setSubText(recordText)` y primera línea del texto expandido. Cadena `rest_notification_record` en los recursos de androidApp.
 - **iPhone:** `ContentState.record: String?` (opcional, así las actividades en curso al actualizar no fallan), `RecordLine` con `trophy.fill` en `ForjaTokens.gold` en la expandida y en la pantalla bloqueada, y `keylineTint` en oro mientras dura ese descanso. Sin compilar aquí: revisar en el Mac.
+
+## 57. Arreglo · franja del récord, 14 de noviembre de 2026
+
+- `RecordBanner` dejó de ser una capa a pantalla completa: ahora es un bloque que se abre con `expandVertically` dentro de la columna, debajo de la barra de arriba de Entreno (`WorkoutRecordBanner`) y del descanso. Antes tapaba la flecha de volver del descanso.
+
