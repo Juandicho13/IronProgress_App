@@ -167,11 +167,21 @@ Relojes:
   2. Tarjeta **Series por músculo**, "Últimos 7 días · 17 al 23 sep": una fila por músculo (columnas 86 / 1fr / 52) con la barra de series en `ember`, la banda del rango objetivo (10 a 20) en `surface3` detrás y el número a la derecha; si está por debajo, la palabra "bajo" en `text3`. Eje 0, 10 y 20. Pie: "Rango objetivo: 10 a 20 series".
 - **Reglas:** las series cuentan los últimos 7 días, no la semana de calendario; el primario suma 1 y el secundario 0,5.
 
-**Alcance actual de Progreso:** Músculos muestra las series reales de los últimos 7 días (primario 1, secundario 0,5) con la banda de 10 a 20; sin entrenos, "Aún no hay entrenos". El mapa de recuperación espera a F2-08 y Cuerpo al seguimiento del cuerpo; no se muestran datos de ejemplo.
+**Alcance actual de Progreso:** Músculos muestra las series reales de los últimos 7 días (primario 1, secundario 0,5) con la banda de 10 a 20; sin entrenos, "Aún no hay entrenos". El mapa de recuperación espera a F2-08; Cuerpo llegó con F2-09 (abajo). No se muestran datos de ejemplo.
 
 **Alcance implementado en F2-07:** series efectivas con porcentajes (11.10): cada serie suma a un músculo su porcentaje entre el del músculo principal del ejercicio (press banca: pecho 1, tríceps 0,45, hombro 0,36); sin porcentajes, primario 1 y secundario 0,5. Cada fila lleva semáforo frente al rango de 10 a 20: barra y punto en hielo con "Bajo", en ember con "En rango" y en peligro con "Alto"; el estado siempre va con palabra, no solo con color, y la fila se lee entera con lector de pantalla. La escala llega a 24 para que lo alto se vea por encima de la banda. Pie con el rango y una línea que explica cómo cuentan las series.
 
 **Alcance implementado en F1-23:** el botón Historial de Progreso abre el historial, sin diseño propio en el lienzo y hecho con las piezas de Forja (tarjetas surface1, chips, botones de 48). Arriba, Calendario o Lista. El calendario muestra el mes de lunes a domingo, con los días entrenados en emberVeil y el día elegido en ember; debajo, las sesiones de ese día. La lista trae todas las sesiones terminadas, de la más nueva a la más vieja, con fecha, rutina, duración, volumen y series. Tocar una sesión abre su detalle: tocar una serie la corrige (peso y reps) o la borra, y cada bloque con tiempo se puede borrar. Las sesiones descartadas no salen.
+
+**Alcance implementado en F2-09 (Cuerpo):** sin diseño propio en el lienzo; hecho con las piezas de Forja. Sin nada registrado, una tarjeta vacía centrada con "Registrar peso" (primario) y "Añadir medida" y "Añadir foto" del mismo ancho. Con datos, tres tarjetas:
+1. **Peso corporal:** el último peso grande y centrado, el cambio en 30 días debajo en text2 (sin color de bueno o malo), la gráfica del peso (la misma `ProgressChart`, sin récord) con dos o más registros, los tres últimos registros (tocar uno pide confirmación para borrarlo) y "Registrar peso" a lo ancho.
+2. **Medidas:** cintura, pecho, brazo, muslo, cadera y medidas propias con nombre; cada fila con la última medida y el cambio frente a la anterior. Tocar una fila anota otra de esa medida; "Añadir medida" abre la hoja con el tipo.
+3. **Fotos de progreso:** "Solo se guardan en este teléfono", miniaturas 3:4 en tres columnas (la más nueva primero, hasta 9) con la fecha abajo, "Añadir foto" y "Comparar" del mismo ancho. Tocar una foto la abre en grande con "Borrar foto" (pide confirmación). Comparar abre Antes y Después lado a lado con los días entre las dos; se toca un lado y se elige otra foto en la tira de abajo.
+- Las hojas para anotar tienen un campo numérico centrado (acepta coma o punto), aviso si el número está fuera de lo normal y Cancelar y Guardar del mismo ancho.
+- Con libras en la bienvenida, el peso va en lb y las medidas en pulgadas; la base guarda kg y cm.
+- **Ocultar peso corporal y calorías:** el peso sale como "Oculto", sin gráfica ni registros, con una línea que explica que se puede seguir anotando. Las medidas siguen visibles.
+- **Modo joven (11.11):** sin la tarjeta de fotos (por ahora solo el ajuste `youngMode`; la pantalla es de F1-26).
+- Las fotos se copian reducidas a 1600 px en el almacenamiento privado de la app (Photo Picker en Android, PHPicker en iPhone, sin permiso de fotos); nunca van a la galería ni a la copia de seguridad, y Copia de seguridad lo dice con una nota debajo de la explicación.
 
 ### 2.2 Ejercicio, historial (`Ejercicio.dc.html`)
 

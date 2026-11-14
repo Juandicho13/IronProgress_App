@@ -423,3 +423,12 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Comparación (`isBetter`):** AMRAP más rondas y a igual rondas más reps; EMOM más rondas; por tiempo y rondas menos segundos; intervalos más reps por ronda de media (`averageReps`, null si todo quedó en 0). `isFormatRecord` exige una marca anterior: la primera vez es "primera marca".
 - **Dónde se busca:** bloques funcionales por nombre y formato en las sesiones FUNCTIONAL (`FindWodBest.of`); intervalos por nombre en las sesiones HIIT (`FindIntervalBest`). La marca se lee antes de guardar la de hoy.
 - **Pantallas:** `FormatBestToBeat` y `FormatResultNote` en `ui/progress/RecordUi.kt`, usadas por el bloque funcional (al armarlo y al terminar) y por los intervalos (editor y fin). Mientras corre el bloque sigue "Tu marca" a la derecha; al terminar no se repite.
+
+## 54. F2-09 · peso corporal, medidas y fotos, 14 de noviembre de 2026
+
+- **Base versión 5:** tablas nuevas `body_weights`, `body_measurements` y `progress_photos` (con `user_id`, fechas y `deleted_at` para F3), `AutoMigration(4, 5)` y la prueba `version4KeepsTheHistoryAndAddsBodyTracking`. Esquema `5.json` exportado. Si otra rama también sube a la 5, juntar las entidades en una sola versión 5 y volver a exportar el esquema.
+- **Dominio (`domain/body`):** `LogBodyWeight` (20 a 400 kg, redondeo a 10 g), `LogBodyMeasurement` (10 a 300 cm; "Otra" exige nombre), `AddProgressPhoto`, `BodyTrends.weightChange` (último menos el más reciente con 30 días o más; si no hay, el primero) y `BodyTrends.latestMeasures`.
+- **Copia de seguridad:** `body_weights` y `body_measurements` entran en `USER_TABLES`; `progress_photos` no (las fotos se quedan en el teléfono).
+- **Fotos:** `PhotoStore` (expect/actual). Android: Photo Picker y `ImageDecoder` (respeta la orientación) a JPEG de 1600 px en `filesDir/progress_photos`. iPhone: `PHPickerViewController` y `UIGraphicsImageRenderer` a JPEG de 1600 px en Application Support. Sin permiso de fotos en ninguno. `PhotoStore.ios.kt` sin compilar aquí: probar añadir, ver, comparar y borrar en el Mac.
+- **Ajustes:** `AppSettings.youngMode` (falso por defecto) para las reglas del modo joven hasta que llegue F1-26; hoy solo quita la tarjeta de fotos.
+- **Unidades:** con libras en el perfil, peso en lb y medidas en pulgadas (`BodyUnits`).

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- F2-09: body -->
+    <string name="body_weight_title">Body weight</string>
+    <string name="body_weight_log">Log weight</string>
+    <string name="body_weight_change_30">%1$s in 30 days</string>
+    <string name="body_weight_first">Log another day to see the change</string>
+    <string name="body_weight_chart_a11y">Body weight: last entry %1$s, %2$d entries in the chart</string>
+    <string name="body_hidden_value">Hidden</string>
+    <string name="body_hidden_note">You hid it in Settings. Your entries are still saved and you can keep logging.</string>
+    <string name="body_recent">Latest entries</string>
+    <string name="body_measures_title">Measurements</string>
+    <string name="body_measures_empty">Log your waist, chest or any one you want to track.</string>
+    <string name="body_measures_add">Add measurement</string>
+    <string name="body_measure_waist">Waist</string>
+    <string name="body_measure_chest">Chest</string>
+    <string name="body_measure_arm">Arm</string>
+    <string name="body_measure_thigh">Thigh</string>
+    <string name="body_measure_hips">Hips</string>
+    <string name="body_measure_custom">Other</string>
+    <string name="body_measure_custom_name">Measurement name</string>
+    <string name="body_measure_change">%1$s since the last one</string>
+    <string name="body_measure_sheet_title">New measurement</string>
+    <string name="body_measure_which">What you measure</string>
+    <string name="body_photos_title">Progress photos</string>
+    <string name="body_photos_private">Kept only on this phone: they never go to the gallery or the backup.</string>
+    <string name="body_photos_add">Add photo</string>
+    <string name="body_photos_compare">Compare</string>
+    <string name="body_photo_a11y">Photo from %1$s</string>
+    <string name="body_photo_delete">Delete photo</string>
+    <string name="body_photo_delete_confirm">The photo is deleted from this phone and cannot be recovered.</string>
+    <string name="body_photo_failed">The photo could not be saved. Try another one.</string>
+    <string name="body_compare_title">Compare photos</string>
+    <string name="body_compare_before">Before</string>
+    <string name="body_compare_after">After</string>
+    <plurals name="body_compare_days">
+        <item quantity="one">%1$d day apart</item>
+        <item quantity="other">%1$d days apart</item>
+    </plurals>
+    <string name="body_compare_pick_before">Pick the before photo</string>
+    <string name="body_compare_pick_after">Pick the after photo</string>
+    <string name="body_empty_title">Start tracking your body</string>
+    <string name="body_empty_body">Log your weight, measurements or a photo. Everything stays on your phone.</string>
+    <string name="body_sheet_weight_title">Today\'s weight</string>
+    <string name="body_value_label">Value in %1$s</string>
+    <string name="body_out_of_range">Check the number: it looks out of range.</string>
+    <string name="body_save">Save</string>
+    <string name="body_cancel">Cancel</string>
+    <string name="body_delete_entry">Delete entry</string>
+    <string name="body_delete_entry_confirm">Delete the entry from %1$s?</string>
+    <string name="body_unit_cm">cm</string>
+    <string name="body_unit_in">in</string>
+    <string name="backup_photos_note">Progress photos are not in the backup: they stay only on this phone.</string>
+</resources>

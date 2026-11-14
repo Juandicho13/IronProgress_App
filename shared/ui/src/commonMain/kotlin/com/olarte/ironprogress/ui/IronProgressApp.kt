@@ -90,6 +90,7 @@ fun IronProgressApp() {
     val todayViewModel = koinViewModel<com.olarte.ironprogress.ui.today.TodayViewModel>()
     val planViewModel = koinViewModel<com.olarte.ironprogress.ui.plan.PlanViewModel>()
     val progressViewModel = koinViewModel<com.olarte.ironprogress.ui.progress.ProgressViewModel>()
+    val bodyViewModel = koinViewModel<com.olarte.ironprogress.ui.body.BodyViewModel>()
 
     // Pila de Navigation 3: la raíz es una pestaña y encima pueden ir Catálogo o Entreno.
     // Sobrevive a girar el teléfono y al cierre del sistema (se guarda con navConfiguration).
@@ -269,6 +270,9 @@ fun IronProgressApp() {
                             onProgress = { backStack.add(Route.ExerciseProgress(it)) },
                         )
                     }
+                    entry<Route.PhotoCompare> {
+                        com.olarte.ironprogress.ui.body.PhotoCompareRoute(onBack = { backStack.removeLastOrNull() }, model = bodyViewModel)
+                    }
                     entry<Route.ExerciseProgress> { route ->
                         com.olarte.ironprogress.ui.progress.ExerciseProgressRoute(
                             route.id,
@@ -398,7 +402,9 @@ fun IronProgressApp() {
                             catalogListState = catalogListState,
                             onHistory = { backStack.add(Route.History) },
                             onOpenExercise = { backStack.add(Route.ExerciseProgress(it)) },
+                            onComparePhotos = { backStack.add(Route.PhotoCompare) },
                             model = progressViewModel,
+                            body = bodyViewModel,
                         )
                     }
                 },
@@ -407,6 +413,7 @@ fun IronProgressApp() {
             val isFullScreen = currentDestination is Route.ExerciseEditor ||
                 currentDestination is Route.ExerciseDetail ||
                 currentDestination is Route.ExerciseProgress ||
+                currentDestination is Route.PhotoCompare ||
                 currentDestination is Route.IntervalEditor ||
                 currentDestination is Route.IntervalRun ||
                 currentDestination is Route.Wod ||
@@ -507,6 +514,7 @@ private fun Route.toForjaTab(): ForjaTab = when (this) {
     Route.History -> ForjaTab.PROGRESS
     is Route.HistorySession -> ForjaTab.PROGRESS
     is Route.ExerciseProgress -> ForjaTab.PROGRESS
+    Route.PhotoCompare -> ForjaTab.PROGRESS
     Route.Settings -> ForjaTab.TODAY
     Route.Backup -> ForjaTab.TODAY
     Route.Disciplines -> ForjaTab.PLAN

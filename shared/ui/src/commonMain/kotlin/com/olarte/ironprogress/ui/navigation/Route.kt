@@ -49,6 +49,9 @@ sealed interface Route : NavKey {
 
     /** Progreso de un ejercicio: gráficas, récords y últimas sesiones (F2-04). */
     @Serializable data class ExerciseProgress(val id: String) : Route
+
+    /** Antes y después con las fotos de progreso (F2-09). */
+    @Serializable data object PhotoCompare : Route
 }
 
 /**
@@ -78,6 +81,7 @@ val navConfiguration = SavedStateConfiguration {
             subclass(Route.Flow::class, Route.Flow.serializer())
             subclass(Route.Breathing::class, Route.Breathing.serializer())
             subclass(Route.ExerciseProgress::class, Route.ExerciseProgress.serializer())
+            subclass(Route.PhotoCompare::class, Route.PhotoCompare.serializer())
         }
     }
 }

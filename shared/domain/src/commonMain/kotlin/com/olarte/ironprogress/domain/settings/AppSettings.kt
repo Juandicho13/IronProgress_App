@@ -87,6 +87,11 @@ data class AppSettings(
     val profile: TrainingProfile? = null,
     /** Las rutinas demo ya se sembraron (o no hacían falta): no vuelven aunque se borren. */
     val demoRoutinesSeeded: Boolean = false,
+    /**
+     * Modo joven (13 a 17 años, HANDOFF 11.11). Su pantalla y el permiso de los padres son de F1-26,
+     * todavía bloqueado; por ahora solo lo leen las reglas que ya existen (sin fotos de progreso).
+     */
+    val youngMode: Boolean = false,
 ) {
     /** Lo que de verdad se usa: la voz apagada de antes de este ajuste también cuenta como "Sin voz". */
     val workoutAudio: WorkoutAudio get() = if (!voice) WorkoutAudio.NO_VOICE else audio
