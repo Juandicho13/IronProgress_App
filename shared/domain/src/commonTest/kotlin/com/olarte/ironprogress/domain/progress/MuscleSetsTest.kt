@@ -71,6 +71,31 @@ class MuscleSetsTest {
     }
 
     @Test
+    fun workSharesCountRelativeToTheMainMuscle() {
+        // Press banca con porcentajes (11.10): pecho 55, tríceps 25, hombro 20.
+        val shared = bench.copy(
+            muscles = listOf(
+                ExerciseMuscle(Muscle.CHEST, MuscleRole.PRIMARY, 55),
+                ExerciseMuscle(Muscle.TRICEPS, MuscleRole.SECONDARY, 25),
+                ExerciseMuscle(Muscle.SHOULDERS, MuscleRole.SECONDARY, 20),
+            ),
+        )
+        val recent = session("a", now - 2.days, listOf(SetType.WORKING to true, SetType.WORKING to true))
+        val totals = MuscleSets.lastSevenDays(listOf(recent), mapOf(shared.id to shared), now)
+        assertEquals(2.0, totals[Muscle.CHEST])
+        assertEquals(2 * 25.0 / 55, totals[Muscle.TRICEPS]!!, 0.0001)
+        assertEquals(2 * 20.0 / 55, totals[Muscle.SHOULDERS]!!, 0.0001)
+    }
+
+    @Test
+    fun statusAgainstTheTargetRange() {
+        assertEquals(VolumeStatus.BELOW, MuscleSets.status(9.5))
+        assertEquals(VolumeStatus.IN_RANGE, MuscleSets.status(10.0))
+        assertEquals(VolumeStatus.IN_RANGE, MuscleSets.status(20.0))
+        assertEquals(VolumeStatus.ABOVE, MuscleSets.status(20.5))
+    }
+
+    @Test
     fun noSessionsMeansNoNumbers() {
         assertTrue(MuscleSets.lastSevenDays(emptyList(), catalog, now).isEmpty())
     }

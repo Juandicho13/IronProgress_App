@@ -411,3 +411,9 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Gráfica (`ProgressChart`):** sigue la guía de dataviz: una sola serie sin leyenda (el título la nombra), 2 dp, área al 10 %, rejilla de 1 dp sólida en `line`, marcas redondas del eje (`niceTicks`), fechas solo en el primero, el del medio y el último, el récord en oro con anillo del color de la tarjeta y etiqueta en text1 (el texto nunca va en el color de la serie). El eje X es por tiempo, no por índice. Tocar o arrastrar en horizontal elige el punto más cercano; la descripción para lector de pantalla dice cuántas sesiones, la última y la más alta, y la lista de Últimas sesiones hace de tabla.
 - **Unidad:** se dibuja en la unidad del ejercicio (kg o lb); todo sigue guardado en kg.
 - **Rutas:** `Route.ExerciseProgress(id)`, pestaña Progreso. `ExerciseDetailRoute`, `ProgressRoute`, `WorkoutRoute` y `HistorySessionRoute` reciben el callback para abrirla.
+
+## 52. F2-07 · series efectivas por músculo, 14 de noviembre de 2026
+
+- **Regla (propuesta de 11.10, aplicada):** s = porcentaje del músculo ÷ porcentaje del músculo con más porcentaje del ejercicio. Así el principal suma 1 y los rangos de 10 a 20 siguen valiendo. Los ejercicios propios sin porcentajes siguen con primario 1 y secundario 0,5.
+- **Semáforo:** `VolumeStatus` (BELOW, IN_RANGE, ABOVE) con 10 y 20 incluidos en el rango. Colores: hielo, ember y peligro, siempre con la palabra al lado.
+- **Pendiente:** los porcentajes de los 77 son los de F1-06, que Juan todavía revisa; si cambian, las series cambian solas.

@@ -169,6 +169,8 @@ Relojes:
 
 **Alcance actual de Progreso:** Músculos muestra las series reales de los últimos 7 días (primario 1, secundario 0,5) con la banda de 10 a 20; sin entrenos, "Aún no hay entrenos". El mapa de recuperación espera a F2-08 y Cuerpo al seguimiento del cuerpo; no se muestran datos de ejemplo.
 
+**Alcance implementado en F2-07:** series efectivas con porcentajes (11.10): cada serie suma a un músculo su porcentaje entre el del músculo principal del ejercicio (press banca: pecho 1, tríceps 0,45, hombro 0,36); sin porcentajes, primario 1 y secundario 0,5. Cada fila lleva semáforo frente al rango de 10 a 20: barra y punto en hielo con "Bajo", en ember con "En rango" y en peligro con "Alto"; el estado siempre va con palabra, no solo con color, y la fila se lee entera con lector de pantalla. La escala llega a 24 para que lo alto se vea por encima de la banda. Pie con el rango y una línea que explica cómo cuentan las series.
+
 **Alcance implementado en F1-23:** el botón Historial de Progreso abre el historial, sin diseño propio en el lienzo y hecho con las piezas de Forja (tarjetas surface1, chips, botones de 48). Arriba, Calendario o Lista. El calendario muestra el mes de lunes a domingo, con los días entrenados en emberVeil y el día elegido en ember; debajo, las sesiones de ese día. La lista trae todas las sesiones terminadas, de la más nueva a la más vieja, con fecha, rutina, duración, volumen y series. Tocar una sesión abre su detalle: tocar una serie la corrige (peso y reps) o la borra, y cada bloque con tiempo se puede borrar. Las sesiones descartadas no salen.
 
 ### 2.2 Ejercicio, historial (`Ejercicio.dc.html`)
