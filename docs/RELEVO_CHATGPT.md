@@ -432,3 +432,10 @@ Juan entrenó con la app y pidió esto. Todo en `feat/f1-claude`.
 - **Fotos:** `PhotoStore` (expect/actual). Android: Photo Picker y `ImageDecoder` (respeta la orientación) a JPEG de 1600 px en `filesDir/progress_photos`. iPhone: `PHPickerViewController` y `UIGraphicsImageRenderer` a JPEG de 1600 px en Application Support. Sin permiso de fotos en ninguno. `PhotoStore.ios.kt` sin compilar aquí: probar añadir, ver, comparar y borrar en el Mac.
 - **Ajustes:** `AppSettings.youngMode` (falso por defecto) para las reglas del modo joven hasta que llegue F1-26; hoy solo quita la tarjeta de fotos.
 - **Unidades:** con libras en el perfil, peso en lb y medidas en pulgadas (`BodyUnits`).
+
+## 55. F2-10 · resúmenes mensual y anual, 14 de noviembre de 2026
+
+- **Dominio:** `Period` (mes o año del calendario local, con anterior y siguiente) y `PeriodSummaries.summarize(detalles, catálogo, periodo, epochDay)`. Los días se cuentan con el día civil local (`localEpochDay`), así una sesión que termina pasada la medianoche cuenta en el día siguiente.
+- **Récords del periodo:** se repite toda la historia en orden con `Records.replay` y se queda el último récord de cada ejercicio y tipo batido dentro del periodo.
+- **Mejor racha:** semanas seguidas (lunes a domingo) con al menos un entreno dentro del periodo.
+- **Pantalla:** `PeriodSummaryViewModel` con clave de entrada (`MONTH:2026:11`, `YEAR:2026`, vacío para el mes actual); la tarjeta de Progreso usa su propio ViewModel a nivel de la app (`PERIOD_CARD_KEY`) para no cargar de nuevo al volver a la pestaña.

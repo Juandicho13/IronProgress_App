@@ -35,6 +35,7 @@ val uiModule = module {
     viewModel { com.olarte.ironprogress.ui.history.HistoryViewModel(get(), get(), get()) }
     viewModel { com.olarte.ironprogress.ui.progress.ProgressViewModel(get(), get(), get()) }
     viewModel { com.olarte.ironprogress.ui.body.BodyViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { (key: String) -> com.olarte.ironprogress.ui.progress.PeriodSummaryViewModel(get(), get(), get(), key) }
     viewModel { (id: String) -> com.olarte.ironprogress.ui.progress.ExerciseProgressViewModel(get(), get(), get(), id) }
     viewModel { (id: String) -> com.olarte.ironprogress.ui.history.HistorySessionViewModel(get(), get(), get(), get(), get(), id) }
     viewModel { (id: String?, defaultName: String) ->

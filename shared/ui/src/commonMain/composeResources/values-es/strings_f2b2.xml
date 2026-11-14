@@ -51,4 +51,43 @@
     <string name="body_unit_cm">cm</string>
     <string name="body_unit_in">in</string>
     <string name="backup_photos_note">Las fotos de progreso no van en la copia: se quedan solo en este teléfono.</string>
+
+    <!-- F2-10: resúmenes -->
+    <string name="period_card_title">Resumen de %1$s</string>
+    <plurals name="period_card_sessions">
+        <item quantity="one">%1$d entreno · %2$s</item>
+        <item quantity="other">%1$d entrenos · %2$s</item>
+    </plurals>
+    <string name="period_see_year">Ver el año</string>
+    <string name="period_title">Resumen</string>
+    <string name="period_month">Mes</string>
+    <string name="period_year">Año</string>
+    <string name="period_sessions">Entrenos</string>
+    <string name="period_time">Tiempo</string>
+    <string name="period_volume">Volumen</string>
+    <string name="period_days">Días entrenados</string>
+    <string name="period_streak">Mejor racha</string>
+    <plurals name="period_weeks">
+        <item quantity="one">%1$d semana</item>
+        <item quantity="other">%1$d semanas</item>
+    </plurals>
+    <string name="period_vs">%1$s frente a %2$s</string>
+    <string name="period_same">Igual que %1$s</string>
+    <string name="period_records">Récords</string>
+    <string name="period_records_none">Sin récords en este periodo. Llegarán.</string>
+    <string name="period_records_more">Y %1$d más</string>
+    <string name="period_muscles">Músculos más trabajados</string>
+    <string name="period_sets_value">%1$s series</string>
+    <string name="period_favourite">Ejercicio favorito</string>
+    <plurals name="period_favourite_sets">
+        <item quantity="one">%1$d serie de trabajo</item>
+        <item quantity="other">%1$d series de trabajo</item>
+    </plurals>
+    <string name="period_empty_title">Sin entrenos en %1$s</string>
+    <string name="period_empty_body">Cuando entrenes, aquí verás el resumen.</string>
+    <string name="period_previous">Periodo anterior</string>
+    <string name="period_next">Periodo siguiente</string>
+    <string name="period_hours_minutes">%1$d h %2$d min</string>
+    <string name="period_minutes">%1$d min</string>
+    <string name="period_month_year">%1$s de %2$d</string>
 </resources>

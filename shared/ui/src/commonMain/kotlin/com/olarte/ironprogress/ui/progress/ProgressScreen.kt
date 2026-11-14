@@ -80,6 +80,7 @@ import com.olarte.ironprogress.ui.theme.ForjaSpacing
 import com.olarte.ironprogress.ui.theme.ForjaTheme
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun ProgressRoute(
@@ -90,12 +91,15 @@ fun ProgressRoute(
     catalogListState: LazyListState,
     onHistory: () -> Unit,
     onOpenExercise: (String) -> Unit = {},
+    onOpenSummary: (String) -> Unit = {},
     onComparePhotos: () -> Unit = {},
     model: ProgressViewModel = koinViewModel(),
     body: BodyViewModel = koinViewModel(),
+    period: PeriodSummaryViewModel = koinViewModel(key = PERIOD_CARD_KEY) { parametersOf("") },
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val bodyState by body.state.collectAsStateWithLifecycle()
+    val periodState by period.state.collectAsStateWithLifecycle()
     val bodyActions = remember(body, onComparePhotos) {
         BodyActions(
             logWeight = body::logWeight,
@@ -118,8 +122,13 @@ fun ProgressRoute(
         onOpenExercise,
         bodyState = bodyState,
         bodyActions = bodyActions,
+        periodState = periodState,
+        onOpenSummary = onOpenSummary,
     )
 }
+
+/** Clave del resumen del mes de la tarjeta de Progreso: vive a nivel de la app (F2-10). */
+const val PERIOD_CARD_KEY = "period-card"
 
 /**
  * Progreso (PANTALLAS 2.1): título con Historial y segmentado Ejercicios, Músculos y Cuerpo.
@@ -139,6 +148,8 @@ fun ProgressScreen(
     initialSegment: Int = 1,
     bodyState: BodyState = BodyState(loading = false),
     bodyActions: BodyActions = BodyActions(),
+    periodState: PeriodUiState = PeriodUiState(loading = false),
+    onOpenSummary: (String) -> Unit = {},
     withPhotoPicker: Boolean = true,
 ) {
     val colors = ForjaTheme.colors
@@ -191,6 +202,16 @@ fun ProgressScreen(
         ),
     ) {
         item { Column { header() } }
+        // Resumen del mes (F2-10): arriba de Músculos en cuanto hay algún entreno.
+        if (selected == 1 && periodState.hasAnySession) {
+            item {
+                MonthSummaryCard(
+                    periodState,
+                    onOpenMonth = { onOpenSummary(PeriodSummaryViewModel.keyOf(it)) },
+                    onOpenYear = { onOpenSummary(PeriodSummaryViewModel.keyOf(it)) },
+                )
+            }
+        }
         when {
             selected == 2 -> item {
                 if (bodyState.loading) {

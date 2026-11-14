@@ -183,6 +183,8 @@ Relojes:
 - **Modo joven (11.11):** sin la tarjeta de fotos (por ahora solo el ajuste `youngMode`; la pantalla es de F1-26).
 - Las fotos se copian reducidas a 1600 px en el almacenamiento privado de la app (Photo Picker en Android, PHPicker en iPhone, sin permiso de fotos); nunca van a la galería ni a la copia de seguridad, y Copia de seguridad lo dice con una nota debajo de la explicación.
 
+**Alcance implementado en F2-10 (resúmenes):** arriba de Músculos, en cuanto hay algún entreno, la tarjeta "Resumen de noviembre" con entrenos y tiempo del mes y "Ver el año". El resumen (`Route.Summaries`) tiene barra superior "Resumen", segmentado Mes y Año y el periodo centrado entre dos flechas (también se cambia deslizando; no deja ir antes del primer entreno ni después de hoy). Contenido: cuadrícula de 2 × 2 con Entrenos, Tiempo, Volumen y Días entrenados, cada uno con su comparación en palabras ("+2 frente a octubre", "+18 % frente a octubre"); Mejor racha en semanas; Récords del periodo (uno por ejercicio y tipo, el mejor, hasta 5 y "Y 3 más"); Músculos más trabajados (3, con barra relativa); Ejercicio favorito con sus series de trabajo. Sin entrenos en el periodo, un estado vacío; nunca números de ejemplo.
+
 ### 2.2 Ejercicio, historial (`Ejercicio.dc.html`)
 
 - **Estructura:** barra superior con `arrow_back`, el nombre ("Press banca con barra") y opciones.

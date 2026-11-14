@@ -15,11 +15,24 @@ import com.olarte.ironprogress.domain.body.BodyMeasurement
 import com.olarte.ironprogress.domain.body.BodyTrends
 import com.olarte.ironprogress.domain.body.BodyWeight
 import com.olarte.ironprogress.domain.body.ProgressPhoto
+import com.olarte.ironprogress.domain.catalog.Muscle
+import com.olarte.ironprogress.domain.progress.FavouriteExercise
+import com.olarte.ironprogress.domain.progress.Period
+import com.olarte.ironprogress.domain.progress.PeriodKind
+import com.olarte.ironprogress.domain.progress.PeriodStats
+import com.olarte.ironprogress.domain.progress.PeriodSummary
+import com.olarte.ironprogress.domain.progress.RecordHit
+import com.olarte.ironprogress.domain.progress.RecordKind
+import com.olarte.ironprogress.domain.session.SessionId
+import com.olarte.ironprogress.domain.session.WorkoutSetId
 import com.olarte.ironprogress.ui.body.BodyState
 import com.olarte.ironprogress.ui.catalog.CatalogState
+import com.olarte.ironprogress.ui.progress.PeriodSummaryScreen
+import com.olarte.ironprogress.ui.progress.PeriodUiState
 import com.olarte.ironprogress.ui.progress.ProgressScreen
 import com.olarte.ironprogress.ui.progress.ProgressState
 import com.olarte.ironprogress.ui.theme.ForjaTheme
+import com.olarte.ironprogress.ui.workout.testBench
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
@@ -32,7 +45,7 @@ import java.io.File
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
-/** Capturas de F2-09: la pestaña Cuerpo y comparar fotos. */
+/** Capturas de F2-09 y F2-10. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35], qualifiers = "es-rCO-w411dp-h891dp")
@@ -122,4 +135,41 @@ class BodyShotsTest {
 
     @Test
     fun bodyEmpty() = shoot("cuerpo-vacio") { body(BodyState(loading = false)) }
+
+    @Test
+    fun monthSummary() {
+        val hit = RecordHit(testBench.id, RecordKind.HEAVIEST_WEIGHT, 70.0, 67.5, 70.0, 6, WorkoutSetId("x"), SessionId("s"), now - 2.days)
+        val oneRm = hit.copy(kind = RecordKind.ESTIMATED_ONE_REP_MAX, value = 84.0, previous = 81.0)
+        val summary = PeriodSummary(
+            period = Period(PeriodKind.MONTH, 2026, 11),
+            stats = PeriodStats(sessions = 9, totalSeconds = 9 * 3_600L + 25 * 60, volumeKg = 48_620.0, trainedDays = 9),
+            previous = PeriodStats(sessions = 7, totalSeconds = 7 * 3_600L, volumeKg = 41_100.0, trainedDays = 7),
+            records = listOf(oneRm, hit),
+            topMuscles = listOf(Muscle.CHEST to 31.0, Muscle.QUADS to 24.0, Muscle.LATS to 19.5),
+            favourite = FavouriteExercise(testBench.id, 27),
+            bestStreakWeeks = 2,
+        )
+        val state = PeriodUiState(
+            loading = false,
+            period = summary.period,
+            summary = summary,
+            exercises = mapOf(testBench.id to testBench),
+            hasAnySession = true,
+            canGoBack = true,
+            canGoForward = false,
+        )
+        shoot("resumen-mes") { PeriodSummaryScreen(state, onBack = {}) }
+        shoot("progreso-tarjeta-mes") {
+            ProgressScreen(
+                ProgressState(loading = false, hasSessions = true, sets = listOf(Muscle.CHEST to 12.0, Muscle.QUADS to 9.0)),
+                rememberLazyListState(),
+                CatalogState(),
+                "es",
+                {},
+                rememberLazyListState(),
+                {},
+                periodState = state,
+            )
+        }
+    }
 }
