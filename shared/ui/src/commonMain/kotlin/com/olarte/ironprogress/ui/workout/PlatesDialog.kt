@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.olarte.ironprogress.domain.catalog.WeightUnit
+import com.olarte.ironprogress.domain.progress.RecoveryWarmups
 import com.olarte.ironprogress.domain.routine.SetType
 import com.olarte.ironprogress.domain.session.SessionExerciseId
 import com.olarte.ironprogress.domain.session.WeightUnits
@@ -71,10 +72,12 @@ fun PlatesDialog(state: WorkoutState, id: SessionExerciseId, onIntent: (WorkoutI
                     color = colors.goldInk,
                 )
             }
+            // Si el músculo sigue cargado, las mismas aproximaciones de más que el aviso de Entreno (F2-14).
             val steps = warmupSets(
                 target,
                 barKg = WeightUnits.toKg(bar, unit),
                 stepKg = WeightUnits.toKg(if (unit == WeightUnit.LB) 5.0 else 2.5, unit),
+                extraLight = state.warmups[id]?.let { RecoveryWarmups.extraLight(it.level) } ?: 0,
             )
             if (steps.isNotEmpty()) {
                 Text(stringResource(Res.string.plates_warmup), style = typography.caption, color = colors.text2)

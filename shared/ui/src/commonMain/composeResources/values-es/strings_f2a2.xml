@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F2 ronda 2 (fork A2): feedback después de entrenar, agujetas, mapa de recuperación y calentamiento según la recuperación. -->
+<resources>
+    <string name="fb_title">¿Cuánto trabajo sintió cada músculo?</string>
+    <string name="fb_subtitle">Ajusta las series de la próxima semana.</string>
+    <string name="fb_load_light">Poco</string>
+    <string name="fb_load_right">Justo</string>
+    <string name="fb_load_hard">Mucho</string>
+    <string name="fb_pump">Bombeo</string>
+    <string name="fb_pump_0">Nada</string>
+    <string name="fb_pump_1">Poco</string>
+    <string name="fb_pump_2">Bien</string>
+    <string name="fb_pump_3">Mucho</string>
+    <string name="fb_pain">Molestias</string>
+    <string name="fb_pain_none">Ninguna</string>
+    <string name="fb_joint_shoulder">Hombro</string>
+    <string name="fb_joint_elbow">Codo</string>
+    <string name="fb_joint_wrist">Muñeca</string>
+    <string name="fb_joint_knee">Rodilla</string>
+    <string name="fb_joint_lower_back">Espalda baja</string>
+    <string name="fb_pain_mild">Leve</string>
+    <string name="fb_pain_strong">Fuerte</string>
+    <string name="fb_pain_strong_note">La próxima vez te propondré cambiar el ejercicio que molestó.</string>
+    <string name="fb_next_week">La próxima semana: %1$s</string>
+    <string name="fb_next_same">La próxima semana: mismas series</string>
+    <string name="fb_change_add">%1$s +1 serie</string>
+    <string name="fb_change_remove">%1$s −1 serie</string>
+    <string name="fb_if_no_soreness">Si llegas sin agujetas.</string>
+    <string name="fb_save">Guardar</string>
+    <string name="fb_skip">Omitir</string>
+
+    <string name="sore_title">¿Te quedan agujetas?</string>
+    <string name="sore_body">Así ajusto las series de hoy.</string>
+    <string name="sore_0">Nada</string>
+    <string name="sore_1">Pocas</string>
+    <string name="sore_2">Bastantes</string>
+    <string name="sore_3">Muchas</string>
+    <string name="sore_apply">Listo</string>
+    <string name="sore_skip">Omitir</string>
+    <string name="sore_result_changes">Hoy: %1$s</string>
+    <string name="sore_result_same">Hoy van las mismas series</string>
+    <string name="sore_result_dismiss">Cerrar aviso</string>
+
+    <string name="pain_swap_title">La última vez te molestó una articulación con este ejercicio</string>
+    <string name="pain_swap_hint">Toca para cambiarlo por otro</string>
+
+    <string name="warm_recovering">%1$s aún se está recuperando</string>
+    <string name="warm_loaded">%1$s sigue con carga alta</string>
+    <plurals name="warm_hint">
+        <item quantity="one">Te sugiero %1$d serie de aproximación antes de empezar.</item>
+        <item quantity="other">Te sugiero %1$d series de aproximación antes de empezar.</item>
+    </plurals>
+    <string name="warm_add">Agregar</string>
+
+    <string name="rec_title">Recuperación muscular</string>
+    <string name="rec_all_fresh">Todo listo para entrenar</string>
+    <string name="rec_none_recent">Sin carga reciente: todo fresco</string>
+    <string name="rec_one">%1$s se está recuperando</string>
+    <string name="rec_two">%1$s y %2$s se están recuperando</string>
+    <string name="rec_many">%1$s, %2$s y %3$d más se están recuperando</string>
+    <string name="rec_front">Frente</string>
+    <string name="rec_back">Espalda</string>
+    <string name="rec_fresh">Fresco</string>
+    <string name="rec_loaded">Cargado</string>
+    <string name="rec_level_fresh">Listo</string>
+    <string name="rec_level_recovering">Recuperando</string>
+    <string name="rec_level_loaded">Cargado</string>
+    <plurals name="rec_ready_hours">
+        <item quantity="one">Se recupera en unas %1$d h</item>
+        <item quantity="other">Se recupera en unas %1$d h</item>
+    </plurals>
+    <plurals name="rec_ready_days">
+        <item quantity="one">Se recupera en unos %1$d día</item>
+        <item quantity="other">Se recupera en unos %1$d días</item>
+    </plurals>
+    <string name="rec_ready_now">Listo para entrenar</string>
+    <string name="rec_tap_hint">Toca un músculo para ver su estado</string>
+    <string name="rec_sore">Con agujetas</string>
+    <string name="rec_last_trained">Último entreno: %1$s</string>
+    <string name="rec_not_trained">Sin entrenar en las últimas dos semanas</string>
+    <string name="rec_pro_load">Carga %1$s (listo por debajo de 3)</string>
+    <string name="rec_map_description">Mapa de recuperación. %1$s</string>
+</resources>

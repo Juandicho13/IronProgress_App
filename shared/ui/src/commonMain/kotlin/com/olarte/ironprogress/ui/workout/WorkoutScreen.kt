@@ -262,6 +262,21 @@ fun WorkoutScreen(
                     }
                 }
             }
+            if (detail != null && state.soreness.isNotEmpty()) {
+                item(key = "soreness") {
+                    SorenessCard(
+                        questions = state.soreness,
+                        answers = state.sorenessAnswers,
+                        enabled = enabled,
+                        onAnswer = { muscle, value -> onIntent(WorkoutIntent.AnswerSoreness(muscle, value)) },
+                        onApply = { onIntent(WorkoutIntent.ApplySoreness) },
+                        onSkip = { onIntent(WorkoutIntent.SkipSoreness) },
+                    )
+                }
+            }
+            state.sorenessResult?.let { result ->
+                item(key = "soreness-result") { SorenessResultNote(result) { onIntent(WorkoutIntent.DismissSorenessResult) } }
+            }
             if (detail != null && selected != null) {
                 item(key = "current-${selected.id.value}") {
                     CurrentExercise(
@@ -680,6 +695,16 @@ private fun CurrentExercise(
         }
         state.stagnation[exercise.id]?.takeIf { exercise.id !in state.stagnationDismissed }?.let { stagnation ->
             StagnationRow(stagnation, enabled, onStagnation)
+        }
+        if (exercise.id in state.painSwap && exercise.id !in state.painSwapDismissed) {
+            PainSwapRow(
+                enabled = enabled && state.pendingWrites == 0,
+                onSwap = { onIntent(WorkoutIntent.Substitute(exercise.id)) },
+                onDismiss = { onIntent(WorkoutIntent.DismissPainSwap(exercise.id)) },
+            )
+        }
+        state.warmups[exercise.id]?.let { note ->
+            WarmupNoteRow(note, enabled && state.pendingWrites == 0) { onIntent(WorkoutIntent.AddWarmup(exercise.id)) }
         }
         if (exercise.notes.isNotBlank()) Text(exercise.notes, color = colors.text2, style = typography.body2)
         val done = sets.filter { it.isCompleted }

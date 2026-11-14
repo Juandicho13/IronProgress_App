@@ -133,7 +133,7 @@ const val PERIOD_CARD_KEY = "period-card"
 /**
  * Progreso (PANTALLAS 2.1): título con Historial y segmentado Ejercicios, Músculos y Cuerpo.
  * Músculos muestra las series reales de los últimos 7 días; sin entrenos, un estado vacío y ningún
- * número inventado. El mapa de recuperación llega con F2-08.
+ * número inventado. Arriba, el mapa de recuperación de las últimas dos semanas (F2-08).
  */
 @Composable
 fun ProgressScreen(
@@ -227,10 +227,14 @@ fun ProgressScreen(
                     Text(stringResource(Res.string.editor_loading), style = ForjaTheme.typography.body2, color = colors.text2)
                 }
             }
-            state.sets.isEmpty() -> item {
+            !state.hasSessions -> item {
                 ForjaEmptyState(stringResource(Res.string.progress_empty_title), stringResource(Res.string.progress_empty_body))
             }
-            else -> item { MuscleSetsCard(state) }
+            else -> {
+                // F2-08: el mapa de recuperación va arriba; las series por músculo, si hay de los últimos 7 días.
+                item(key = "recovery") { RecoveryCard(state.recovery, state.toEpochMs) }
+                if (state.sets.isNotEmpty()) item(key = "sets") { MuscleSetsCard(state) }
+            }
         }
     }
 }

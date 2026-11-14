@@ -16,7 +16,7 @@ val uiModule = module {
     single { RestController() }
     single { RestBackgroundActions(get(), get(), get(), get(), get(), get(), getOrNull()) }
     single { com.olarte.ironprogress.ui.rest.platformRestNotifications() }
-    viewModel { WorkoutViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { WorkoutViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), feedback = getOrNull()) }
     viewModel { TodayViewModel(get(), get(), get(), get(), get()) }
     viewModel { PlanViewModel(get(), get(), get(), get(), get()) }
     viewModel { (id: String?) -> RoutineEditorViewModel(get(), get(), get(), get(), id) }
@@ -31,9 +31,9 @@ val uiModule = module {
     }
     viewModel { (label: String) -> com.olarte.ironprogress.ui.discipline.BreathingViewModel(get(), get(), label) }
     viewModel { com.olarte.ironprogress.ui.wod.WodViewModel(get(), get(), get(), get()) }
-    viewModel { (id: String) -> com.olarte.ironprogress.ui.summary.SummaryViewModel(get(), get(), get(), id) }
+    viewModel { (id: String) -> com.olarte.ironprogress.ui.summary.SummaryViewModel(get(), get(), get(), id, get(), get(), get(), get()) }
     viewModel { com.olarte.ironprogress.ui.history.HistoryViewModel(get(), get(), get()) }
-    viewModel { com.olarte.ironprogress.ui.progress.ProgressViewModel(get(), get(), get()) }
+    viewModel { com.olarte.ironprogress.ui.progress.ProgressViewModel(get(), get(), get(), getOrNull()) }
     viewModel { com.olarte.ironprogress.ui.body.BodyViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { (key: String) -> com.olarte.ironprogress.ui.progress.PeriodSummaryViewModel(get(), get(), get(), key) }
     viewModel { (id: String) -> com.olarte.ironprogress.ui.progress.ExerciseProgressViewModel(get(), get(), get(), id) }

@@ -4,10 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.olarte.ironprogress.domain.catalog.ExerciseId
 import com.olarte.ironprogress.domain.catalog.ExerciseRepository
+import com.olarte.ironprogress.domain.catalog.Muscle
 import com.olarte.ironprogress.domain.catalog.SetField
 import com.olarte.ironprogress.domain.catalog.WeightUnit
 import com.olarte.ironprogress.domain.common.IdGenerator
+import com.olarte.ironprogress.domain.feedback.FeedbackRepository
+import com.olarte.ironprogress.domain.feedback.SessionFeedback
+import com.olarte.ironprogress.domain.feedback.SessionFeedbackRules
+import com.olarte.ironprogress.domain.feedback.latestByMuscle
 import com.olarte.ironprogress.domain.progress.DetectRecords
+import com.olarte.ironprogress.domain.progress.MuscleRecovery
+import com.olarte.ironprogress.domain.progress.MuscleSets
+import com.olarte.ironprogress.domain.progress.Recovery
+import com.olarte.ironprogress.domain.progress.RecoveryLevel
+import com.olarte.ironprogress.domain.progress.RecoveryWarmups
 import com.olarte.ironprogress.domain.progression.RepRange
 import com.olarte.ironprogress.domain.progression.StagnationDetector
 import com.olarte.ironprogress.domain.progression.carryWeightForward
@@ -55,6 +65,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -75,6 +86,8 @@ class WorkoutViewModel(
     val restController: RestController = RestController(),
     /** Récords al completar una serie (F2-03); la Live Activity los tomará de aquí (F2-15). */
     private val detectRecords: DetectRecords = DetectRecords(sessions),
+    /** Feedback por músculo (F2-06): agujetas al empezar y molestias de la última vez. */
+    private val feedback: FeedbackRepository? = null,
 ) : ViewModel() {
     private var notifiedDeadline: Long? = null
 
@@ -107,6 +120,16 @@ class WorkoutViewModel(
 
     /** Series ya rellenadas con la última vez: cada una una sola vez, aunque el usuario la vacíe. */
     private val prefilled = mutableSetOf<WorkoutSetId>()
+
+    /**
+     * Lo que se lee una vez por sesión para el feedback y la recuperación (F2-06, F2-08 y F2-14):
+     * las sesiones terminadas del último mes, el feedback guardado y el estado de cada músculo.
+     */
+    private var bodySession: SessionId? = null
+    private var recentFinished: List<SessionDetail> = emptyList()
+    private var ratings: List<SessionFeedback> = emptyList()
+    private var recovery: Map<Muscle, MuscleRecovery> = emptyMap()
+    private var sorenessHandled = false
 
     fun refreshRest() {
         val rest = state.value.rest ?: return
@@ -220,6 +243,7 @@ class WorkoutViewModel(
                     }
                     if (detail != null) prefillFromLastTime(detail, previous)
                     if (detail != null) analyze(detail, catalog)
+                    if (detail != null) analyzeBody(detail, catalog)
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -306,12 +330,7 @@ class WorkoutViewModel(
                 val sets = detail.setsOf(intent.id)
                 if (sets.any { it.setType == SetType.WARMUP }) return@enqueue
                 val work = sets.firstOrNull { it.setType.countsAsWorking && it.weightKg != null }?.weightKg ?: return@enqueue
-                val unit = state.value.unitOf(intent.id)
-                val steps = warmupSets(
-                    work,
-                    barKg = WeightUnits.toKg(WeightUnits.defaultBar(unit), unit),
-                    stepKg = WeightUnits.toKg(if (unit == WeightUnit.LB) 5.0 else 2.5, unit),
-                )
+                val steps = warmupFor(intent.id, work)
                 if (steps.isEmpty()) return@enqueue
                 sets.forEach { sessions.saveSet(it.copy(sortOrder = it.sortOrder + steps.size)) }
                 val first = sets.minOfOrNull { it.sortOrder } ?: 0
@@ -462,6 +481,16 @@ class WorkoutViewModel(
                 recordJob?.cancel()
                 mutableState.update { it.copy(record = null) }
             }
+            is WorkoutIntent.AnswerSoreness -> mutableState.update {
+                it.copy(sorenessAnswers = it.sorenessAnswers + (intent.muscle to intent.value.coerceIn(0, 3)))
+            }
+            WorkoutIntent.ApplySoreness -> enqueue { applySoreness() }
+            WorkoutIntent.SkipSoreness -> {
+                sorenessHandled = true
+                mutableState.update { it.copy(soreness = emptyList(), sorenessAnswers = emptyMap()) }
+            }
+            WorkoutIntent.DismissSorenessResult -> mutableState.update { it.copy(sorenessResult = null) }
+            is WorkoutIntent.DismissPainSwap -> mutableState.update { it.copy(painSwapDismissed = it.painSwapDismissed + intent.id) }
             is WorkoutIntent.ChangeType -> edit(intent.id) { it.copy(setType = intent.type) }
             is WorkoutIntent.ChangeNote -> edit(intent.id) { it.copy(notes = intent.note) }
         }
@@ -522,6 +551,87 @@ class WorkoutViewModel(
             StagnationDetector.detect(history, info.trackingType, range, canChangeRange = planned != null)?.let { found[exercise.id] = it }
         }
         if (found.isNotEmpty()) mutableState.update { it.copy(stagnation = it.stagnation + found) }
+    }
+
+    /**
+     * Feedback y recuperación de la sesión (F2-06, F2-08 y F2-14). Lee una vez por sesión las
+     * sesiones terminadas del último mes y el feedback; en cada cambio vuelve a calcular qué
+     * ejercicio lleva el aviso de calentamiento y cuál conviene cambiar por molestias.
+     */
+    private suspend fun analyzeBody(detail: SessionDetail, catalog: Map<ExerciseId, com.olarte.ironprogress.domain.catalog.Exercise>) {
+        val repository = feedback ?: return
+        val now = clock.now()
+        if (bodySession != detail.session.id) {
+            bodySession = detail.session.id
+            sorenessHandled = false
+            recentFinished = sessions.observeFinishedSessions().first()
+                .filter { it.id != detail.session.id && now - (it.endedAt ?: it.startedAt) <= SessionFeedbackRules.PAIN_WINDOW }
+                .mapNotNull { sessions.findSession(it.id) }
+            ratings = repository.observeAll().first()
+            recovery = Recovery.of(recentFinished, catalog, now, ratings)
+        }
+        val questions = if (sorenessHandled) {
+            emptyList()
+        } else {
+            SessionFeedbackRules.sorenessQuestions(detail, catalog, ratings.latestByMuscle(), now)
+        }
+        val swap = SessionFeedbackRules.exercisesToSwap(detail, catalog, recentFinished, ratings.groupBy { it.sessionId }, now)
+        val notes = RecoveryWarmups.targets(detail, catalog, recovery).mapNotNull { (id, state) ->
+            val work =
+                detail.setsOf(id).firstOrNull { it.setType.countsAsWorking && it.weightKg != null }?.weightKg ?: return@mapNotNull null
+            val count = warmupFor(id, work, state.level).size
+            if (count == 0) null else id to RecoveryWarmupNote(state.muscle, state.level, count)
+        }.toMap()
+        mutableState.update { current ->
+            current.copy(
+                soreness = questions,
+                sorenessAnswers = current.sorenessAnswers.filterKeys { muscle -> questions.any { it.muscle == muscle } },
+                painSwap = swap,
+                warmups = notes,
+            )
+        }
+    }
+
+    /**
+     * Calentamiento hacia [workKg] en la unidad del ejercicio. Si su músculo sigue cargado, con las
+     * aproximaciones suaves de más (F2-14).
+     */
+    private fun warmupFor(id: SessionExerciseId, workKg: Double, level: RecoveryLevel? = state.value.warmups[id]?.level) =
+        state.value.unitOf(id).let { unit ->
+            warmupSets(
+                workKg,
+                barKg = WeightUnits.toKg(WeightUnits.defaultBar(unit), unit),
+                stepKg = WeightUnits.toKg(if (unit == WeightUnit.LB) 5.0 else 2.5, unit),
+                extraLight = level?.let { RecoveryWarmups.extraLight(it) } ?: 0,
+            )
+        }
+
+    /**
+     * Guarda las agujetas y ajusta las series de hoy con las reglas de 11.4: una más si llegó sin
+     * agujetas y la carga fue fácil, una menos con agujetas o carga muy dura.
+     */
+    private suspend fun applySoreness() {
+        val repository = feedback ?: return
+        val questions = state.value.soreness
+        val answers = state.value.sorenessAnswers
+        val now = clock.now()
+        sorenessHandled = true
+        questions.forEach { question -> answers[question.muscle]?.let { repository.setSoreness(question.id, it, now) } }
+        ratings = ratings.map { row ->
+            val answer = answers[row.muscle]
+            if (answer != null && questions.any { it.id == row.id }) row.copy(soreness = answer, sorenessAt = now) else row
+        }
+        val detail = active()
+        val catalog = state.value.catalog
+        val weekly = MuscleSets.lastSevenDays(recentFinished, catalog, now)
+        val changes = questions.associate { question ->
+            question.muscle to
+                SessionFeedbackRules.changeAtStart(question.copy(soreness = answers[question.muscle]), weekly[question.muscle] ?: 0.0)
+        }
+        val plan = SessionFeedbackRules.planSetChanges(detail, catalog, changes, ids::newId)
+        plan.removed.forEach { sessions.deleteSet(it) }
+        plan.added.forEach { sessions.saveSet(it) }
+        mutableState.update { it.copy(soreness = emptyList(), sorenessAnswers = emptyMap(), sorenessResult = plan.applied) }
     }
 
     /** Cambia el rango de reps del ejercicio en la rutina y pone el nuevo mínimo en las series pendientes. */
