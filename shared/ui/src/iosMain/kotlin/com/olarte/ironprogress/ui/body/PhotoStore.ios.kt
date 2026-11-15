@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
+
 package com.olarte.ironprogress.ui.body
 
 import androidx.compose.runtime.Composable
